@@ -117,20 +117,20 @@ public final class YiPdfFile {
 		writeAscii("<<\n");
 		writeAscii("/Type /FontDescriptor\n");
 		writeAscii(String.format("/FontName /%s\n", familyName));
-		writeAscii("/Flags 39\n");//TODO
-		writeAscii("/FontBBox [ -150 -147 1100 853 ]\n");//TODO
-		writeAscii("/MissingWidth 507\n");//TODO
-		writeAscii("/StemV 92\n");//TODO
-		writeAscii("/StemH 92\n");//TODO
+		writeAscii("/Flags 6\n");
+		writeAscii("/FontBBox [ -150 -347 1100 853 ]\n");//TODO
 		writeAscii("/ItalicAngle 0\n");//TODO
+		writeAscii("/Ascent 853\n");//TODO
+		writeAscii("/Descent -347\n");//TODO
+		writeAscii("/Leading 0\n");//TODO
 		writeAscii("/CapHeight 853\n");//TODO
 		writeAscii("/XHeight 597\n");//TODO
-		writeAscii("/Ascent 853\n");//TODO
-		writeAscii("/Descent -147\n");//TODO
-		writeAscii("/Leading 0\n");//TODO
-		writeAscii("/MaxWidth 1000\n");//TODO
+		writeAscii("/StemV 92\n");//TODO
+		writeAscii("/StemH 92\n");//TODO
 		writeAscii("/AvgWidth 507\n");//TODO
-		writeAscii("/Style << /Panose <0805020B0609000000000000> >>\n");//TODO
+		writeAscii("/MaxWidth 1000\n");//TODO
+		writeAscii("/MissingWidth 507\n");//TODO
+		writeAscii("/Style << /Panose <08 05 02 0B 06 09 00 00 00 00 00 00> >>\n");//TODO
 		writeAscii(">>\n");
 		closeObj();
 		int cidId = openObj();
@@ -138,20 +138,19 @@ public final class YiPdfFile {
 		writeAscii("/Type /Font\n");
 		writeAscii("/Subtype /CIDFontType2\n");
 		writeAscii(String.format("/BaseFont /%s\n", familyName));
-		writeAscii("/WinCharSet 128\n");//TODO
-		writeAscii(String.format("/FontDescriptor %d 0 R\n", descriptorId));
 		writeAscii("/CIDSystemInfo\n");
 		writeAscii("<<\n");
-		writeAscii("/Registry(Adobe)\n");//TODO
-		writeAscii("/Ordering(Japan1)\n");//TODO
-		writeAscii("/Supplement 2\n");//TODO
+		writeAscii("/Registry(Adobe)\n");
+		writeAscii("/Ordering(Japan1)\n");
+		writeAscii("/Supplement 4\n");//TODO
 		writeAscii(">>\n");
-		writeAscii("/DW 1000\n");//TODO
+		writeAscii(String.format("/FontDescriptor %d 0 R\n", descriptorId));
+		writeAscii("/DW 1000\n");
 		writeAscii("/W\n");//TODO
 		writeAscii("[\n");
-		writeAscii("231 389 500\n");
-		writeAscii("631 631 500\n");
+		writeAscii("1 632 500\n");
 		writeAscii("]\n");
+		writeAscii("/DW2 [ 880 -1200 ]\n");
 		writeAscii(">>\n");
 		closeObj();
 		int id = openObj();

@@ -105,7 +105,8 @@ public final class YiPdfPage {
 	public double getStringWidth() {
 		return 0;
 	}
-	public void drawLine(double x1, double y1, double x2, double y2) {
+	public void drawLine(double x1, double y1, double x2, double y2) throws IOException {
+		graphicsStream.write(toBytesFromAscii(String.format("%f %f m %f %f l S\n", x1, height - y1, x2, height - y2)));
 	}
 	public void setFillColorRGB(double r, double g, double b) {
 	}

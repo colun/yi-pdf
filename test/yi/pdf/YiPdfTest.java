@@ -4,7 +4,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import yi.pdf.font.YiPdfJGothicFont;
+import yi.pdf.font.YiPdfJGothicFontV;
 import yi.pdf.font.YiPdfJMinchoFont;
 
 import junit.framework.TestCase;
@@ -26,15 +26,16 @@ public class YiPdfTest extends TestCase {
 		OutputStream stream = new FileOutputStream("test-output/test2.pdf");
 		YiPdfFile pdf = new YiPdfFile(stream);
 		YiPdfFont font = new YiPdfJMinchoFont();
-		YiPdfFont gothicFont = new YiPdfJGothicFont();
+		YiPdfFont gothicFont = new YiPdfJGothicFontV();
 
 		YiPdfPage page = new YiPdfPage(800, 600);
 		page.setFont(font);
 		page.setFontSize(10.5);
 		page.drawText(100, 100, "Hello World!");
-		page.drawText(100, 150, "Ç±ÇÒÇ…ÇøÇÕÅAê¢äE!!");
+		page.drawText(100, 150, "„Åì„Çì„Å´„Å°„ÅØ„ÄÅ‰∏ñÁïå!!");
 		page.setFont(gothicFont);
-		page.drawText(100, 200, "Ç±ÇÒÇ…ÇøÇÕÅAê¢äE!!");
+		page.drawText(100, 200, "Hello World!");
+		page.drawText(150, 200, "„Åì„Çì„Å´„Å°„ÅØ„ÄÅ‰∏ñÁïå!!");
 		pdf.writePage(page);
 		pdf.writePage(page);
 		page = new YiPdfPage(600, 800);
