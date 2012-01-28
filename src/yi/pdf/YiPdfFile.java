@@ -5,16 +5,21 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 public final class YiPdfFile {
 	OutputStream stream;
 	int streamPos;
 	int objCount;
+	int pageCount;
 	List<Integer> offsets;
-	List<Integer> pageObjIdList;
+	Map<Integer, Integer> pageId2ObjIdMap = new TreeMap<Integer, Integer>();
+	Map<YiPdfPage, Integer> reservedPageMap = new LinkedHashMap<YiPdfPage, Integer>();
 	Set<YiPdfFont> fontObjSet;
 	YiPdfTag documentTag;
 	//Map<String, Integer> imageObjIdMap;
@@ -22,11 +27,11 @@ public final class YiPdfFile {
 		this.stream = stream;
 		streamPos = 0;
 		objCount = 4;
+		pageCount = 0;
 		offsets = new ArrayList<Integer>();
 		for(int i=0; i<objCount; ++i) {
 			offsets.add(0);
 		}
-		pageObjIdList = new ArrayList<Integer>();
 		fontObjSet = new LinkedHashSet<YiPdfFont>();
 		documentTag = new YiPdfTag("document");
 		//imageObjIdMap = new LinkedHashMap<String, Integer>();
@@ -81,7 +86,7 @@ public final class YiPdfFile {
 		writeAscii("endstream\n");
 		closeObj();
 		int id = openObj();
-		pageObjIdList.add(id);
+		pageId2ObjIdMap.put(reservedPageMap.get(page), id);
 		writeAscii("<<\n");
 		writeAscii("/Type /Page\n");
 		writeAscii("/Parent 4 0 R\n");
@@ -90,8 +95,12 @@ public final class YiPdfFile {
 		writeAscii(String.format("/Contents %d 0 R\n", contentsId));
 		writeAscii(">>\n");
 		closeObj();
+		reservedPageMap.remove(page);
 	}
 	public void close() throws IOException {
+		for(YiPdfPage page : new ArrayList<YiPdfPage>(reservedPageMap.keySet())) {
+			page.close();
+		}
 		putPages();
 		putCatalog();
 		putResources();
@@ -104,11 +113,11 @@ public final class YiPdfFile {
 		writeAscii("<<\n");
 		writeAscii("/Type /Pages\n");
 		writeAscii("/Kids [");
-		for(int i : pageObjIdList) {
+		for(int i : pageId2ObjIdMap.values()) {
 			writeAscii(String.format(" %d 0 R", i));
 		}
 		writeAscii(" ]\n");
-		writeAscii(String.format("/Count %d\n", pageObjIdList.size()));
+		writeAscii(String.format("/Count %d\n", pageId2ObjIdMap.size()));
 		writeAscii(">>\n");
 		closeObj();
 	}
@@ -235,6 +244,8 @@ public final class YiPdfFile {
 		return documentTag;
 	}
 	public YiPdfPage newPage(double width, double height) {
-		return new YiPdfPage(width, height);
+		YiPdfPage page = new YiPdfPage(this, width, height);
+		reservedPageMap.put(page, ++pageCount);
+		return page;
 	}
 }

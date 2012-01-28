@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public final class YiPdfPage {
+	private YiPdfFile pdfFile;
 	double width;
 	double height;
 	private YiPdfFont nowFont = null;
@@ -16,9 +17,18 @@ public final class YiPdfPage {
 	ByteArrayOutputStream graphicsStream = new ByteArrayOutputStream();
 	Set<YiPdfFont> fontSet = new LinkedHashSet<YiPdfFont>();
 
-	protected YiPdfPage(double width, double height) {
+	protected YiPdfPage(YiPdfFile pdfFile, double width, double height) {
+		this.pdfFile = pdfFile;
 		this.width = width;
 		this.height = height;
+	}
+	public void close() throws IOException {
+		pdfFile.writePage(this);
+		nowFont = null;
+		beforeFont = null;
+		textStream = null;
+		graphicsStream = null;
+		fontSet = null;
 	}
 	public double getWidth() {
 		return width;
