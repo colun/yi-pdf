@@ -56,15 +56,23 @@ public class YiPdfTest extends TestCase {
 		YiPdfTag table = document.makeChild("Table");
 		YiPdfTag trA = table.makeChild("TR");
 		YiPdfTag tdA1 = trA.makeChild("TD");
-		page.drawText(100, 100, "Hello World!", tdA1);
+		page.beginTextTag(tdA1);
+		page.drawText(100, 100, "Hello World!");
+		page.endTextTag();
 		YiPdfTag tdA2 = trA.makeChild("TD");
-		page.drawText(100, 150, "こんにちは、世界!!", tdA2);
+		page.beginTextTag(tdA2);
+		page.drawText(100, 150, "こんにちは、世界!!");
+		page.endTextTag();
 		page.setFont(gothicFont);
 		YiPdfTag trB = table.makeChild("TR");
 		YiPdfTag tdB1 = trB.makeChild("TD");
-		page.drawText(100, 200, "Hello World!", tdB1);
+		page.beginTextTag(tdB1);
+		page.drawText(100, 200, "Hello World!");
+		page.endTextTag();
 		YiPdfTag tdB2 = trB.makeChild("TD");
-		page.drawText(150, 200, "こんにちは、世界!!", tdB2);
+		page.beginTextTag(tdB2);
+		page.drawText(150, 200, "こんにちは、世界!!");
+		page.endTextTag();
 		page = pdf.newPage(600, 800);
 		pdf.close();
 

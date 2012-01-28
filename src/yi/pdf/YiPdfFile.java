@@ -33,7 +33,7 @@ public final class YiPdfFile {
 			offsets.add(0);
 		}
 		fontObjSet = new LinkedHashSet<YiPdfFont>();
-		documentTag = new YiPdfTag("document");
+		documentTag = new YiPdfTag(this, "document");
 		//imageObjIdMap = new LinkedHashMap<String, Integer>();
 		writeAscii("%PDF-1.4\n\0\0\0\0\0\0\0\n"); // There are seven null characters. Because saying that this file is binary with all 4bytes alignment.
 	}
@@ -57,6 +57,10 @@ public final class YiPdfFile {
 		++objCount;
 		writeAscii(String.format("%d 0 obj\n", objCount));
 		return objCount;
+	}
+	protected int reserveObjId() throws IOException {
+		offsets.add(0);
+		return ++objCount;
 	}
 	private void openObj(int i) throws IOException {
 		offsets.set(i-1, streamPos);
@@ -101,12 +105,34 @@ public final class YiPdfFile {
 		for(YiPdfPage page : new ArrayList<YiPdfPage>(reservedPageMap.keySet())) {
 			page.close();
 		}
+		putStructTree();
 		putPages();
 		putCatalog();
 		putResources();
 		putInfo();
 		putCrossRef();
 		stream.flush();
+	}
+	private int putTag(YiPdfTag tag, int parentId) {
+		assert(false) : "TODO: YiPdfFile.putTag()";
+		return 0;
+	}
+	private void putStructTree() throws IOException {
+		int rootId = reserveObjId();
+		int docId = putTag(documentTag, rootId);
+		openObj(rootId);
+		writeAscii("<<\n");
+		writeAscii("/Type /StructTreeRoot\n");
+		writeAscii("RoleMap <<\n");
+		writeAscii("/Document /Document\n");
+		writeAscii("/Table /Table\n");
+		writeAscii("/TR /TR\n");
+		writeAscii("/TD /TD\n");
+		writeAscii("/TH /TH\n");
+		writeAscii(">>\n");
+		writeAscii(String.format("/K [ %d 0 R ]\n", docId));
+		writeAscii(">>\n");
+		closeObj();
 	}
 	private void putPages() throws IOException {
 		openObj(4);
