@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -105,7 +106,6 @@ public final class YiPdfFile {
 		for(YiPdfPage page : new ArrayList<YiPdfPage>(reservedPageMap.keySet())) {
 			page.close();
 		}
-		putStructTree();
 		putPages();
 		putCatalog();
 		putResources();
@@ -113,11 +113,37 @@ public final class YiPdfFile {
 		putCrossRef();
 		stream.flush();
 	}
-	private int putTag(YiPdfTag tag, int parentId) {
-		assert(false) : "TODO: YiPdfFile.putTag()";
-		return 0;
+	private int putTag(YiPdfTag tag, int parentId) throws IOException {
+		int myId = reserveObjId();
+		Collection<YiPdfTag> childrenList = tag.getChildrenList();
+		List<Integer> childrenIdList = new ArrayList<Integer>();
+		for(YiPdfTag child : childrenList) {
+			int childId = putTag(child, myId);
+			childrenIdList.add(childId);
+		}
+		Collection<Integer> mcIdList = tag.getMcIdList();
+		openObj(myId);
+		writeAscii("<<\n");
+		writeAscii("/Type /StructElem\n");
+		writeAscii(String.format("/S /%s\n", tag.getTagName()));
+		writeAscii(String.format("/P /%d\n", parentId));
+		writeAscii("/K [");
+		for(int mcId : mcIdList) {
+			if(mcId < 0) {
+				int childId = childrenIdList.get(-1 - mcId);
+				writeAscii(String.format(" %d 0 R", childId));
+			}
+			else {
+				writeAscii(String.format(" %d", mcId));
+			}
+		}
+		writeAscii(" ]\n");
+		
+		writeAscii(">>\n");
+		closeObj();
+		return myId;
 	}
-	private void putStructTree() throws IOException {
+	private int putStructTree() throws IOException {
 		int rootId = reserveObjId();
 		int docId = putTag(documentTag, rootId);
 		openObj(rootId);
@@ -133,6 +159,7 @@ public final class YiPdfFile {
 		writeAscii(String.format("/K [ %d 0 R ]\n", docId));
 		writeAscii(">>\n");
 		closeObj();
+		return rootId;
 	}
 	private void putPages() throws IOException {
 		openObj(4);
@@ -232,13 +259,7 @@ public final class YiPdfFile {
 	private void putCatalog() throws IOException {
 		//int parentTreeId = openObj();
 		//closeObj();
-		int stId = openObj();
-		writeAscii("<<\n");
-		writeAscii("/Type /StructTreeRoot\n");
-		//writeAscii(String.format("/ParentTree %d 0 R\n", parentTreeId));
-		writeAscii("/RoleMap << /Table /Table /TR /TR /TD /TD >>\n");
-		writeAscii(">>\n");
-		closeObj();
+		int stId = putStructTree();
 		openObj(3);
 		writeAscii("<<\n");
 		writeAscii("/Type /Catalog\n");

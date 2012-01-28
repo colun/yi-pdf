@@ -1,6 +1,7 @@
 package yi.pdf;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class YiPdfTag {
@@ -17,6 +18,12 @@ public class YiPdfTag {
 	}
 	public String getTagName() {
 		return tagName;
+	}
+	protected Collection<YiPdfTag> getChildrenList() {
+		return childrenList;
+	}
+	protected Collection<Integer> getMcIdList() {
+		return mcIdList;
 	}
 	public int publishMcId() {
 		int mcId;
