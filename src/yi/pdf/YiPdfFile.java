@@ -16,6 +16,7 @@ public final class YiPdfFile {
 	List<Integer> offsets;
 	List<Integer> pageObjIdList;
 	Set<YiPdfFont> fontObjSet;
+	YiPdfTag documentTag;
 	//Map<String, Integer> imageObjIdMap;
 	public YiPdfFile(OutputStream stream) throws IOException {
 		this.stream = stream;
@@ -27,6 +28,7 @@ public final class YiPdfFile {
 		}
 		pageObjIdList = new ArrayList<Integer>();
 		fontObjSet = new LinkedHashSet<YiPdfFont>();
+		documentTag = new YiPdfTag("document");
 		//imageObjIdMap = new LinkedHashMap<String, Integer>();
 		writeAscii("%PDF-1.4\n\0\0\0\0\0\0\0\n"); // There are seven null characters. Because saying that this file is binary with all 4bytes alignment.
 	}
@@ -58,7 +60,7 @@ public final class YiPdfFile {
 	private void closeObj() throws IOException {
 		writeAscii("endobj\n");
 	}
-	public void writePage(YiPdfPage page) throws IOException {
+	protected void writePage(YiPdfPage page) throws IOException {
 		assert(page!=null);
 		double width = page.getWidth();
 		double height = page.getHeight();
@@ -193,10 +195,21 @@ public final class YiPdfFile {
 		closeObj();
 	}
 	private void putCatalog() throws IOException {
+		//int parentTreeId = openObj();
+		//closeObj();
+		int stId = openObj();
+		writeAscii("<<\n");
+		writeAscii("/Type /StructTreeRoot\n");
+		//writeAscii(String.format("/ParentTree %d 0 R\n", parentTreeId));
+		writeAscii("/RoleMap << /Table /Table /TR /TR /TD /TD >>\n");
+		writeAscii(">>\n");
+		closeObj();
 		openObj(3);
 		writeAscii("<<\n");
 		writeAscii("/Type /Catalog\n");
 		writeAscii("/Pages 4 0 R\n");
+		writeAscii(String.format("/StructTreeRoot %d 0 R\n", stId));
+		writeAscii("/MarkInfo << /Marked true >>\n");
 		writeAscii(">>\n");
 		closeObj();
 	}
@@ -217,5 +230,11 @@ public final class YiPdfFile {
 		writeAscii("startxref\n");
 		writeAscii(String.format("%d\n", now));
 		writeAscii("%%EOF\n");
+	}
+	public YiPdfTag getDocument() {
+		return documentTag;
+	}
+	public YiPdfPage newPage(double width, double height) {
+		return new YiPdfPage(width, height);
 	}
 }

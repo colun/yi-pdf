@@ -16,7 +16,7 @@ public final class YiPdfPage {
 	ByteArrayOutputStream graphicsStream = new ByteArrayOutputStream();
 	Set<YiPdfFont> fontSet = new LinkedHashSet<YiPdfFont>();
 
-	public YiPdfPage(double width, double height) {
+	protected YiPdfPage(double width, double height) {
 		this.width = width;
 		this.height = height;
 	}
@@ -38,6 +38,16 @@ public final class YiPdfPage {
 		textStream.write(escapeStringBinary(nowFont.encode(text)));
 		textStream.write(toBytesFromAscii(") Tj\n"));
 	}
+	public void drawText(double x, double y, String text, YiPdfTag tag) throws IOException {
+		assert(false) : "TODO: drawText with tag.";
+	}
+	public void beginTextTag(String tagName) throws IOException {
+		textStream.write(toBytesFromAscii(String.format("/%s BMC\n", tagName)));
+	}
+	public void endTextTag() throws IOException {
+		textStream.write(toBytesFromAscii("EMC\n"));
+	}
+	
 	private static byte[] toBytesFromAscii(String str) {
 		char[] buf = str.toCharArray();
 		byte[] data = new byte[buf.length];
