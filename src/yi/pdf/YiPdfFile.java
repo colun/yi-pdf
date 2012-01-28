@@ -97,6 +97,7 @@ public final class YiPdfFile {
 		writeAscii("/Parent 4 0 R\n");
 		writeAscii(String.format("/MediaBox [ 0 0 %f %f ]\n", width, height));
 		writeAscii("/Resources 2 0 R\n");
+		writeAscii("/StructParents 0\n");
 		writeAscii(String.format("/Contents %d 0 R\n", contentsId));
 		writeAscii(">>\n");
 		closeObj();
@@ -113,6 +114,7 @@ public final class YiPdfFile {
 		putCrossRef();
 		stream.flush();
 	}
+	Set<Integer> leafTagNodeList = new LinkedHashSet<Integer>();
 	private int putTag(YiPdfTag tag, int parentId) throws IOException {
 		int myId = reserveObjId();
 		Collection<YiPdfTag> childrenList = tag.getChildrenList();
@@ -134,6 +136,7 @@ public final class YiPdfFile {
 				writeAscii(String.format(" %d 0 R", childId));
 			}
 			else {
+				leafTagNodeList.add(myId);
 				writeAscii(String.format(" %d", mcId));
 			}
 		}
@@ -156,9 +159,25 @@ public final class YiPdfFile {
 		writeAscii("/TD /TD\n");
 		writeAscii("/TH /TH\n");
 		writeAscii(">>\n");
+		int parentId = 0;
+		if(!leafTagNodeList.isEmpty()) {
+			parentId = reserveObjId();
+			writeAscii(String.format("/ParentTree %d 0 R\n", parentId));
+		}
 		writeAscii(String.format("/K [ %d 0 R ]\n", docId));
 		writeAscii(">>\n");
 		closeObj();
+		if(parentId!=0) {
+			openObj(parentId);
+			writeAscii("<<\n");
+			writeAscii("/Nums 0 [");
+			for(int id : leafTagNodeList) {
+				writeAscii(String.format(" %d 0 R", id));
+			}
+			writeAscii(" ]\n");
+			writeAscii(">>\n");
+			closeObj();
+		}
 		return rootId;
 	}
 	private void putPages() throws IOException {
