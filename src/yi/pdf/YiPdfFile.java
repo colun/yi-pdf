@@ -328,9 +328,9 @@ public final class YiPdfFile {
 		int now = streamPos;
 		writeAscii("xref\n");
 		writeAscii(String.format("0 %d\n", objCount + 1));
-		writeAscii(String.format("%010d %05d f\n", 0, 65535));
+		writeAscii(String.format("%010d %05d f \n", 0, 65535));
 		for(int i : offsets) {
-			writeAscii(String.format("%010d %05d n\n", i, 0));
+			writeAscii(String.format("%010d %05d n \n", i, 0));
 		}
 		writeAscii("trailer\n");
 		writeAscii("<<\n");
