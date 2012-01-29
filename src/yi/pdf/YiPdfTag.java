@@ -5,9 +5,6 @@ import java.util.Collection;
 import java.util.List;
 
 public class YiPdfTag {
-	private final static Object staticLockObj = new Object();
-	private static int mcIdSequence = 0;
-
 	private List<YiPdfTag> childrenList = new ArrayList<YiPdfTag>();
 	private String tagName;
 	private YiPdfFile pdfFile;
@@ -26,10 +23,7 @@ public class YiPdfTag {
 		return mcIdList;
 	}
 	public int publishMcId() {
-		int mcId;
-		synchronized(staticLockObj) {
-			mcId = mcIdSequence++;
-		}
+		int mcId = pdfFile.publishMcId();
 		mcIdList.add(mcId);
 		return mcId;
 	}

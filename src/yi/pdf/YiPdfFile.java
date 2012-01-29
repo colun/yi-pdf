@@ -38,6 +38,10 @@ public final class YiPdfFile {
 		//imageObjIdMap = new LinkedHashMap<String, Integer>();
 		writeAscii("%PDF-1.4\n\0\0\0\0\0\0\0\n"); // There are seven null characters. Because saying that this file is binary with all 4bytes alignment.
 	}
+	int mcIdSequence = 0;
+	protected int publishMcId() {
+		return mcIdSequence++;
+	}
 	private static byte[] toBytesFromAscii(String str) {
 		char[] buf = str.toCharArray();
 		byte[] data = new byte[buf.length];
