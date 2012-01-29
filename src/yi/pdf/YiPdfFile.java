@@ -174,12 +174,24 @@ public final class YiPdfFile {
 		writeAscii("/Type /StructTreeRoot\n");
 		writeAscii("/RoleMap <<\n");
 		writeAscii("/Document /Document\n");
+		writeAscii("/Div /Div\n");
+		writeAscii("/H /H\n");
+		writeAscii("/H1 /H1\n");
+		writeAscii("/H2 /H2\n");
+		writeAscii("/H3 /H3\n");
+		writeAscii("/H4 /H4\n");
+		writeAscii("/H5 /H5\n");
+		writeAscii("/H6 /H6\n");
 		writeAscii("/P /P\n");
+		writeAscii("/L /L\n");
+		writeAscii("/LI /LI\n");
+		writeAscii("/Lbl /Lbl\n");
+		writeAscii("/LBody /LBody\n");
 		writeAscii("/Span /Span\n");
 		writeAscii("/Table /Table\n");
 		writeAscii("/TR /TR\n");
-		writeAscii("/TD /TD\n");
 		writeAscii("/TH /TH\n");
+		writeAscii("/TD /TD\n");
 		writeAscii(">>\n");
 		int parentId = 0;
 		if(!leafTagNodeList.isEmpty()) {
