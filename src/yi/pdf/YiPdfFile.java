@@ -36,7 +36,7 @@ public final class YiPdfFile {
 		fontObjSet = new LinkedHashSet<YiPdfFont>();
 		documentTag = new YiPdfTag(this, "Document");
 		//imageObjIdMap = new LinkedHashMap<String, Integer>();
-		writeAscii("%PDF-1.4\n\0\0\0\0\0\0\0\n"); // There are seven null characters. Because saying that this file is binary with all 4bytes alignment.
+		writeAscii("%PDF-1.4\n%\0\0\0\0\0\0\0\n\n"); // There are seven null characters. Because saying that this file is binary with all 4bytes alignment.
 	}
 	int mcIdSequence = 0;
 	protected int publishMcId() {
