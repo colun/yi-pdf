@@ -126,6 +126,7 @@ public final class YiPdfFile {
 		Collection<Integer> mcIdList = tag.getMcIdList();
 
 		int aId = 0;
+		/*
 		String tagName = tag.getTagName();
 		if(!"Document".equals(tagName) && !"Span".equals(tagName)) {
 			aId = openObj();
@@ -135,6 +136,7 @@ public final class YiPdfFile {
 			writeAscii(">>\n");
 			closeObj();
 		}
+		//*/
 
 		openObj(myId);
 		writeAscii("<<\n");
@@ -170,7 +172,7 @@ public final class YiPdfFile {
 		openObj(rootId);
 		writeAscii("<<\n");
 		writeAscii("/Type /StructTreeRoot\n");
-		writeAscii("RoleMap <<\n");
+		writeAscii("/RoleMap <<\n");
 		writeAscii("/Document /Document\n");
 		writeAscii("/P /P\n");
 		writeAscii("/Span /Span\n");
@@ -296,8 +298,6 @@ public final class YiPdfFile {
 		closeObj();
 	}
 	private void putCatalog() throws IOException {
-		//int parentTreeId = openObj();
-		//closeObj();
 		int stId = putStructTree();
 		openObj(3);
 		writeAscii("<<\n");
