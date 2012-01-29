@@ -28,7 +28,7 @@ public class YiPdfTag {
 	public int publishMcId() {
 		int mcId;
 		synchronized(staticLockObj) {
-			mcId = ++mcIdSequence;
+			mcId = mcIdSequence++;
 		}
 		mcIdList.add(mcId);
 		return mcId;

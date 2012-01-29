@@ -37,16 +37,21 @@ public final class YiPdfPage {
 		return height;
 	}
 	public void drawText(double x, double y, String text) throws IOException {
+		textStream.write(toBytesFromAscii("BT\n"));
 		if(nowFont!=beforeFont || nowFontSize!=beforeFontSize) {
 			beforeFont = nowFont;
 			beforeFontSize = nowFontSize;
 			fontSet.add(nowFont);
 			textStream.write(toBytesFromAscii(String.format("/F%d %f Tf\n", nowFont.getResourceId(), nowFontSize)));
 		}
+		else {
+			textStream.write(toBytesFromAscii(String.format("/F%d %f Tf\n", nowFont.getResourceId(), nowFontSize)));
+		}
 		textStream.write(toBytesFromAscii(String.format("1 0 0 1 %f %f Tm\n", x, height - y)));
 		textStream.write(toBytesFromAscii("("));
 		textStream.write(escapeStringBinary(nowFont.encode(text)));
 		textStream.write(toBytesFromAscii(") Tj\n"));
+		textStream.write(toBytesFromAscii("ET\n"));
 	}
 	public void beginTextTag(YiPdfTag tag) throws IOException {
 		textStream.write(toBytesFromAscii(String.format("/%s << /MCID %d >> BDC\n", tag.getTagName(), tag.publishMcId())));
@@ -97,20 +102,20 @@ public final class YiPdfPage {
 		if(textStream.size()==0) {
 			return graphicsStream.toByteArray();
 		}
-		byte[] result = new byte[textStream.size() + graphicsStream.size() + 6];
+		byte[] result = new byte[textStream.size() + graphicsStream.size()/* + 6*/];
 		int pos = 0;
 		for(byte b : graphicsStream.toByteArray()) {
 			result[pos++] = b;
 		}
-		result[pos++] = 'B';
-		result[pos++] = 'T';
-		result[pos++] = '\n';
+		//result[pos++] = 'B';
+		//result[pos++] = 'T';
+		//result[pos++] = '\n';
 		for(byte b : textStream.toByteArray()) {
 			result[pos++] = b;
 		}
-		result[pos++] = 'E';
-		result[pos++] = 'T';
-		result[pos++] = '\n';
+		//result[pos++] = 'E';
+		//result[pos++] = 'T';
+		//result[pos++] = '\n';
 		return result;
 	}
 	public void setFont(YiPdfFont font) {

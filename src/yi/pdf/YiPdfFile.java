@@ -34,7 +34,7 @@ public final class YiPdfFile {
 			offsets.add(0);
 		}
 		fontObjSet = new LinkedHashSet<YiPdfFont>();
-		documentTag = new YiPdfTag(this, "document");
+		documentTag = new YiPdfTag(this, "Document");
 		//imageObjIdMap = new LinkedHashMap<String, Integer>();
 		writeAscii("%PDF-1.4\n\0\0\0\0\0\0\0\n"); // There are seven null characters. Because saying that this file is binary with all 4bytes alignment.
 	}
@@ -68,7 +68,7 @@ public final class YiPdfFile {
 		writeAscii(String.format("%d 0 obj\n", i));
 	}
 	private void closeObj() throws IOException {
-		writeAscii("endobj\n");
+		writeAscii("endobj\n\n");
 	}
 	protected void writePage(YiPdfPage page) throws IOException {
 		assert(page!=null);
@@ -124,23 +124,41 @@ public final class YiPdfFile {
 			childrenIdList.add(childId);
 		}
 		Collection<Integer> mcIdList = tag.getMcIdList();
+
+		int aId = 0;
+		String tagName = tag.getTagName();
+		if(!"Document".equals(tagName) && !"Span".equals(tagName)) {
+			aId = openObj();
+			writeAscii("<<\n");
+			writeAscii("/O /Layout\n");
+			writeAscii("TD".equals(tagName) ? "/Placement /Inline\n" : "/Placement /Block\n");
+			writeAscii(">>\n");
+			closeObj();
+		}
+
 		openObj(myId);
 		writeAscii("<<\n");
 		writeAscii("/Type /StructElem\n");
 		writeAscii(String.format("/S /%s\n", tag.getTagName()));
-		writeAscii(String.format("/P /%d\n", parentId));
-		writeAscii("/K [");
-		for(int mcId : mcIdList) {
-			if(mcId < 0) {
-				int childId = childrenIdList.get(-1 - mcId);
-				writeAscii(String.format(" %d 0 R", childId));
-			}
-			else {
-				leafTagNodeList.add(myId);
-				writeAscii(String.format(" %d", mcId));
-			}
+		writeAscii(String.format("/P %d 0 R\n", parentId));
+		writeAscii(String.format("/Pg %d 0 R\n", pageId2ObjIdMap.get(0)));//TODO
+		if(aId!=0) {
+			writeAscii(String.format("/A %d 0 R\n", aId));
 		}
-		writeAscii(" ]\n");
+		if(!mcIdList.isEmpty()) {
+			writeAscii("/K [");
+			for(int mcId : mcIdList) {
+				if(mcId < 0) {
+					int childId = childrenIdList.get(-1 - mcId);
+					writeAscii(String.format(" %d 0 R", childId));
+				}
+				else {
+					leafTagNodeList.add(myId);
+					writeAscii(String.format(" %d", mcId));
+				}
+			}
+			writeAscii(" ]\n");
+		}
 		
 		writeAscii(">>\n");
 		closeObj();
@@ -154,6 +172,8 @@ public final class YiPdfFile {
 		writeAscii("/Type /StructTreeRoot\n");
 		writeAscii("RoleMap <<\n");
 		writeAscii("/Document /Document\n");
+		writeAscii("/P /P\n");
+		writeAscii("/Span /Span\n");
 		writeAscii("/Table /Table\n");
 		writeAscii("/TR /TR\n");
 		writeAscii("/TD /TD\n");
@@ -169,13 +189,13 @@ public final class YiPdfFile {
 		closeObj();
 		if(parentId!=0) {
 			openObj(parentId);
-			writeAscii("<<\n");
-			writeAscii("/Nums 0 [");
+			writeAscii("<< /Nums [\n");
+			writeAscii("0 [");
 			for(int id : leafTagNodeList) {
 				writeAscii(String.format(" %d 0 R", id));
 			}
 			writeAscii(" ]\n");
-			writeAscii(">>\n");
+			writeAscii("] >>\n");
 			closeObj();
 		}
 		return rootId;
@@ -311,7 +331,7 @@ public final class YiPdfFile {
 	}
 	public YiPdfPage newPage(double width, double height) {
 		YiPdfPage page = new YiPdfPage(this, width, height);
-		reservedPageMap.put(page, ++pageCount);
+		reservedPageMap.put(page, pageCount++);
 		return page;
 	}
 }
