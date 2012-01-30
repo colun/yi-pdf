@@ -15,7 +15,7 @@ public class YiDomNode {
 	private Map<String, String> attr;
 	private List<YiDomNode> children;
 	public static YiDomNode parse(String html) throws ParseException {
-		return YiHtmlParser.parse(html);
+		return MyHtmlParser.parse(html);
 	}
 	public void setNodeType(int nodeType) {
 		this.nodeType = nodeType;

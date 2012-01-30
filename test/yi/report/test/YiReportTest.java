@@ -2,23 +2,31 @@ package yi.report.test;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
 
+import yi.pdf.YiPdfFile;
 import yi.report.YiDomNode;
+import yi.report.YiReportEngine;
 import junit.framework.TestCase;
 
 public class YiReportTest extends TestCase {
 	public void test1() throws Exception {
-		File file = new File("test-input/test-report1.html");
-		int size = (int)file.length();
-		byte[] buf = new byte[size];
-		size = new FileInputStream(file).read(buf);
-		String html = new String(buf, 0, size, Charset.forName("utf-8"));
+		String html = readTextFile("test-input/test-report1.html");
 		YiDomNode dom = YiDomNode.parse(html);
 		for(YiDomNode node : dom.getChildren()) {
 			showNode(node, 0);
 		}
+	}
+	private static String readTextFile(String filename) throws FileNotFoundException, IOException {
+		File file = new File(filename);
+		int size = (int)file.length();
+		byte[] buf = new byte[size];
+		size = new FileInputStream(file).read(buf);
+		return new String(buf, 0, size, Charset.forName("utf-8"));
 	}
 	private static void showNode(YiDomNode nowNode, int tab) {
 		for(int i=0; i<tab; ++i) {
@@ -53,5 +61,12 @@ public class YiReportTest extends TestCase {
 			}
 			System.out.printf("</%s>\n", nowNode.getTagName());
 		}
+	}
+	public void test2() throws Exception {
+		String html = readTextFile("test-input/test-report1.html");
+		YiDomNode dom = YiDomNode.parse(html);
+		FileOutputStream fos = new FileOutputStream("test-output/test-report2.pdf");
+		YiPdfFile pdfFile = new YiPdfFile(fos);
+		YiReportEngine.build(dom, pdfFile);
 	}
 }

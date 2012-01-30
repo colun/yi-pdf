@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-class YiHtmlParser {
+class MyHtmlParser {
 
 	private final static boolean[] nameCharset;
 	private final static boolean[] spaceCharset;
