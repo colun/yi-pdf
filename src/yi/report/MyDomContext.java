@@ -1,5 +1,6 @@
 package yi.report;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +49,7 @@ class MyDomContext {
 	}
 	MyDomContext() {
 	}
-	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_]+) *: *([-a-zA-Z0-9_]+) *");
+	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_\\.]+) *: *([-a-zA-Z0-9_]+) *");
 	Map<String, String> fromStyle(String style) {
 		Map<String, String> dic = new HashMap<String, String>();
 		Matcher m = stylePattern.matcher("");
@@ -103,9 +104,10 @@ class MyDomContext {
 	void visitText(YiDomNode node) {
 		layoutContext.writeText(node.getText());
 	}
-	public void exec(YiDomNode dom, YiPdfFile pdfFile) {
+	public void exec(YiDomNode dom, YiPdfFile pdfFile) throws IOException {
 		layoutContext = new MyLayoutContext(pdfFile);
 		visitChildren(dom, rootTagSet);
+		layoutContext.clearNowBlock();
 	}
 
 	static final HashSet<TagType> rootTagSet = new HashSet<MyDomContext.TagType>();

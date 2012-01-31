@@ -68,5 +68,6 @@ public class YiReportTest extends TestCase {
 		FileOutputStream fos = new FileOutputStream("test-output/test-report2.pdf");
 		YiPdfFile pdfFile = new YiPdfFile(fos);
 		YiReportEngine.build(dom, pdfFile);
+		pdfFile.close();
 	}
 }

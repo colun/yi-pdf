@@ -1,5 +1,6 @@
 package yi.report;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -33,7 +34,7 @@ public class MyLayoutContext {
 	}
 	MyLayoutBlock getNowBlock() {
 		if(nowBlock==null) {
-			nowBlock = MyLayoutBlock.createPageRoot();
+			nowBlock = MyLayoutBlock.createPageRoot(nowStyle);
 		}
 		return nowBlock;
 	}
@@ -48,10 +49,10 @@ public class MyLayoutContext {
 		nowBlock.addBlock(childBlock);
 		assert(false) : "TODO: MyLayoutContext.popBlock()";
 	}
-	void clearNowBlock() {
+	void clearNowBlock() throws IOException {
 		if(nowBlock!=null) {
 			assert(nowBlock.isPageRoot()) : "pageRootではないnowBlockをclearしてはならない。";
-			assert(false) : "TODO: MyLayoutContext.clearNowBlock()";
+			nowBlock.drawPage(pdfFile);
 			nowBlock = null;
 		}
 	}
