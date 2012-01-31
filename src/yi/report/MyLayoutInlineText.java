@@ -39,6 +39,7 @@ class MyLayoutInlineText extends MyLayoutInline {
 		page.beginTextTag(lineTag.makeChild("Span"));
 		page.setFont(font);
 		page.setFontSize(fontSize);
+		page.setTextColor(color);
 		page.drawText(posX, posY, text);
 		page.endTextTag();
 	}

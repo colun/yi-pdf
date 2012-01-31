@@ -13,6 +13,8 @@ public final class YiPdfPage {
 	private YiPdfFont beforeFont = null;
 	private double nowFontSize = 10.5;
 	private double beforeFontSize;
+	private YiPdfColor nowFontColor = new YiPdfColor(0, 0, 0);
+	private YiPdfColor beforeFontColor = null;
 	ByteArrayOutputStream textStream = new ByteArrayOutputStream();
 	ByteArrayOutputStream graphicsStream = new ByteArrayOutputStream();
 	Set<YiPdfFont> fontSet = new LinkedHashSet<YiPdfFont>();
@@ -44,8 +46,9 @@ public final class YiPdfPage {
 			fontSet.add(nowFont);
 			textStream.write(toBytesFromAscii(String.format("/F%d %f Tf\n", nowFont.getResourceId(), nowFontSize)));
 		}
-		else {
-			textStream.write(toBytesFromAscii(String.format("/F%d %f Tf\n", nowFont.getResourceId(), nowFontSize)));
+		if(beforeFontColor==null || nowFontColor.r!=beforeFontColor.r || nowFontColor.g!=beforeFontColor.g || nowFontColor.b!=beforeFontColor.b) {
+			beforeFontColor = nowFontColor;
+			textStream.write(toBytesFromAscii(String.format("%f %f %f rg\n", nowFontColor.r, nowFontColor.g, nowFontColor.b)));
 		}
 		textStream.write(toBytesFromAscii(String.format("1 0 0 1 %f %f Tm\n", x, height - y)));
 		textStream.write(toBytesFromAscii("("));
@@ -134,7 +137,8 @@ public final class YiPdfPage {
 	}
 	public void setDrawColorRGB(double r, double g, double b) {
 	}
-	public void setTextColorRGB(double r, double g, double b) {
+	public void setTextColor(YiPdfColor color) {
+		nowFontColor = color;
 	}
 	public Set<YiPdfFont> getFontSet() {
 		return fontSet;
