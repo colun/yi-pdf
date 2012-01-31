@@ -57,7 +57,7 @@ public class YiPdfTest extends TestCase {
 		YiPdfTag trA = table.makeChild("TR");
 		YiPdfTag p2 = trA.makeChild("TD").makeChild("P").makeChild("Span");
 		page.beginTextTag(p2);
-		page.drawText(100, 100, "Hello");
+		page.drawText(100, 100, "Hello ");
 		page.drawText(100, 300, "WorldA!");
 		page.endTextTag();
 		YiPdfTag p3 = trA.makeChild("TD").makeChild("P").makeChild("Span");
