@@ -20,6 +20,7 @@ class MyDomContext {
 		TAG_BODY("body"),
 		TAG_DIV("div"),
 		TAG_SPAN("span"),
+		TAG_BR("br"),
 		TAG_TABLE("table"),
 		TAG_TR("tr"),
 		TAG_TD("td"),
@@ -90,10 +91,14 @@ class MyDomContext {
 				switch(tagType) {
 				case TAG_HTML: visitHtml(child); break;
 				case TAG_BODY: visitBody(child); break;
+				case TAG_BR: visitBr(child); break;
 				}
 				layoutContext.popStyle();
 			}
 		}
+	}
+	private void visitBr(YiDomNode child) {
+		layoutContext.writeNewLine();
 	}
 	void visitHtml(YiDomNode node) {
 		visitChildren(node, htmlTagSet);

@@ -100,7 +100,7 @@ public class MyLayoutContext {
 			double totalTravel = q.fourth;
 			nLine.addInline(new MyLayoutInlineText(font, fontSize, color, str, totalTravel));
 			if(brFlag) {
-				clearNowLine();
+				writeNewLine();
 			}
 		}
 	}
@@ -157,6 +157,9 @@ public class MyLayoutContext {
 		}
 		String str = text.substring(stPos, pos);
 		return new MyQuartet<Integer, String, Boolean, Double>(pos, str, brFlag, (fontSize * totalTravel) / 1000);
+	}
+	public void writeNewLine() {
+		clearNowLine();
 	}
 
 }
