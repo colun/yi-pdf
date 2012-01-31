@@ -1,5 +1,5 @@
 package yi.report;
 
-class MyLayout {
+class MyLayoutInline {
 
 }
