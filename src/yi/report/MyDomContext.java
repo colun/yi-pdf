@@ -50,7 +50,7 @@ class MyDomContext {
 	}
 	MyDomContext() {
 	}
-	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_\\.]+) *: *([-a-zA-Z0-9_]+) *");
+	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_]+) *: *([-a-zA-Z0-9_\\.]+) *");
 	Map<String, String> fromStyle(String style) {
 		Map<String, String> dic = new HashMap<String, String>();
 		Matcher m = stylePattern.matcher("");
@@ -91,14 +91,21 @@ class MyDomContext {
 				switch(tagType) {
 				case TAG_HTML: visitHtml(child); break;
 				case TAG_BODY: visitBody(child); break;
+				case TAG_H1: visitH1(child); break;
 				case TAG_BR: visitBr(child); break;
 				}
 				layoutContext.popStyle();
 			}
 		}
 	}
+	private void visitH1(YiDomNode node) throws IOException {
+		layoutContext.pushPdfTag(layoutContext.getNowTag().makeChild("H1"));
+		visitChildren(node, normalTagSet);
+		layoutContext.writeBr();
+		layoutContext.popPdfTag();
+	}
 	private void visitBr(YiDomNode child) throws IOException {
-		layoutContext.writeNewLine();
+		layoutContext.writeBr();
 	}
 	void visitHtml(YiDomNode node) throws IOException {
 		visitChildren(node, htmlTagSet);

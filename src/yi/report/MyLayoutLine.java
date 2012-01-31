@@ -4,13 +4,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import yi.pdf.YiPdfFont;
 import yi.pdf.YiPdfPage;
+import yi.pdf.YiPdfTag;
 
 class MyLayoutLine {
 	double width;
 	double totalTravel;
 	double upperPerpend;
 	double lowerPerpend;
+	boolean blankFlag = true;
 	public MyLayoutLine(double width) {
 		this.width = width;
 		totalTravel = 0;
@@ -22,6 +25,7 @@ class MyLayoutLine {
 	}
 	List<MyLayoutInline> inlineList = new ArrayList<MyLayoutInline>();
 	public void addInline(MyLayoutInline myLayoutInline) {
+		blankFlag = false;
 		inlineList.add(myLayoutInline);
 		totalTravel += myLayoutInline.getTravel();
 		lowerPerpend = Math.min(lowerPerpend, myLayoutInline.getLowerPerpend());
@@ -41,6 +45,14 @@ class MyLayoutLine {
 	public void draw(YiPdfPage page) throws IOException {
 		for(MyLayoutInline item : inlineList) {
 			item.draw(page);
+		}
+	}
+	public void addBlankText(YiPdfFont nowFont, double nowFontSize, YiPdfTag lineTag) {
+		if(blankFlag) {
+			blankFlag = false;
+			lowerPerpend = Math.min(lowerPerpend, nowFontSize * nowFont.getLowerPerpend('A') / 1000);
+			upperPerpend = Math.max(upperPerpend, nowFontSize * nowFont.getUpperPerpend('A') / 1000);
+			lineTag.makeChild("Span");
 		}
 	}
 }

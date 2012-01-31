@@ -8,6 +8,7 @@ import java.util.Stack;
 import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfFont;
+import yi.pdf.YiPdfTag;
 import yi.pdf.font.YiPdfJGothicFont;
 
 public class MyLayoutContext {
@@ -17,9 +18,34 @@ public class MyLayoutContext {
 	Stack<Map<String, String>> styleStack = new Stack<Map<String,String>>();
 	MyLayoutBlock nowBlock;
 	MyLayoutLine nowLine;
+	YiPdfTag nowTag;
+	YiPdfTag nowLineTag;
 
 	MyLayoutContext(YiPdfFile pdfFile) {
 		this.pdfFile = pdfFile;
+		nowTag = pdfFile.getDocument();
+	}
+	Stack<YiPdfTag> tagStack = new Stack<YiPdfTag>();
+	void pushPdfTag(YiPdfTag tag) {
+		tagStack.push(nowTag);
+		nowTag = tag;
+		clearLineTag();
+	}
+	void popPdfTag() {
+		nowTag = tagStack.pop();
+		clearLineTag();
+	}
+	YiPdfTag getNowTag() {
+		return nowTag;
+	}
+	YiPdfTag getLineTag() {
+		if(nowLineTag==null) {
+			nowLineTag = nowTag.makeChild("P");
+		}
+		return nowLineTag;
+	}
+	void clearLineTag() { 
+		nowLineTag = null;
 	}
 	void pushStyle(Map<String, String> style) {
 		nowStyleDiff = style;
@@ -112,7 +138,7 @@ public class MyLayoutContext {
 			String str = q.second;
 			boolean brFlag = q.third;
 			double totalTravel = q.fourth;
-			nLine.addInline(new MyLayoutInlineText(font, fontSize, color, str, totalTravel));
+			nLine.addInline(new MyLayoutInlineText(font, fontSize, color, str, totalTravel, getLineTag()));
 			if(brFlag) {
 				writeNewLine();
 			}
@@ -172,8 +198,12 @@ public class MyLayoutContext {
 		String str = text.substring(stPos, pos);
 		return new MyQuartet<Integer, String, Boolean, Double>(pos, str, brFlag, (fontSize * totalTravel) / 1000);
 	}
+	public void writeBr() throws IOException {
+		getNowLine().addBlankText(getNowFont(), getNowFontSize(), getLineTag());
+		clearLineTag();
+		writeNewLine();
+	}
 	public void writeNewLine() throws IOException {
 		clearNowLine();
 	}
-
 }
