@@ -28,6 +28,9 @@ class MyLayoutBlock {
 	boolean isPageRoot() {
 		return pageRootFlag;
 	}
+	public void addBlock(MyLayoutBlock childBlock) {
+		assert(false) : "TODO: MyLayoutBlock.pushBlock()";
+	}
 
 
 }

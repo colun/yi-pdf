@@ -46,8 +46,6 @@ class MyDomContext {
 			return result;
 		}
 	}
-	Map<String, String> nowStyle;
-	Map<String, String> nowStyleDiff;
 	MyDomContext() {
 	}
 	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_]+) *: *([-a-zA-Z0-9_]+) *");
@@ -62,9 +60,7 @@ class MyDomContext {
 		}
 		return dic;
 	}
-	double getNowWidth() {
-		return 0;
-	}
+	MyLayoutContext layoutContext;
 	void visitChildren(YiDomNode node, Set<TagType> enableChildTag) {
 		List<YiDomNode> children = node.getChildren();
 		for(YiDomNode child : children) {
@@ -75,17 +71,16 @@ class MyDomContext {
 					}
 					continue;
 				}
-				Map<String, String> oldStyle = nowStyle;
-				nowStyle = new HashMap<String, String>(oldStyle);
 				{
+					Map<String, String> diff = null;
 					Map<String, String> attr = child.getAttr();
 					if(attr!=null) {
 						String style = attr.get("style");
 						if(style!=null) {
-							nowStyleDiff = fromStyle(style);
-							nowStyle.putAll(nowStyleDiff);
+							diff = fromStyle(style);
 						}
 					}
+					layoutContext.pushStyle(diff);
 				}
 				TagType tagType = TagType.fromString(child.getTagName());
 				if(tagType==null || enableChildTag!=null && !enableChildTag.contains(tagType)) {
@@ -95,6 +90,7 @@ class MyDomContext {
 				case TAG_HTML: visitHtml(child); break;
 				case TAG_BODY: visitBody(child); break;
 				}
+				layoutContext.popStyle();
 			}
 		}
 	}
@@ -105,13 +101,10 @@ class MyDomContext {
 		visitChildren(node, normalTagSet);
 	}
 	void visitText(YiDomNode node) {
-		for(String key : nowStyle.keySet()) {
-			System.out.println(key + ": " + nowStyle.get(key));
-		}
 		System.out.println("Text: " + node.getText());
 	}
 	public void exec(YiDomNode dom, YiPdfFile pdfFile) {
-		nowStyle = new HashMap<String, String>();
+		layoutContext = new MyLayoutContext(pdfFile);
 		visitChildren(dom, rootTagSet);
 	}
 
