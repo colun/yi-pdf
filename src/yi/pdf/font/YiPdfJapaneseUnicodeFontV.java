@@ -5,5 +5,14 @@ public abstract class YiPdfJapaneseUnicodeFontV extends YiPdfJapaneseUnicodeFont
 	public String getEncoding() {
 		return "UniJIS-UTF16-V";
 	}
+	public int getTravel(char c) {
+		return ascent - descent;
+	}
+	public int getLowerPerpend(char c) {
+		return -500;
+	}
+	public int getUpperPerpend(char c) {
+		return 500;
+	}
 
 }

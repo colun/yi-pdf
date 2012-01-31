@@ -71,8 +71,8 @@ class MyDomContext {
 					}
 					continue;
 				}
+				Map<String, String> diff = null;
 				{
-					Map<String, String> diff = null;
 					Map<String, String> attr = child.getAttr();
 					if(attr!=null) {
 						String style = attr.get("style");
@@ -101,7 +101,7 @@ class MyDomContext {
 		visitChildren(node, normalTagSet);
 	}
 	void visitText(YiDomNode node) {
-		System.out.println("Text: " + node.getText());
+		layoutContext.writeText(node.getText());
 	}
 	public void exec(YiDomNode dom, YiPdfFile pdfFile) {
 		layoutContext = new MyLayoutContext(pdfFile);

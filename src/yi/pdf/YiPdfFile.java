@@ -239,13 +239,13 @@ public final class YiPdfFile {
 		writeAscii("/Type /FontDescriptor\n");
 		writeAscii(String.format("/FontName /%s\n", familyName));
 		writeAscii("/Flags 6\n");
-		writeAscii("/FontBBox [ -150 -347 1100 853 ]\n");//TODO
-		writeAscii("/ItalicAngle 0\n");//TODO
-		writeAscii("/Ascent 853\n");//TODO
-		writeAscii("/Descent -347\n");//TODO
+		writeAscii(String.format("/FontBBox [ -100 %d 1100 %d ]\n", font.getDescent(), font.getAscent()));
+		writeAscii("/ItalicAngle 0\n");
+		writeAscii(String.format("/Ascent %d\n", font.getAscent()));//TODO
+		writeAscii(String.format("/Descent %d\n", font.getDescent()));//TODO
 		writeAscii("/Leading 0\n");//TODO
-		writeAscii("/CapHeight 853\n");//TODO
-		writeAscii("/XHeight 597\n");//TODO
+		writeAscii(String.format("/CapHeight %d\n", font.getAscent()));//TODO
+		writeAscii(String.format("/XHeight %d\n", font.getXHeight()));//TODO
 		writeAscii("/StemV 92\n");//TODO
 		writeAscii("/StemH 92\n");//TODO
 		writeAscii("/AvgWidth 507\n");//TODO
@@ -271,7 +271,7 @@ public final class YiPdfFile {
 		writeAscii("[\n");
 		writeAscii("1 632 500\n");
 		writeAscii("]\n");
-		writeAscii("/DW2 [ 880 -1200 ]\n");
+		writeAscii(String.format("/DW2 [ %d %d ]\n", font.getAscent(), font.getDescent() - font.getAscent()));
 		writeAscii(">>\n");
 		closeObj();
 		int id = openObj();
