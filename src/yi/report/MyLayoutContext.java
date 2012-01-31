@@ -64,9 +64,23 @@ public class MyLayoutContext {
 		}
 		return nowLine;
 	}
-	void clearNowLine() {
+	boolean fourceBlockFlag = true;
+	void clearNowLine() throws IOException {
 		if(nowLine!=null) {
-			getNowBlock().addLine(nowLine);
+			while(true) {
+				boolean f = getNowBlock().addLine(nowLine, fourceBlockFlag);
+				if(!f) {
+					MyLayoutLine hold = nowLine;
+					nowLine = null;
+					clearNowBlock();
+					nowLine = hold;
+					fourceBlockFlag = true;
+				}
+				else {
+					fourceBlockFlag = false;
+					break;
+				}
+			}
 			nowLine = null;
 		}
 	}
@@ -83,7 +97,7 @@ public class MyLayoutContext {
 		return new YiPdfColor(0, 0, 0);
 		//assert(false) : "TODO: MyLayoutContext.getNowFontColor()";
 	}
-	public void writeText(String text) {
+	public void writeText(String text) throws IOException {
 		YiPdfFont font = getNowFont();
 		YiPdfColor color = getNowFontColor();
 		double fontSize = getNowFontSize();
@@ -158,7 +172,7 @@ public class MyLayoutContext {
 		String str = text.substring(stPos, pos);
 		return new MyQuartet<Integer, String, Boolean, Double>(pos, str, brFlag, (fontSize * totalTravel) / 1000);
 	}
-	public void writeNewLine() {
+	public void writeNewLine() throws IOException {
 		clearNowLine();
 	}
 

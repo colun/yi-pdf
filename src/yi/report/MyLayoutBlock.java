@@ -62,9 +62,9 @@ class MyLayoutBlock {
 		assert(false) : "TODO: MyLayoutBlock.addBlock()";
 	}
 	List<MyLayoutLine> lineList = new ArrayList<MyLayoutLine>();
-	public boolean addLine(MyLayoutLine line) {
+	public boolean addLine(MyLayoutLine line, boolean fourceBlockFlag) {
 		double perpend = line.getPerpend();
-		if(contentBottom - yPos < perpend) {
+		if(!fourceBlockFlag && contentBottom - yPos < perpend) {
 			return false;
 		}
 		line.setPos(contentLeft, yPos);

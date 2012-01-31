@@ -63,7 +63,7 @@ class MyDomContext {
 		return dic;
 	}
 	MyLayoutContext layoutContext;
-	void visitChildren(YiDomNode node, Set<TagType> enableChildTag) {
+	void visitChildren(YiDomNode node, Set<TagType> enableChildTag) throws IOException {
 		List<YiDomNode> children = node.getChildren();
 		for(YiDomNode child : children) {
 			if(child!=null) {
@@ -97,16 +97,16 @@ class MyDomContext {
 			}
 		}
 	}
-	private void visitBr(YiDomNode child) {
+	private void visitBr(YiDomNode child) throws IOException {
 		layoutContext.writeNewLine();
 	}
-	void visitHtml(YiDomNode node) {
+	void visitHtml(YiDomNode node) throws IOException {
 		visitChildren(node, htmlTagSet);
 	}
-	void visitBody(YiDomNode node) {
+	void visitBody(YiDomNode node) throws IOException {
 		visitChildren(node, normalTagSet);
 	}
-	void visitText(YiDomNode node) {
+	void visitText(YiDomNode node) throws IOException {
 		layoutContext.writeText(node.getText());
 	}
 	public void exec(YiDomNode dom, YiPdfFile pdfFile) throws IOException {
