@@ -1,7 +1,10 @@
 package yi.report;
 
+import java.io.IOException;
+
 import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfFont;
+import yi.pdf.YiPdfPage;
 
 class MyLayoutInlineText extends MyLayoutInline {
 	YiPdfFont font;
@@ -22,10 +25,16 @@ class MyLayoutInlineText extends MyLayoutInline {
 	}
 	@Override
 	public double getLowerPerpend() {
-		return font.getLowerPerpend('A');
+		return fontSize * font.getLowerPerpend('A') / 1000;
 	}
 	@Override
 	public double getUpperPerpend() {
-		return font.getUpperPerpend('A');
+		return fontSize * font.getUpperPerpend('A') / 1000;
+	}
+	@Override
+	public void draw(YiPdfPage page) throws IOException {
+		page.setFont(font);
+		page.setFontSize(fontSize);
+		page.drawText(posX, posY, text);
 	}
 }

@@ -1,6 +1,8 @@
 package yi.report;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -10,10 +12,13 @@ import yi.pdf.YiPdfPage;
 class MyLayoutBlock {
 	double pageWidth;
 	double pageHeight;
-	double pageLeft;
-	double pageTop;
-	double width;
-	double height;
+	double contentLeft;
+	double contentTop;
+	double contentRight;
+	double contentBottom;
+	double contentWidth;
+	double contentHeight;
+	double yPos;
 	boolean pageRootFlag;
 	Stack<MyPair<Double, Double>> earthStack = new Stack<MyPair<Double,Double>>();//earth = left or top
 	Stack<MyPair<Double, Double>> skyStack = new Stack<MyPair<Double,Double>>();//sky = right or bottom
@@ -23,12 +28,15 @@ class MyLayoutBlock {
 		MyLayoutBlock self = new MyLayoutBlock();
 		self.pageWidth = MyUtil.evalUnit(style.get("page-width"));
 		self.pageHeight = MyUtil.evalUnit(style.get("page-height"));
-		self.pageLeft = MyUtil.evalUnit(style.get("margin-left"));
-		self.pageTop = MyUtil.evalUnit(style.get("margin-top"));
+		self.contentLeft = MyUtil.evalUnit(style.get("margin-left"));
+		self.contentTop = MyUtil.evalUnit(style.get("margin-top"));
 		double marginRight = MyUtil.evalUnit(style.get("margin-right"));
 		double marginBottom = MyUtil.evalUnit(style.get("margin-bottom"));
-		self.width = self.pageWidth - self.pageLeft - marginRight;
-		self.height = self.pageHeight - self.pageTop - marginBottom;
+		self.contentRight = self.pageWidth - marginRight;
+		self.contentBottom = self.pageHeight - marginBottom;
+		self.contentWidth = self.contentRight - self.contentLeft;
+		self.contentHeight = self.contentBottom - self.contentTop;
+		self.yPos = self.contentTop;
 		self.pageRootFlag = true;
 		return self;
 	}
@@ -45,18 +53,30 @@ class MyLayoutBlock {
 		if(!skyStack.isEmpty()) {
 			sWidth = skyStack.lastElement().second;
 		}
-		return width - eWidth - sWidth;
+		return contentWidth - eWidth - sWidth;
 	}
 	boolean isPageRoot() {
 		return pageRootFlag;
 	}
 	public void addBlock(MyLayoutBlock childBlock) {
-		assert(false) : "TODO: MyLayoutBlock.pushBlock()";
+		assert(false) : "TODO: MyLayoutBlock.addBlock()";
+	}
+	List<MyLayoutLine> lineList = new ArrayList<MyLayoutLine>();
+	public boolean addLine(MyLayoutLine line) {
+		double perpend = line.getPerpend();
+		if(contentBottom - yPos < perpend) {
+			return false;
+		}
+		line.setPos(contentLeft, yPos);
+		lineList.add(line);
+		yPos += perpend;
+		return true;
 	}
 	public void drawPage(YiPdfFile pdfFile) throws IOException {
 		YiPdfPage page = pdfFile.newPage(pageWidth, pageHeight);
+		for(MyLayoutLine line : lineList) {
+			line.draw(page);
+		}
 		page.close();
 	}
-
-
 }

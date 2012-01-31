@@ -50,6 +50,7 @@ public class MyLayoutContext {
 		assert(false) : "TODO: MyLayoutContext.popBlock()";
 	}
 	void clearNowBlock() throws IOException {
+		clearNowLine();
 		if(nowBlock!=null) {
 			assert(nowBlock.isPageRoot()) : "pageRootではないnowBlockをclearしてはならない。";
 			nowBlock.drawPage(pdfFile);
@@ -65,7 +66,7 @@ public class MyLayoutContext {
 	}
 	void clearNowLine() {
 		if(nowLine!=null) {
-			assert(false) : "TODO: MyLayoutContext.clearNowLine()";
+			getNowBlock().addLine(nowLine);
 			nowLine = null;
 		}
 	}
@@ -90,7 +91,7 @@ public class MyLayoutContext {
 		int pos = 0;
 		while(pos<len) {
 			MyLayoutLine nLine = getNowLine();
-			double maxTravel = nLine.getRemainingWidth();
+			double maxTravel = nLine.getRemainingTravel();
 			MyQuartet<Integer, String, Boolean, Double> q = formattingText(font, fontSize, text, maxTravel, pos);
 			assert(pos!=q.first);
 			pos = q.first;
@@ -148,6 +149,7 @@ public class MyLayoutContext {
 						totalTravel += travel;
 					}
 				}
+				brFlag = true;
 				break;
 			}
 			totalTravel += travel;
