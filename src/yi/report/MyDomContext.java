@@ -93,10 +93,14 @@ class MyDomContext {
 				case TAG_BODY: visitBody(child); break;
 				case TAG_H1: visitH1(child); break;
 				case TAG_BR: visitBr(child); break;
+				case TAG_SPAN: visitSpan(child); break;
 				}
 				layoutContext.popStyle();
 			}
 		}
+	}
+	private void visitSpan(YiDomNode node) throws IOException {
+		visitChildren(node, normalTagSet);
 	}
 	private void visitH1(YiDomNode node) throws IOException {
 		layoutContext.pushPdfTag(layoutContext.getNowTag().makeChild("H1"));

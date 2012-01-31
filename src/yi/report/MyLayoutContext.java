@@ -116,11 +116,19 @@ public class MyLayoutContext {
 		//assert(false) : "TODO: MyLayoutContext.getNowFont()";
 	}
 	double getNowFontSize() {
-		return 10.5;
+		String str = nowStyle.get("font-size");
+		if(str==null) {
+			return 10.5;
+		}
+		return MyUtil.evalUnit(str);
 		//assert(false) : "TODO: MyLayoutContext.getNowFontSize()";
 	}
 	private YiPdfColor getNowFontColor() {
-		return new YiPdfColor(0, 0, 0);
+		String str = nowStyle.get("font-color");
+		if(str==null) {
+			return new YiPdfColor(0, 0, 0);
+		}
+		return MyUtil.evalColor(str);
 		//assert(false) : "TODO: MyLayoutContext.getNowFontColor()";
 	}
 	public void writeText(String text) throws IOException {
