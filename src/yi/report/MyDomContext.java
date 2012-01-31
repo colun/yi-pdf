@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 import yi.pdf.YiPdfFile;
 
-class MyHtmlPdfLayouter {
+class MyDomContext {
 	enum TagType {
 		TAG_HTML("html"),
 		TAG_HEAD("head"),
@@ -33,7 +33,7 @@ class MyHtmlPdfLayouter {
 		public static HashMap<String, TagType> getDic() {
 			HashMap<String, TagType> eDic = enumDic;
 			if(eDic==null) {
-				eDic = new HashMap<String, MyHtmlPdfLayouter.TagType>();
+				eDic = new HashMap<String, MyDomContext.TagType>();
 				for(TagType tag : values()) {
 					eDic.put(tag.name, tag);
 				}
@@ -48,7 +48,7 @@ class MyHtmlPdfLayouter {
 	}
 	Map<String, String> nowStyle;
 	Map<String, String> nowStyleDiff;
-	MyHtmlPdfLayouter() {
+	MyDomContext() {
 	}
 	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_]+) *: *([-a-zA-Z0-9_]+) *");
 	Map<String, String> fromStyle(String style) {
@@ -115,12 +115,12 @@ class MyHtmlPdfLayouter {
 		visitChildren(dom, rootTagSet);
 	}
 
-	static final HashSet<TagType> rootTagSet = new HashSet<MyHtmlPdfLayouter.TagType>();
-	static final HashSet<TagType> htmlTagSet = new HashSet<MyHtmlPdfLayouter.TagType>();
-	static final HashSet<TagType> headTagSet = new HashSet<MyHtmlPdfLayouter.TagType>();
-	static final HashSet<TagType> normalTagSet = new HashSet<MyHtmlPdfLayouter.TagType>();
-	static final HashSet<TagType> tableTagSet = new HashSet<MyHtmlPdfLayouter.TagType>();
-	static final HashSet<TagType> trTagSet = new HashSet<MyHtmlPdfLayouter.TagType>();
+	static final HashSet<TagType> rootTagSet = new HashSet<MyDomContext.TagType>();
+	static final HashSet<TagType> htmlTagSet = new HashSet<MyDomContext.TagType>();
+	static final HashSet<TagType> headTagSet = new HashSet<MyDomContext.TagType>();
+	static final HashSet<TagType> normalTagSet = new HashSet<MyDomContext.TagType>();
+	static final HashSet<TagType> tableTagSet = new HashSet<MyDomContext.TagType>();
+	static final HashSet<TagType> trTagSet = new HashSet<MyDomContext.TagType>();
 	static {
 		rootTagSet.add(TagType.TAG_HTML);
 		htmlTagSet.add(TagType.TAG_HEAD);

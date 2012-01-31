@@ -4,7 +4,7 @@ import yi.pdf.YiPdfFile;
 
 public class YiReportEngine {
 	public static void build(YiDomNode dom, YiPdfFile pdfFile) {
-		MyHtmlPdfLayouter layouter = new MyHtmlPdfLayouter();
+		MyDomContext layouter = new MyDomContext();
 		layouter.exec(dom, pdfFile);
 	}
 
