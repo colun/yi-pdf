@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2011-2012 Yasunobu Imamura ( TwitterID: @colun )
+ */
 package yi.report;
 
 class MyPair<T1, T2> {

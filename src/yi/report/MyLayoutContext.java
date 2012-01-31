@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2011-2012 Yasunobu Imamura ( TwitterID: @colun )
+ */
 package yi.report;
 
 import java.io.IOException;
@@ -160,7 +163,6 @@ public class MyLayoutContext {
 		int totalTravel = 0;
 		int reservedTravel = -1;
 		int reservedPos = -1;
-		int reservedEndPos = -1;
 		char beforeCh = 0;
 		boolean brFlag = false;
 		int pos;
@@ -174,12 +176,10 @@ public class MyLayoutContext {
 			else if(ch==' ') {
 				reservedPos = pos + 1;
 				reservedTravel = totalTravel;
-				reservedEndPos = pos + 1;
 			}
 			else if(tabooPrefix.indexOf(ch)<0 && tabooSuffix.indexOf(beforeCh)<0) {
 				reservedPos = pos;
 				reservedTravel = totalTravel;
-				reservedEndPos = pos;
 			}
 			int travel = font.getTravel(ch);
 			if(128<=ch && maxTravelInt < totalTravel + travel) {
