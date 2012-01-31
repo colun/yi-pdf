@@ -1,5 +1,7 @@
 package yi.report;
 
-class MyLayoutInline {
-
+abstract class MyLayoutInline {
+	public abstract double getTravel();
+	public abstract double getLowerPerpend();
+	public abstract double getUpperPerpend();
 }

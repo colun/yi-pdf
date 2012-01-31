@@ -7,6 +7,7 @@ import java.util.Stack;
 import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfFont;
+import yi.pdf.font.YiPdfJGothicFont;
 
 public class MyLayoutContext {
 	YiPdfFile pdfFile;
@@ -56,7 +57,8 @@ public class MyLayoutContext {
 	}
 	MyLayoutLine getNowLine() {
 		if(nowLine==null) {
-			nowLine = new MyLayoutLine();
+			double lineWidth = getNowBlock().getLineWidth();
+			nowLine = new MyLayoutLine(lineWidth);
 		}
 		return nowLine;
 	}
@@ -66,17 +68,18 @@ public class MyLayoutContext {
 			nowLine = null;
 		}
 	}
+	YiPdfFont dummyFont = new YiPdfJGothicFont();
 	YiPdfFont getNowFont() {
-		assert(false) : "TODO: MyLayoutContext.getNowFont()";
-		return null;
+		return dummyFont;
+		//assert(false) : "TODO: MyLayoutContext.getNowFont()";
 	}
 	double getNowFontSize() {
-		assert(false) : "TODO: MyLayoutContext.getNowFontSize()";
-		return 0;
+		return 10.5;
+		//assert(false) : "TODO: MyLayoutContext.getNowFontSize()";
 	}
 	private YiPdfColor getNowFontColor() {
-		assert(false) : "TODO: MyLayoutContext.getNowFontColor()";
 		return new YiPdfColor(0, 0, 0);
+		//assert(false) : "TODO: MyLayoutContext.getNowFontColor()";
 	}
 	public void writeText(String text) {
 		YiPdfFont font = getNowFont();
@@ -88,6 +91,7 @@ public class MyLayoutContext {
 			MyLayoutLine nLine = getNowLine();
 			double maxTravel = nLine.getRemainingWidth();
 			MyQuartet<Integer, String, Boolean, Double> q = formattingText(font, fontSize, text, maxTravel, pos);
+			assert(pos!=q.first);
 			pos = q.first;
 			String str = q.second;
 			boolean brFlag = q.third;
@@ -97,7 +101,6 @@ public class MyLayoutContext {
 				clearNowLine();
 			}
 		}
-		assert(false) : "TODO: MyLayoutContext.writeText()";
 	}
 	String tabooPrefix = "、。」）・？";
 	String tabooSuffix = "「（";
@@ -106,16 +109,14 @@ public class MyLayoutContext {
 		int len = text.length();
 		int totalTravel = 0;
 		int reservedTravel = -1;
-		int endPos = -1;
 		int reservedPos = -1;
 		int reservedEndPos = -1;
-		int pos;
 		char beforeCh = 0;
 		boolean brFlag = false;
+		int pos;
 		for(pos = stPos; pos < len; ++pos) {
 			char ch = text.charAt(pos);
 			if(ch=='\n') {
-				endPos = pos;
 				pos += 1;
 				brFlag = true;
 				break;
@@ -131,28 +132,27 @@ public class MyLayoutContext {
 				reservedEndPos = pos;
 			}
 			int travel = font.getTravel(ch);
-			if(maxTravelInt < totalTravel + travel) {
+			if(128<=ch && maxTravelInt < totalTravel + travel) {
 				if(reservedPos==-1) {
 					if(pos==stPos) {
 						pos += 1;
 						totalTravel += travel;
 					}
-					endPos = pos;
 				}
 				else {
 					pos = reservedPos;
-					endPos = reservedEndPos;
 					totalTravel = reservedTravel;
+					if(pos==stPos) {
+						pos += 1;
+						totalTravel += travel;
+					}
 				}
 				break;
 			}
 			totalTravel += travel;
 			beforeCh = ch;
 		}
-		if(pos==len) {
-			endPos = pos;
-		}
-		String str = text.substring(stPos, endPos);
+		String str = text.substring(stPos, pos);
 		return new MyQuartet<Integer, String, Boolean, Double>(pos, str, brFlag, (fontSize * totalTravel) / 1000);
 	}
 

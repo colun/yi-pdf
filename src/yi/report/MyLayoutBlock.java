@@ -5,8 +5,8 @@ import java.util.Stack;
 class MyLayoutBlock {
 	double width;
 	boolean pageRootFlag;
-	Stack<MyPair<Double, Double>> earthStack;//earth = left or top
-	Stack<MyPair<Double, Double>> skyStack;//sky = right or bottom
+	Stack<MyPair<Double, Double>> earthStack = new Stack<MyPair<Double,Double>>();//earth = left or top
+	Stack<MyPair<Double, Double>> skyStack = new Stack<MyPair<Double,Double>>();//sky = right or bottom
 	private MyLayoutBlock() {
 		
 	}
@@ -19,9 +19,15 @@ class MyLayoutBlock {
 		return self;
 	}
 	double getLineWidth() {
-		MyPair<Double, Double> earthTop = earthStack.lastElement();
-		MyPair<Double, Double> skyTop = skyStack.lastElement();
-		return width - earthTop.second - skyTop.second;
+		double eWidth = 0;
+		if(!earthStack.isEmpty()) {
+			eWidth = earthStack.lastElement().second;
+		}
+		double sWidth = 0;
+		if(!skyStack.isEmpty()) {
+			sWidth = skyStack.lastElement().second;
+		}
+		return width - eWidth - sWidth;
 	}
 	boolean isPageRoot() {
 		return pageRootFlag;

@@ -16,4 +16,16 @@ class MyLayoutInlineText extends MyLayoutInline {
 		this.text = text;
 		this.travel = travel;
 	}
+	@Override
+	public double getTravel() {
+		return travel;
+	}
+	@Override
+	public double getLowerPerpend() {
+		return font.getLowerPerpend('A');
+	}
+	@Override
+	public double getUpperPerpend() {
+		return font.getUpperPerpend('A');
+	}
 }
