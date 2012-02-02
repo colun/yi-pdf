@@ -37,7 +37,7 @@ public final class YiPdfFile {
 			offsets.add(0);
 		}
 		fontObjSet = new LinkedHashSet<YiPdfFont>();
-		documentTag = new YiPdfTag(this, "Document");
+		documentTag = new YiPdfTag(this, null, "Document");
 		//imageObjIdMap = new LinkedHashMap<String, Integer>();
 		writeAscii("%PDF-1.4\n%\0\0\0\0\0\0\0\n\n"); // There are seven null characters. Because saying that this file is binary with all 4bytes alignment.
 	}
@@ -122,15 +122,21 @@ public final class YiPdfFile {
 		stream.flush();
 	}
 	Set<Integer> leafTagNodeList = new LinkedHashSet<Integer>();
-	private int putTag(YiPdfTag tag, int parentId) throws IOException {
+	private int putTag(YiPdfTag tag, int parentId, int pageId) throws IOException {
 		int myId = reserveObjId();
 		Collection<YiPdfTag> childrenList = tag.getChildrenList();
 		List<Integer> childrenIdList = new ArrayList<Integer>();
 		for(YiPdfTag child : childrenList) {
-			int childId = putTag(child, myId);
+			if(child.pageId!=-1) {
+				pageId = child.pageId;
+			}
+			int childId = putTag(child, myId, pageId);
 			childrenIdList.add(childId);
 		}
 		Collection<Integer> mcIdList = tag.getMcIdList();
+		if(tag.pageId!=-1) {
+			pageId = tag.pageId;
+		}
 
 		int aId = 0;
 		/*
@@ -150,7 +156,7 @@ public final class YiPdfFile {
 		writeAscii("/Type /StructElem\n");
 		writeAscii(String.format("/S /%s\n", tag.getTagName()));
 		writeAscii(String.format("/P %d 0 R\n", parentId));
-		writeAscii(String.format("/Pg %d 0 R\n", pageId2ObjIdMap.get(0)));//TODO
+		writeAscii(String.format("/Pg %d 0 R\n", pageId2ObjIdMap.get(pageId)));
 		if(aId!=0) {
 			writeAscii(String.format("/A %d 0 R\n", aId));
 		}
@@ -175,7 +181,7 @@ public final class YiPdfFile {
 	}
 	private int putStructTree() throws IOException {
 		int rootId = reserveObjId();
-		int docId = putTag(documentTag, rootId);
+		int docId = putTag(documentTag, rootId, 0);
 		openObj(rootId);
 		writeAscii("<<\n");
 		writeAscii("/Type /StructTreeRoot\n");
@@ -349,8 +355,9 @@ public final class YiPdfFile {
 		return documentTag;
 	}
 	public YiPdfPage newPage(double width, double height) {
-		YiPdfPage page = new YiPdfPage(this, width, height);
-		reservedPageMap.put(page, pageCount++);
+		int pageId = pageCount++;
+		YiPdfPage page = new YiPdfPage(this, pageId, width, height);
+		reservedPageMap.put(page, pageId);
 		return page;
 	}
 }

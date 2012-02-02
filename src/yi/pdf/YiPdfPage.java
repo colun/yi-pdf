@@ -10,6 +10,7 @@ import java.util.Set;
 
 public final class YiPdfPage {
 	private YiPdfFile pdfFile;
+	int pageId;
 	double width;
 	double height;
 	private YiPdfFont nowFont = null;
@@ -22,8 +23,9 @@ public final class YiPdfPage {
 	ByteArrayOutputStream graphicsStream = new ByteArrayOutputStream();
 	Set<YiPdfFont> fontSet = new LinkedHashSet<YiPdfFont>();
 
-	protected YiPdfPage(YiPdfFile pdfFile, double width, double height) {
+	protected YiPdfPage(YiPdfFile pdfFile, int pageId, double width, double height) {
 		this.pdfFile = pdfFile;
+		this.pageId = pageId;
 		this.width = width;
 		this.height = height;
 	}
@@ -60,7 +62,7 @@ public final class YiPdfPage {
 		textStream.write(toBytesFromAscii("ET\n"));
 	}
 	public void beginTextTag(YiPdfTag tag) throws IOException {
-		textStream.write(toBytesFromAscii(String.format("/%s << /MCID %d >> BDC\n", tag.getTagName(), tag.publishMcId())));
+		textStream.write(toBytesFromAscii(String.format("/%s << /MCID %d >> BDC\n", tag.getTagName(), tag.publishMcId(pageId))));
 	}
 	public void endTextTag() throws IOException {
 		textStream.write(toBytesFromAscii("EMC\n"));
