@@ -127,7 +127,7 @@ public class MyLayoutContext {
 		//assert(false) : "TODO: MyLayoutContext.getNowFontSize()";
 	}
 	private YiPdfColor getNowFontColor() {
-		String str = nowStyle.get("font-color");
+		String str = nowStyle.get("color");
 		if(str==null) {
 			return new YiPdfColor(0, 0, 0);
 		}
