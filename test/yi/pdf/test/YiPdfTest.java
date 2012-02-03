@@ -135,4 +135,37 @@ public class YiPdfTest extends TestCase {
 
 		stream.close();
 	}
+	public void test5() throws IOException {
+		OutputStream stream = new FileOutputStream("test-output/test5.pdf");
+		YiPdfFile pdf = new YiPdfFile(stream);
+		YiPdfFont font = new YiPdfJMinchoFont();
+		YiPdfTag document = pdf.getDocument();
+
+		YiPdfPage page1 = pdf.newPage(800, 600);
+		page1.setFont(font);
+		page1.setFontSize(10.5);
+		YiPdfPage page2 = pdf.newPage(800, 600);
+		page2.setFont(font);
+		page2.setFontSize(10.5);
+
+		YiPdfTag nowLine;
+
+		nowLine = document.makeChild("P");
+		page1.beginTextTag(nowLine.makeChild("Span"));
+		page1.drawText(100, 60, "AAA");
+		page1.endTextTag();
+		page2.beginTextTag(nowLine.makeChild("Span"));
+		page2.drawText(100, 80, "BBB");
+		page2.endTextTag();
+		page1.beginTextTag(nowLine.makeChild("Span"));
+		page1.drawText(100, 100, "CCC");
+		page1.endTextTag();
+		page2.beginTextTag(nowLine.makeChild("Span"));
+		page2.drawText(100, 120, "DDD");
+		page2.endTextTag();
+
+		pdf.close();
+
+		stream.close();
+	}
 }
