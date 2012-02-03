@@ -177,12 +177,12 @@ public class MyLayoutContext {
 				reservedPos = pos + 1;
 				reservedTravel = totalTravel;
 			}
-			else if(tabooPrefix.indexOf(ch)<0 && tabooSuffix.indexOf(beforeCh)<0) {
+			else if((ch<0 || 128<=ch) && tabooPrefix.indexOf(ch)<0 && tabooSuffix.indexOf(beforeCh)<0) {
 				reservedPos = pos;
 				reservedTravel = totalTravel;
 			}
 			int travel = font.getTravel(ch);
-			if(128<=ch && maxTravelInt < totalTravel + travel) {
+			if(maxTravelInt < totalTravel + travel) {
 				if(reservedPos==-1) {
 					if(pos==stPos) {
 						pos += 1;
