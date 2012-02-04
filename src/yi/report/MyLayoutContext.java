@@ -116,7 +116,6 @@ public class MyLayoutContext {
 	YiPdfFont dummyFont = new YiPdfJGothicFont();
 	YiPdfFont getNowFont() {
 		return dummyFont;
-		//assert(false) : "TODO: MyLayoutContext.getNowFont()";
 	}
 	double getNowFontSize() {
 		String str = nowStyle.get("font-size");
@@ -124,7 +123,6 @@ public class MyLayoutContext {
 			return 10.5;
 		}
 		return MyUtil.evalUnit(str);
-		//assert(false) : "TODO: MyLayoutContext.getNowFontSize()";
 	}
 	private YiPdfColor getNowFontColor() {
 		String str = nowStyle.get("color");
@@ -132,18 +130,25 @@ public class MyLayoutContext {
 			return new YiPdfColor(0, 0, 0);
 		}
 		return MyUtil.evalColor(str);
-		//assert(false) : "TODO: MyLayoutContext.getNowFontColor()";
+	}
+	private boolean getTabooHangMode() {
+		String str = nowStyle.get("line-break-hang");
+		if(str==null || str.isEmpty() || "0".equals(str) || "false".equals(str)) {
+			return false;
+		}
+		return true;
 	}
 	public void writeText(String text) throws IOException {
 		YiPdfFont font = getNowFont();
 		YiPdfColor color = getNowFontColor();
 		double fontSize = getNowFontSize();
+		boolean tabooHangMode = getTabooHangMode();
 		int len = text.length();
 		int pos = 0;
 		while(pos<len) {
 			MyLayoutLine nLine = getNowLine();
 			double maxTravel = nLine.getRemainingTravel();
-			MyQuartet<Integer, String, Boolean, Double> q = formattingText(font, fontSize, text, maxTravel, pos);
+			MyQuartet<Integer, String, Boolean, Double> q = formattingText(font, fontSize, text, maxTravel, pos, tabooHangMode);
 			assert(pos!=q.first);
 			pos = q.first;
 			String str = q.second;
@@ -155,9 +160,65 @@ public class MyLayoutContext {
 			}
 		}
 	}
-	String tabooPrefix = "、。」）・？";
+	String tabooPrefix = "　、。」）・？！";
 	String tabooSuffix = "「（";
-	public MyQuartet<Integer, String, Boolean, Double> formattingText(YiPdfFont font, double fontSize, String text, double maxTravel, int stPos) {
+	private MyQuartet<Integer, String, Boolean, Double> formattingText(YiPdfFont font, double fontSize, String text, double maxTravel, int stPos, boolean hangFlag) {
+		int maxTravelInt = (int)((maxTravel * 1000) / fontSize);
+		int len = text.length();
+		int totalTravel = 0;
+		int reservedTravel = -1;
+		int reservedPos = -1;
+		char beforeCh = 0;
+		boolean brFlag = false;
+		int pos;
+		for(pos = stPos; pos < len; ++pos) {
+			char ch = text.charAt(pos);
+			if(ch=='\n') {
+				pos += 1;
+				brFlag = true;
+				break;
+			}
+			else if(ch==' ') {
+				reservedPos = pos + 1;
+				reservedTravel = totalTravel;
+			}
+			else if((ch<0 || 128<=ch) && tabooPrefix.indexOf(ch)<0 && tabooSuffix.indexOf(beforeCh)<0) {
+				reservedPos = pos;
+				reservedTravel = totalTravel;
+			}
+			int travel = font.getTravel(ch);
+			if(maxTravelInt < totalTravel + travel) {
+				if(hangFlag && 0<=tabooPrefix.indexOf(ch)) {
+					++pos;
+					while(0<=tabooPrefix.indexOf(text.charAt(pos))) {
+						++pos;
+					}
+				}
+				else if(reservedPos==-1) {
+					if(pos==stPos) {
+						pos += 1;
+						totalTravel += travel;
+					}
+				}
+				else {
+					pos = reservedPos;
+					totalTravel = reservedTravel;
+					if(pos==stPos) {
+						pos += 1;
+						totalTravel += travel;
+					}
+				}
+				brFlag = true;
+				break;
+			}
+			totalTravel += travel;
+			beforeCh = ch;
+		}
+		String str = text.substring(stPos, pos);
+		return new MyQuartet<Integer, String, Boolean, Double>(pos, str, brFlag, (fontSize * totalTravel) / 1000);
+	}
+	/*
+	private MyQuartet<Integer, String, Boolean, Double> formattingText(YiPdfFont font, double fontSize, String text, double maxTravel, int stPos, boolean hang) {
 		int maxTravelInt = (int)((maxTravel * 1000) / fontSize);
 		int len = text.length();
 		int totalTravel = 0;
@@ -206,6 +267,7 @@ public class MyLayoutContext {
 		String str = text.substring(stPos, pos);
 		return new MyQuartet<Integer, String, Boolean, Double>(pos, str, brFlag, (fontSize * totalTravel) / 1000);
 	}
+	*/
 	public void writeBr() throws IOException {
 		getNowLine().addBlankText(getNowFont(), getNowFontSize(), getLineTag());
 		clearLineTag();
