@@ -17,6 +17,8 @@ public final class YiPdfPage {
 	private YiPdfFont beforeFont = null;
 	private double nowFontSize = 10.5;
 	private double beforeFontSize;
+	private int nowTextRenderingMode = 0;
+	private int beforeTextRenderingMode = -1;
 	private YiPdfColor nowFontColor = new YiPdfColor(0, 0, 0);
 	private YiPdfColor beforeFontColor = null;
 	ByteArrayOutputStream textStream = new ByteArrayOutputStream();
@@ -54,6 +56,10 @@ public final class YiPdfPage {
 		if(beforeFontColor==null || nowFontColor.r!=beforeFontColor.r || nowFontColor.g!=beforeFontColor.g || nowFontColor.b!=beforeFontColor.b) {
 			beforeFontColor = nowFontColor;
 			textStream.write(toBytesFromAscii(String.format("%f %f %f rg\n", nowFontColor.r, nowFontColor.g, nowFontColor.b)));
+		}
+		if(nowTextRenderingMode!=beforeTextRenderingMode) {
+			beforeTextRenderingMode = nowTextRenderingMode;
+			textStream.write(toBytesFromAscii(String.format("%d Tr\n", nowTextRenderingMode)));
 		}
 		textStream.write(toBytesFromAscii(String.format("1 0 0 1 %f %f Tm\n", x, height - y)));
 		textStream.write(toBytesFromAscii("("));
@@ -141,6 +147,9 @@ public final class YiPdfPage {
 	public void setFillColorRGB(double r, double g, double b) {
 	}
 	public void setDrawColorRGB(double r, double g, double b) {
+	}
+	public void setTextRenderingMode(int mode) {
+		nowTextRenderingMode = mode;
 	}
 	public void setTextColor(YiPdfColor color) {
 		nowFontColor = color;
