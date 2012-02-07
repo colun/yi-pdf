@@ -128,7 +128,9 @@ class MyDomContext {
 		if(!rbInlineText.isEmpty()) {
 			rbInlineText.get(rbInlineText.size() - 1).setRubyLastFlag(true);
 		}
+		afterRtFlag = false;
 	}
+	boolean afterRtFlag = false;
 	void mergeRuby(List<MyLayoutInlineText> rbList, List<MyLayoutInlineText> rtList) {
 		double rbTravelSum = 0;
 		for(MyLayoutInlineText rb : rbList) {
@@ -172,7 +174,7 @@ class MyDomContext {
 	private void visitRt(YiDomNode node) throws IOException {
 		assert(rbInlineText!=null) : "rtタグよりも前にrbタグが必要です。";
 		Map<String, String> halfFontSizeMap = new HashMap<String, String>();
-		halfFontSizeMap.put("font-size", String.format("%fpt", layoutContext.getNowFontSize() / 2));
+		halfFontSizeMap.put("font-size", String.format("%fpt", layoutContext.getNowFontSize() * 0.5));
 		MyLayoutLine infLine = MyLayoutLine.createInfLine();
 		layoutContext.pushLine(infLine);
 		layoutContext.pushStyle(halfFontSizeMap);
@@ -185,9 +187,13 @@ class MyDomContext {
 			rtList.addAll(((MyLayoutInlineText)il).explode());
 		}
 		mergeRuby(rbInlineText, rtList);
+		afterRtFlag = true;
 	}
 	private void visitRp(YiDomNode node) throws IOException {
 		assert(rbInlineText!=null) : "rpタグよりも前にrbタグが必要です。";
+		if(rbInlineText.isEmpty()) {
+			return;
+		}
 		List<YiDomNode> children = node.getChildren();
 		StringBuilder builder = new StringBuilder();
 		for(YiDomNode child : children) {
@@ -196,6 +202,18 @@ class MyDomContext {
 		}
 		if(1<=builder.length()) {
 			String text = builder.toString();
+			Map<String, String> halfFontSizeMap = new HashMap<String, String>();
+			halfFontSizeMap.put("font-size", String.format("%fpt", layoutContext.getNowFontSize() * 0.015625));
+			layoutContext.pushStyle(halfFontSizeMap);
+			MyLayoutInlineText rp = layoutContext.createNobrInlineText(text);
+			rp.setTransparentFlag(true);
+			layoutContext.popStyle();
+			if(afterRtFlag==false) {
+				rbInlineText.get(0).setBeforeRp(rp);
+			}
+			else {
+				rbInlineText.get(rbInlineText.size()-1).setAfterRp(rp);
+			}
 		}
 	}
 	private void visitSpan(YiDomNode node) throws IOException {

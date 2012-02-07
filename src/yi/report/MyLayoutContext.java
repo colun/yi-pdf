@@ -215,6 +215,17 @@ public class MyLayoutContext {
 			}
 		}
 	}
+	public MyLayoutInlineText createNobrInlineText(String text) throws IOException {
+		YiPdfFont font = getNowFont();
+		YiPdfColor color = getNowFontColor();
+		double fontSize = getNowFontSize();
+		int len = text.length();
+		int travelSum = 0;
+		for(int i=0; i<len; ++i) {
+			travelSum += font.getTravel(text.charAt(i));
+		}
+		return new MyLayoutInlineText(font, fontSize, color, text, (fontSize * travelSum) / 1000, getLineTag());
+	}
 	String tabooPrefix = "　、。」）・？！";
 	String tabooSuffix = "「（";
 	private MyQuartet<Integer, String, Boolean, Double> formattingText(YiPdfFont font, double fontSize, String text, double maxTravel, int stPos, boolean emptyLineFlag, boolean hangFlag) {

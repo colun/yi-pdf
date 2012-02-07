@@ -19,6 +19,7 @@ class MyLayoutInlineText extends MyLayoutInline {
 	String text;
 	double travel;
 	YiPdfTag lineTag;
+	boolean transparentFlag = false;
 	public MyLayoutInlineText(YiPdfFont font, double fontSize, YiPdfColor color, String text, double travel, YiPdfTag lineTag) {
 		this.font = font;
 		this.fontSize = fontSize;
@@ -26,6 +27,9 @@ class MyLayoutInlineText extends MyLayoutInline {
 		this.text = text;
 		this.travel = travel;
 		this.lineTag = lineTag;
+	}
+	public void setTransparentFlag(boolean transparentFlag) {
+		this.transparentFlag = transparentFlag;
 	}
 	@Override
 	public double getTravel() {
@@ -46,13 +50,27 @@ class MyLayoutInlineText extends MyLayoutInline {
 		page.setFont(font);
 		page.setFontSize(fontSize);
 		page.setTextColor(color);
+		if(transparentFlag) {
+			page.setTextRenderingMode(3);
+		}
 		page.drawText(posX, posY, text);
+		if(transparentFlag) {
+			page.setTextRenderingMode(0);
+		}
 		page.endTextTag();
+		if(beforeRp!=null) {
+			beforeRp.setPos(posX - beforeRp.getTravel(), posY - getUpperPerpend() + beforeRp.getLowerPerpend());
+			pageContext.addRuby(beforeRp);
+		}
 		if(rubyList!=null) {
 			for(MyLayoutInlineText ruby : rubyList) {
 				ruby.setPos(posX + ruby.getDx(), posY - getUpperPerpend() + ruby.getLowerPerpend());
 				pageContext.addRuby(ruby);
 			}
+		}
+		if(afterRp!=null) {
+			afterRp.setPos(posX + this.getTravel(), posY - getUpperPerpend() + afterRp.getLowerPerpend());
+			pageContext.addRuby(afterRp);
 		}
 		if(rubyLastFlag) {
 			pageContext.invokeRuby();
@@ -79,5 +97,13 @@ class MyLayoutInlineText extends MyLayoutInline {
 	}
 	public void setRubyLastFlag(boolean rubyLastFlag) { 
 		this.rubyLastFlag = rubyLastFlag;
+	}
+	MyLayoutInlineText beforeRp = null;
+	public void setBeforeRp(MyLayoutInlineText beforeRp) {
+		this.beforeRp = beforeRp;
+	}
+	MyLayoutInlineText afterRp = null;
+	public void setAfterRp(MyLayoutInlineText afterRp) {
+		this.afterRp = afterRp;
 	}
 }
