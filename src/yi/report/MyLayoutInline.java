@@ -5,8 +5,6 @@ package yi.report;
 
 import java.io.IOException;
 
-import yi.pdf.YiPdfPage;
-
 abstract class MyLayoutInline {
 	double posX;
 	double posY;
@@ -17,5 +15,5 @@ abstract class MyLayoutInline {
 	public abstract double getTravel();
 	public abstract double getLowerPerpend();
 	public abstract double getUpperPerpend();
-	public abstract void draw(YiPdfPage page) throws IOException;
+	public abstract void draw(MyLayoutPageContext pageContext) throws IOException;
 }

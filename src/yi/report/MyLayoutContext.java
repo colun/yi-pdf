@@ -4,7 +4,9 @@
 package yi.report;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -47,6 +49,16 @@ public class MyLayoutContext {
 		}
 		return nowLineTag;
 	}
+	Stack<MyLayoutLine> lineStack = new Stack<MyLayoutLine>();
+	void pushLine(MyLayoutLine newLine) {
+		lineStack.push(nowLine);
+		nowLine = newLine;
+	}
+	MyLayoutLine popLine() {
+		MyLayoutLine result = nowLine;
+		nowLine = lineStack.pop();
+		return result;
+	}
 	void clearLineTag() { 
 		nowLineTag = null;
 	}
@@ -57,6 +69,9 @@ public class MyLayoutContext {
 			nowStyle = new HashMap<String, String>(nowStyle);
 			nowStyle.putAll(style);
 		}
+	}
+	Map<String, String> getNowStyle() {
+		return nowStyle;
 	}
 	void popStyle() {
 		nowStyle = styleStack.pop();
@@ -78,11 +93,45 @@ public class MyLayoutContext {
 		nowBlock.addBlock(childBlock);
 		assert(false) : "TODO: MyLayoutContext.popBlock()";
 	}
+	private int lazyDrawLockCount = 0;
+	private List<MyLayoutBlock> lazyDrawBlockList = new ArrayList<MyLayoutBlock>();
+	private List<MyLayoutInlineText> lockedInlineTextList = new ArrayList<MyLayoutInlineText>();
+	void lockLazyDraw() {
+		++lazyDrawLockCount;
+	}
+	void unlockLazyDraw() throws IOException {
+		assert(1<=lazyDrawLockCount);
+		--lazyDrawLockCount;
+		if(lazyDrawLockCount==0) {
+			for(MyLayoutBlock block : lazyDrawBlockList) {
+				block.drawPage(pdfFile);
+			}
+			lazyDrawBlockList.clear();
+			lockedInlineTextList.clear();
+		}
+	}
+	void clearLockedInlineTextList() {
+		lockedInlineTextList.clear();
+	}
+	List<MyLayoutInlineText> getLockedInlineTextList() {
+		return new ArrayList<MyLayoutInlineText>(lockedInlineTextList);
+	}
+	boolean isLockedLazyDraw() {
+		return lazyDrawLockCount!=0;
+	}
+	void drawBlock(MyLayoutBlock block) throws IOException {
+		if(isLockedLazyDraw()) {
+			lazyDrawBlockList.add(block);
+		}
+		else {
+			block.drawPage(pdfFile);
+		}
+	}
 	void clearNowBlock() throws IOException {
 		clearNowLine();
 		if(nowBlock!=null) {
 			assert(nowBlock.isPageRoot()) : "pageRootではないnowBlockをclearしてはならない。";
-			nowBlock.drawPage(pdfFile);
+			drawBlock(nowBlock);
 			nowBlock = null;
 		}
 	}
@@ -148,13 +197,19 @@ public class MyLayoutContext {
 		while(pos<len) {
 			MyLayoutLine nLine = getNowLine();
 			double maxTravel = nLine.getRemainingTravel();
-			MyQuartet<Integer, String, Boolean, Double> q = formattingText(font, fontSize, text, maxTravel, pos, tabooHangMode);
-			assert(pos!=q.first);
-			pos = q.first;
-			String str = q.second;
+			MyQuartet<Integer, String, Boolean, Double> q = formattingText(font, fontSize, text, maxTravel, pos, nLine.isEmpty(), tabooHangMode);
+			assert(!nLine.isEmpty() || pos!=q.first);
+			if(pos!=q.first) {
+				pos = q.first;
+				String str = q.second;
+				double totalTravel = q.fourth;
+				MyLayoutInlineText inlineText = new MyLayoutInlineText(font, fontSize, color, str, totalTravel, getLineTag());
+				if(isLockedLazyDraw()) {
+					lockedInlineTextList.add(inlineText);
+				}
+				nLine.addInline(inlineText);
+			}
 			boolean brFlag = q.third;
-			double totalTravel = q.fourth;
-			nLine.addInline(new MyLayoutInlineText(font, fontSize, color, str, totalTravel, getLineTag()));
 			if(brFlag) {
 				writeNewLine();
 			}
@@ -162,7 +217,7 @@ public class MyLayoutContext {
 	}
 	String tabooPrefix = "　、。」）・？！";
 	String tabooSuffix = "「（";
-	private MyQuartet<Integer, String, Boolean, Double> formattingText(YiPdfFont font, double fontSize, String text, double maxTravel, int stPos, boolean hangFlag) {
+	private MyQuartet<Integer, String, Boolean, Double> formattingText(YiPdfFont font, double fontSize, String text, double maxTravel, int stPos, boolean emptyLineFlag, boolean hangFlag) {
 		int maxTravelInt = (int)((maxTravel * 1000) / fontSize);
 		int len = text.length();
 		int totalTravel = 0;
@@ -190,12 +245,12 @@ public class MyLayoutContext {
 			if(maxTravelInt < totalTravel + travel) {
 				if(hangFlag && 0<=tabooPrefix.indexOf(ch)) {
 					++pos;
-					while(0<=tabooPrefix.indexOf(text.charAt(pos))) {
+					while(pos < len && 0<=tabooPrefix.indexOf(text.charAt(pos))) {
 						++pos;
 					}
 				}
 				else if(reservedPos==-1) {
-					if(pos==stPos) {
+					if(emptyLineFlag && pos==stPos) {
 						pos += 1;
 						totalTravel += travel;
 					}
@@ -203,7 +258,7 @@ public class MyLayoutContext {
 				else {
 					pos = reservedPos;
 					totalTravel = reservedTravel;
-					if(pos==stPos) {
+					if(emptyLineFlag && pos==stPos) {
 						pos += 1;
 						totalTravel += travel;
 					}
@@ -217,57 +272,6 @@ public class MyLayoutContext {
 		String str = text.substring(stPos, pos);
 		return new MyQuartet<Integer, String, Boolean, Double>(pos, str, brFlag, (fontSize * totalTravel) / 1000);
 	}
-	/*
-	private MyQuartet<Integer, String, Boolean, Double> formattingText(YiPdfFont font, double fontSize, String text, double maxTravel, int stPos, boolean hang) {
-		int maxTravelInt = (int)((maxTravel * 1000) / fontSize);
-		int len = text.length();
-		int totalTravel = 0;
-		int reservedTravel = -1;
-		int reservedPos = -1;
-		char beforeCh = 0;
-		boolean brFlag = false;
-		int pos;
-		for(pos = stPos; pos < len; ++pos) {
-			char ch = text.charAt(pos);
-			if(ch=='\n') {
-				pos += 1;
-				brFlag = true;
-				break;
-			}
-			else if(ch==' ') {
-				reservedPos = pos + 1;
-				reservedTravel = totalTravel;
-			}
-			else if((ch<0 || 128<=ch) && tabooPrefix.indexOf(ch)<0 && tabooSuffix.indexOf(beforeCh)<0) {
-				reservedPos = pos;
-				reservedTravel = totalTravel;
-			}
-			int travel = font.getTravel(ch);
-			if(maxTravelInt < totalTravel + travel) {
-				if(reservedPos==-1) {
-					if(pos==stPos) {
-						pos += 1;
-						totalTravel += travel;
-					}
-				}
-				else {
-					pos = reservedPos;
-					totalTravel = reservedTravel;
-					if(pos==stPos) {
-						pos += 1;
-						totalTravel += travel;
-					}
-				}
-				brFlag = true;
-				break;
-			}
-			totalTravel += travel;
-			beforeCh = ch;
-		}
-		String str = text.substring(stPos, pos);
-		return new MyQuartet<Integer, String, Boolean, Double>(pos, str, brFlag, (fontSize * totalTravel) / 1000);
-	}
-	*/
 	public void writeBr() throws IOException {
 		getNowLine().addBlankText(getNowFont(), getNowFontSize(), getLineTag());
 		clearLineTag();

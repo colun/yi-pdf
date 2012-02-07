@@ -77,9 +77,11 @@ class MyLayoutBlock {
 	}
 	public void drawPage(YiPdfFile pdfFile) throws IOException {
 		YiPdfPage page = pdfFile.newPage(pageWidth, pageHeight);
+		MyLayoutPageContext pageContext = new MyLayoutPageContext(page);
 		for(MyLayoutLine line : lineList) {
-			line.draw(page);
+			line.draw(pageContext);
 		}
+		pageContext.invokeRuby();
 		page.close();
 	}
 }

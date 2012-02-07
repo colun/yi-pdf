@@ -4,6 +4,7 @@
 package yi.report;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,10 @@ class MyDomContext {
 		TAG_TR("tr"),
 		TAG_TD("td"),
 		TAG_TH("th"),
+		TAG_RUBY("ruby"),
+		TAG_RB("rb"),
+		TAG_RT("rt"),
+		TAG_RP("rp"),
 		TAG_H1("h1"),
 		NOT_TAG_TEXT("XXXXX");
 		private final String name;
@@ -97,9 +102,100 @@ class MyDomContext {
 				case TAG_H1: visitH1(child); break;
 				case TAG_BR: visitBr(child); break;
 				case TAG_SPAN: visitSpan(child); break;
+				case TAG_RUBY: visitRuby(child); break;
+				case TAG_RB: visitRb(child); break;
+				case TAG_RT: visitRt(child); break;
+				case TAG_RP: visitRp(child); break;
 				}
 				layoutContext.popStyle();
 			}
+		}
+	}
+	private void visitRuby(YiDomNode node) throws IOException {
+		layoutContext.lockLazyDraw();
+		visitChildren(node, rubyTagSet);
+		layoutContext.unlockLazyDraw();
+	}
+	List<MyLayoutInlineText> rbInlineText;
+	private void visitRb(YiDomNode node) throws IOException {
+		layoutContext.unlockLazyDraw();
+		layoutContext.lockLazyDraw();
+		layoutContext.clearLockedInlineTextList();
+		rbInlineText = null;
+		visitChildren(node, rbTagSet);
+		assert(rbInlineText==null);
+		rbInlineText = layoutContext.getLockedInlineTextList();
+		if(!rbInlineText.isEmpty()) {
+			rbInlineText.get(rbInlineText.size() - 1).setRubyLastFlag(true);
+		}
+	}
+	void mergeRuby(List<MyLayoutInlineText> rbList, List<MyLayoutInlineText> rtList) {
+		double rbTravelSum = 0;
+		for(MyLayoutInlineText rb : rbList) {
+			rbTravelSum += rb.getTravel();
+		}
+		double rtTravelSum = 0;
+		for(MyLayoutInlineText rt : rtList) {
+			rtTravelSum += rt.getTravel();
+		}
+		if(rbTravelSum==0 || rtTravelSum==0) {
+			return;
+		}
+		double rbrtRate = rbTravelSum / rtTravelSum;
+		double rbTravelPos = 0;
+		int rtPos = 0;
+		double rtTravelPos = 0;
+		for(MyLayoutInlineText rb : rbList) {
+			double rbNextTravelPos = rbTravelPos + rb.getTravel();
+			int rtPos2 = rtPos;
+			while(rtPos2<rtList.size()) {
+				MyLayoutInlineText rt = rtList.get(rtPos2);
+				double trvl = rt.getTravel();
+				double trvl2 = trvl / 2;
+				double rtt = rtTravelPos + trvl2;
+				double rbt = rtt * rbrtRate;
+				if(rbNextTravelPos<rbt) {
+					break;
+				}
+				rt.setDx((rbt - trvl2) - rbTravelPos);
+				rtTravelPos += trvl;
+				++rtPos2;
+			}
+			if(rtPos!=rtPos2) {
+				rb.setRuby(rtList.subList(rtPos, rtPos2));
+				rtPos = rtPos2;
+			}
+			rbTravelPos = rbNextTravelPos;
+		}
+		assert(rtPos==rtList.size());
+	}
+	private void visitRt(YiDomNode node) throws IOException {
+		assert(rbInlineText!=null) : "rtタグよりも前にrbタグが必要です。";
+		Map<String, String> halfFontSizeMap = new HashMap<String, String>();
+		halfFontSizeMap.put("font-size", String.format("%fpt", layoutContext.getNowFontSize() / 2));
+		MyLayoutLine infLine = MyLayoutLine.createInfLine();
+		layoutContext.pushLine(infLine);
+		layoutContext.pushStyle(halfFontSizeMap);
+		visitChildren(node, rbTagSet);
+		layoutContext.popStyle();
+		MyLayoutLine infLine2 = layoutContext.popLine();
+		assert(infLine==infLine2);
+		List<MyLayoutInlineText> rtList = new ArrayList<MyLayoutInlineText>();
+		for(MyLayoutInline il : infLine.getInlineList()) {
+			rtList.addAll(((MyLayoutInlineText)il).explode());
+		}
+		mergeRuby(rbInlineText, rtList);
+	}
+	private void visitRp(YiDomNode node) throws IOException {
+		assert(rbInlineText!=null) : "rpタグよりも前にrbタグが必要です。";
+		List<YiDomNode> children = node.getChildren();
+		StringBuilder builder = new StringBuilder();
+		for(YiDomNode child : children) {
+			assert(child.getNodeType()==YiDomNode.TYPE_OF_TEXT) : "rpタグの要素はテキストのみが許される";
+			builder.append(child.getText());
+		}
+		if(1<=builder.length()) {
+			String text = builder.toString();
 		}
 	}
 	private void visitSpan(YiDomNode node) throws IOException {
@@ -135,6 +231,8 @@ class MyDomContext {
 	static final HashSet<TagType> normalTagSet = new HashSet<MyDomContext.TagType>();
 	static final HashSet<TagType> tableTagSet = new HashSet<MyDomContext.TagType>();
 	static final HashSet<TagType> trTagSet = new HashSet<MyDomContext.TagType>();
+	static final HashSet<TagType> rubyTagSet = new HashSet<MyDomContext.TagType>();
+	static final HashSet<TagType> rbTagSet = new HashSet<MyDomContext.TagType>();
 	static {
 		rootTagSet.add(TagType.TAG_HTML);
 		htmlTagSet.add(TagType.TAG_HEAD);
@@ -150,8 +248,16 @@ class MyDomContext {
 		normalTagSet.remove(TagType.TAG_TR);
 		normalTagSet.remove(TagType.TAG_TD);
 		normalTagSet.remove(TagType.TAG_TH);
+		normalTagSet.remove(TagType.TAG_RB);
+		normalTagSet.remove(TagType.TAG_RT);
+		normalTagSet.remove(TagType.TAG_RP);
 		tableTagSet.add(TagType.TAG_TR);
 		trTagSet.add(TagType.TAG_TD);
 		trTagSet.add(TagType.TAG_TH);
+		rubyTagSet.add(TagType.TAG_RB);
+		rubyTagSet.add(TagType.TAG_RT);
+		rubyTagSet.add(TagType.TAG_RP);
+		rbTagSet.add(TagType.NOT_TAG_TEXT);
+		rbTagSet.add(TagType.TAG_SPAN);
 	}
 }

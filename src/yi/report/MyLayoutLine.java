@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import yi.pdf.YiPdfFont;
-import yi.pdf.YiPdfPage;
 import yi.pdf.YiPdfTag;
 
 class MyLayoutLine {
@@ -23,10 +22,19 @@ class MyLayoutLine {
 		lowerPerpend = 0;
 		upperPerpend = 0;
 	}
+	static MyLayoutLine createInfLine() {
+		return new MyLayoutLine(1000000000);
+	}
 	double getRemainingTravel() {
 		return width - totalTravel;
 	}
 	List<MyLayoutInline> inlineList = new ArrayList<MyLayoutInline>();
+	boolean isEmpty() {
+		return inlineList.isEmpty();
+	}
+	List<MyLayoutInline> getInlineList() {
+		return inlineList;
+	}
 	public void addInline(MyLayoutInline myLayoutInline) {
 		blankFlag = false;
 		inlineList.add(myLayoutInline);
@@ -45,9 +53,9 @@ class MyLayoutLine {
 			x += travel;
 		}
 	}
-	public void draw(YiPdfPage page) throws IOException {
+	public void draw(MyLayoutPageContext pageContext) throws IOException {
 		for(MyLayoutInline item : inlineList) {
-			item.draw(page);
+			item.draw(pageContext);
 		}
 	}
 	public void addBlankText(YiPdfFont nowFont, double nowFontSize, YiPdfTag lineTag) {
