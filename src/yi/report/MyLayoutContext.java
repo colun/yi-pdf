@@ -255,4 +255,7 @@ public class MyLayoutContext {
 	public void writeNewLine() throws IOException {
 		clearNowLine();
 	}
+	public void writeInline(MyLayoutInline item) {
+		getNowLine().addInline(item);
+	}
 }

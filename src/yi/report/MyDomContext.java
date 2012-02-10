@@ -238,7 +238,19 @@ class MyDomContext {
 		}
 	}
 	private void visitSpan(YiDomNode node) throws IOException {
-		visitChildren(node, normalTagSet);
+		MyLayoutStyle style = layoutContext.getNowStyle();
+		boolean writingModeFlag = style.hasWritingMode();
+		if(writingModeFlag) {
+			MyLayoutLine infLine = MyLayoutLine.createInfLine(style.isVerticalWritingMode());
+			layoutContext.pushLine(infLine);
+			visitChildren(node, normalTagSet);
+			MyLayoutLine infLine2 = layoutContext.popLine();
+			assert(infLine==infLine2);
+			layoutContext.writeInline(new MyLayoutInlineLine(layoutContext.getNowBlock().isVerticalWritingMode(), infLine));
+		}
+		else {
+			visitChildren(node, normalTagSet);
+		}
 	}
 	private void visitH1(YiDomNode node) throws IOException {
 		layoutContext.pushPdfTag(layoutContext.getNowTag().makeChild("H1"));

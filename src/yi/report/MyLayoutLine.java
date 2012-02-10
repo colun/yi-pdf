@@ -48,12 +48,6 @@ class MyLayoutLine {
 		return upperPerpend - lowerPerpend;
 	}
 	public void setPos(double x, double y) {
-		if(!verticalWritingMode) {
-			y += upperPerpend;
-		}
-		else {
-			x -= upperPerpend;
-		}
 		for(MyLayoutInline item : inlineList) {
 			double travel = item.getTravel();
 			item.setPos(x, y);
@@ -80,5 +74,14 @@ class MyLayoutLine {
 	}
 	public boolean isVerticalWritingMode() {
 		return verticalWritingMode;
+	}
+	public double getTravel() {
+		return totalTravel;
+	}
+	public double getLowerPerpend() {
+		return lowerPerpend;
+	}
+	public double getUpperPerpend() {
+		return upperPerpend;
 	}
 }

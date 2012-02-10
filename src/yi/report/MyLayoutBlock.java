@@ -80,10 +80,10 @@ class MyLayoutBlock {
 			return false;
 		}
 		if(!verticalWritingMode) {
-			line.setPos(contentLeft, divePos);
+			line.setPos(contentLeft, divePos + line.getUpperPerpend());
 		}
 		else {
-			line.setPos(pageWidth - divePos, contentTop);
+			line.setPos(pageWidth - divePos - line.getUpperPerpend(), contentTop);
 		}
 		lineList.add(line);
 		divePos += perpend;
