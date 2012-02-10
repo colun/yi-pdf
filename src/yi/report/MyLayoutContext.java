@@ -165,20 +165,19 @@ public class MyLayoutContext {
 		while(pos<len) {
 			MyLayoutLine nLine = getNowLine();
 			double maxTravel = nLine.getRemainingTravel();
-			MyQuartet<Integer, String, Boolean, Double> q = formattingText(font, fontSize, text, maxTravel, pos, nLine.isEmpty(), tabooHangMode);
+			MyQuartet<Integer, String, Double, Object> q = formattingText(font, fontSize, text, maxTravel, pos, nLine.isEmpty(), tabooHangMode);
 			assert(!nLine.isEmpty() || pos!=q.first);
 			if(pos!=q.first) {
 				pos = q.first;
 				String str = q.second;
-				double totalTravel = q.fourth;
+				double totalTravel = q.third;
 				MyLayoutInlineText inlineText = new MyLayoutInlineText(font, fontSize, color, str, totalTravel, getLineTag());
 				if(isLockedLazyDraw()) {
 					lockedInlineTextList.add(inlineText);
 				}
 				nLine.addInline(inlineText);
 			}
-			boolean brFlag = q.third;
-			if(brFlag) {
+			if(pos<len) {
 				writeNewLine();
 			}
 		}
@@ -196,20 +195,18 @@ public class MyLayoutContext {
 	}
 	String tabooPrefix = "　、。」）・？！";
 	String tabooSuffix = "「（";
-	private MyQuartet<Integer, String, Boolean, Double> formattingText(YiPdfFont font, double fontSize, String text, double maxTravel, int stPos, boolean emptyLineFlag, boolean hangFlag) {
+	private MyQuartet<Integer, String, Double, Object> formattingText(YiPdfFont font, double fontSize, String text, double maxTravel, int stPos, boolean emptyLineFlag, boolean hangFlag) {
 		int maxTravelInt = (int)((maxTravel * 1000) / fontSize);
 		int len = text.length();
 		int totalTravel = 0;
 		int reservedTravel = -1;
 		int reservedPos = -1;
 		char beforeCh = 0;
-		boolean brFlag = false;
 		int pos;
 		for(pos = stPos; pos < len; ++pos) {
 			char ch = text.charAt(pos);
 			if(ch=='\n') {
 				pos += 1;
-				brFlag = true;
 				break;
 			}
 			else if(ch==' ') {
@@ -242,14 +239,13 @@ public class MyLayoutContext {
 						totalTravel += travel;
 					}
 				}
-				brFlag = true;
 				break;
 			}
 			totalTravel += travel;
 			beforeCh = ch;
 		}
 		String str = text.substring(stPos, pos);
-		return new MyQuartet<Integer, String, Boolean, Double>(pos, str, brFlag, (fontSize * totalTravel) / 1000);
+		return new MyQuartet<Integer, String, Double, Object>(pos, str, (fontSize * totalTravel) / 1000, null);
 	}
 	public void writeBr() throws IOException {
 		getNowLine().addBlankText(nowStyle.getFont(), nowStyle.getFontSize(), getLineTag());
