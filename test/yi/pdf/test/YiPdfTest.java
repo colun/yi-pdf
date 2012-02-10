@@ -21,8 +21,8 @@ public class YiPdfTest extends TestCase {
 		OutputStream stream = new FileOutputStream("test-output/test1.pdf");
 		YiPdfFile pdf = new YiPdfFile(stream);
 
-		YiPdfPage page = pdf.newPage(800, 600);
-		page = pdf.newPage(600, 800);
+		pdf.newPage(800, 600);
+		pdf.newPage(600, 800);
 		pdf.close();
 
 		stream.close();
@@ -86,7 +86,6 @@ public class YiPdfTest extends TestCase {
 		OutputStream stream = new FileOutputStream("test-output/test4.pdf");
 		YiPdfFile pdf = new YiPdfFile(stream);
 		YiPdfFont font = new YiPdfJMinchoFont();
-		YiPdfFont gothicFont = new YiPdfJGothicFontV();
 		YiPdfTag document = pdf.getDocument();
 
 		YiPdfPage page = pdf.newPage(800, 600);

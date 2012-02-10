@@ -4,13 +4,6 @@
 package yi.report;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import yi.pdf.YiPdfColor;
-import yi.pdf.YiPdfFont;
-import yi.pdf.YiPdfPage;
-import yi.pdf.YiPdfTag;
 
 class MyLayoutInlineLine extends MyLayoutInline {
 	boolean blockVerticalWritingMode;
