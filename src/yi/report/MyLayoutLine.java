@@ -11,19 +11,21 @@ import yi.pdf.YiPdfFont;
 import yi.pdf.YiPdfTag;
 
 class MyLayoutLine {
+	boolean verticalWritingMode;
 	double width;
 	double totalTravel;
 	double upperPerpend;
 	double lowerPerpend;
 	boolean blankFlag = true;
-	public MyLayoutLine(double width) {
+	public MyLayoutLine(double width, boolean verticalWritingMode) {
+		this.verticalWritingMode = verticalWritingMode;
 		this.width = width;
 		totalTravel = 0;
 		lowerPerpend = 0;
 		upperPerpend = 0;
 	}
-	static MyLayoutLine createInfLine() {
-		return new MyLayoutLine(1000000000);
+	static MyLayoutLine createInfLine(boolean verticalWritingMode) {
+		return new MyLayoutLine(1000000000, verticalWritingMode);
 	}
 	double getRemainingTravel() {
 		return width - totalTravel;
@@ -46,11 +48,21 @@ class MyLayoutLine {
 		return upperPerpend - lowerPerpend;
 	}
 	public void setPos(double x, double y) {
-		y += upperPerpend;
+		if(!verticalWritingMode) {
+			y += upperPerpend;
+		}
+		else {
+			x -= upperPerpend;
+		}
 		for(MyLayoutInline item : inlineList) {
 			double travel = item.getTravel();
 			item.setPos(x, y);
-			x += travel;
+			if(!verticalWritingMode) {
+				x += travel;
+			}
+			else {
+				y += travel;
+			}
 		}
 	}
 	public void draw(MyLayoutPageContext pageContext) throws IOException {
@@ -65,5 +77,8 @@ class MyLayoutLine {
 			upperPerpend = Math.max(upperPerpend, nowFontSize * nowFont.getUpperPerpend('A') / 1000);
 			lineTag.makeChild("Span");
 		}
+	}
+	public boolean isVerticalWritingMode() {
+		return verticalWritingMode;
 	}
 }

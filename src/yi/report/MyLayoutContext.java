@@ -5,7 +5,6 @@ package yi.report;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -14,13 +13,11 @@ import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfFont;
 import yi.pdf.YiPdfTag;
-import yi.pdf.font.YiPdfJGothicFont;
 
 public class MyLayoutContext {
 	YiPdfFile pdfFile;
-	Map<String, String> nowStyle = new HashMap<String, String>();
-	Map<String, String> nowStyleDiff;
-	Stack<Map<String, String>> styleStack = new Stack<Map<String,String>>();
+	MyLayoutStyle nowStyle = new MyLayoutStyle();
+	Stack<MyLayoutStyle> styleStack = new Stack<MyLayoutStyle>();
 	MyLayoutBlock nowBlock;
 	MyLayoutLine nowLine;
 	YiPdfTag nowTag;
@@ -62,15 +59,11 @@ public class MyLayoutContext {
 	void clearLineTag() { 
 		nowLineTag = null;
 	}
-	void pushStyle(Map<String, String> style) {
-		nowStyleDiff = style;
+	void pushStyle(Map<String, String> diff) {
 		styleStack.push(nowStyle);
-		if(style!=null) {
-			nowStyle = new HashMap<String, String>(nowStyle);
-			nowStyle.putAll(style);
-		}
+		nowStyle = nowStyle.merge(diff);
 	}
-	Map<String, String> getNowStyle() {
+	MyLayoutStyle getNowStyle() {
 		return nowStyle;
 	}
 	void popStyle() {
@@ -83,10 +76,10 @@ public class MyLayoutContext {
 		return nowBlock;
 	}
 	Stack<MyLayoutBlock> blockStack;
-	void pushNewBlock() {
-		blockStack.push(getNowBlock());
-		nowBlock = MyLayoutBlock.createChildBlock();
-	}
+	//void pushNewBlock() {
+	//	blockStack.push(getNowBlock());
+	//	nowBlock = MyLayoutBlock.createChildBlock();
+	//}
 	void popBlock() {
 		MyLayoutBlock childBlock = nowBlock;
 		nowBlock = blockStack.pop();
@@ -138,7 +131,7 @@ public class MyLayoutContext {
 	MyLayoutLine getNowLine() {
 		if(nowLine==null) {
 			double lineWidth = getNowBlock().getLineWidth();
-			nowLine = new MyLayoutLine(lineWidth);
+			nowLine = new MyLayoutLine(lineWidth, getNowBlock().isVerticalWritingMode());
 		}
 		return nowLine;
 	}
@@ -162,36 +155,11 @@ public class MyLayoutContext {
 			nowLine = null;
 		}
 	}
-	YiPdfFont dummyFont = new YiPdfJGothicFont();
-	YiPdfFont getNowFont() {
-		return dummyFont;
-	}
-	double getNowFontSize() {
-		String str = nowStyle.get("font-size");
-		if(str==null) {
-			return 10.5;
-		}
-		return MyUtil.evalUnit(str);
-	}
-	private YiPdfColor getNowFontColor() {
-		String str = nowStyle.get("color");
-		if(str==null) {
-			return new YiPdfColor(0, 0, 0);
-		}
-		return MyUtil.evalColor(str);
-	}
-	private boolean getTabooHangMode() {
-		String str = nowStyle.get("line-break-hang");
-		if(str==null || str.isEmpty() || "0".equals(str) || "false".equals(str)) {
-			return false;
-		}
-		return true;
-	}
 	public void writeText(String text) throws IOException {
-		YiPdfFont font = getNowFont();
-		YiPdfColor color = getNowFontColor();
-		double fontSize = getNowFontSize();
-		boolean tabooHangMode = getTabooHangMode();
+		YiPdfFont font = nowStyle.getFont();
+		YiPdfColor color = nowStyle.getFontColor();
+		double fontSize = nowStyle.getFontSize();
+		boolean tabooHangMode = nowStyle.getLineBreakHang();
 		int len = text.length();
 		int pos = 0;
 		while(pos<len) {
@@ -216,9 +184,9 @@ public class MyLayoutContext {
 		}
 	}
 	public MyLayoutInlineText createNobrInlineText(String text) throws IOException {
-		YiPdfFont font = getNowFont();
-		YiPdfColor color = getNowFontColor();
-		double fontSize = getNowFontSize();
+		YiPdfFont font = nowStyle.getFont();
+		YiPdfColor color = nowStyle.getFontColor();
+		double fontSize = nowStyle.getFontSize();
 		int len = text.length();
 		int travelSum = 0;
 		for(int i=0; i<len; ++i) {
@@ -284,7 +252,7 @@ public class MyLayoutContext {
 		return new MyQuartet<Integer, String, Boolean, Double>(pos, str, brFlag, (fontSize * totalTravel) / 1000);
 	}
 	public void writeBr() throws IOException {
-		getNowLine().addBlankText(getNowFont(), getNowFontSize(), getLineTag());
+		getNowLine().addBlankText(nowStyle.getFont(), nowStyle.getFontSize(), getLineTag());
 		clearLineTag();
 		writeNewLine();
 	}

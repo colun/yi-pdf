@@ -13,4 +13,5 @@ public abstract class YiPdfFont extends YiPdfResource {
 	public abstract int getAscent();
 	public abstract int getDescent();
 	public abstract int getXHeight();
+	public abstract boolean isVertical();
 }

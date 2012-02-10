@@ -6,47 +6,56 @@ package yi.report;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfPage;
 
 class MyLayoutBlock {
+	boolean verticalWritingMode;
 	double pageWidth;
 	double pageHeight;
 	double contentLeft;
 	double contentTop;
 	double contentRight;
 	double contentBottom;
-	double contentWidth;
-	double contentHeight;
-	double yPos;
+	double contentTravel;
+	//double contentHeight;
+	double divePos;
+	double diveEnd;
 	boolean pageRootFlag;
 	Stack<MyPair<Double, Double>> earthStack = new Stack<MyPair<Double,Double>>();//earth = left or top
 	Stack<MyPair<Double, Double>> skyStack = new Stack<MyPair<Double,Double>>();//sky = right or bottom
 	private MyLayoutBlock() {
 	}
-	static MyLayoutBlock createPageRoot(Map<String, String> style) {
+	static MyLayoutBlock createPageRoot(MyLayoutStyle style) {
 		MyLayoutBlock self = new MyLayoutBlock();
-		self.pageWidth = MyUtil.evalUnit(style.get("page-width"));
-		self.pageHeight = MyUtil.evalUnit(style.get("page-height"));
-		self.contentLeft = MyUtil.evalUnit(style.get("margin-left"));
-		self.contentTop = MyUtil.evalUnit(style.get("margin-top"));
-		double marginRight = MyUtil.evalUnit(style.get("margin-right"));
-		double marginBottom = MyUtil.evalUnit(style.get("margin-bottom"));
+		self.verticalWritingMode = style.isVerticalWritingMode();
+		self.pageWidth = style.getPageWidth();
+		self.pageHeight = style.getPageHeight();
+		self.contentLeft = style.getMarginLeft();
+		self.contentTop = style.getMarginTop();
+		double marginRight = style.getMarginRight();
+		double marginBottom = style.getMarginBottom();
 		self.contentRight = self.pageWidth - marginRight;
 		self.contentBottom = self.pageHeight - marginBottom;
-		self.contentWidth = self.contentRight - self.contentLeft;
-		self.contentHeight = self.contentBottom - self.contentTop;
-		self.yPos = self.contentTop;
+		if(!self.verticalWritingMode) {
+			self.contentTravel = self.contentRight - self.contentLeft;
+			self.divePos = self.contentTop;
+			self.diveEnd = self.contentBottom;
+		}
+		else {
+			self.contentTravel = self.contentBottom - self.contentTop;
+			self.divePos = marginRight;
+			self.diveEnd = self.pageWidth - self.contentLeft;
+		}
 		self.pageRootFlag = true;
 		return self;
 	}
-	static MyLayoutBlock createChildBlock() {
-		MyLayoutBlock self = new MyLayoutBlock();
-		return self;
-	}
+	//static MyLayoutBlock createChildBlock() {
+	//	MyLayoutBlock self = new MyLayoutBlock();
+	//	return self;
+	//}
 	double getLineWidth() {
 		double eWidth = 0;
 		if(!earthStack.isEmpty()) {
@@ -56,7 +65,7 @@ class MyLayoutBlock {
 		if(!skyStack.isEmpty()) {
 			sWidth = skyStack.lastElement().second;
 		}
-		return contentWidth - eWidth - sWidth;
+		return contentTravel - eWidth - sWidth;
 	}
 	boolean isPageRoot() {
 		return pageRootFlag;
@@ -67,12 +76,17 @@ class MyLayoutBlock {
 	List<MyLayoutLine> lineList = new ArrayList<MyLayoutLine>();
 	public boolean addLine(MyLayoutLine line, boolean fourceBlockFlag) {
 		double perpend = line.getPerpend();
-		if(!fourceBlockFlag && contentBottom - yPos < perpend) {
+		if(!fourceBlockFlag && diveEnd - divePos < perpend) {
 			return false;
 		}
-		line.setPos(contentLeft, yPos);
+		if(!verticalWritingMode) {
+			line.setPos(contentLeft, divePos);
+		}
+		else {
+			line.setPos(pageWidth - divePos, contentTop);
+		}
 		lineList.add(line);
-		yPos += perpend;
+		divePos += perpend;
 		return true;
 	}
 	public void drawPage(YiPdfFile pdfFile) throws IOException {
@@ -83,5 +97,8 @@ class MyLayoutBlock {
 		}
 		pageContext.invokeRuby();
 		page.close();
+	}
+	public boolean isVerticalWritingMode() {
+		return verticalWritingMode;
 	}
 }

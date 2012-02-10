@@ -45,6 +45,7 @@ class MyLayoutInlineText extends MyLayoutInline {
 	}
 	@Override
 	public void draw(MyLayoutPageContext pageContext) throws IOException {
+		boolean verticalWritingMode = font.isVertical();
 		YiPdfPage page = pageContext.getPdfPage();
 		page.beginTextTag(lineTag.makeChild("Span"));
 		page.setFont(font);
@@ -59,17 +60,32 @@ class MyLayoutInlineText extends MyLayoutInline {
 		}
 		page.endTextTag();
 		if(beforeRp!=null) {
-			beforeRp.setPos(posX - beforeRp.getTravel(), posY - getUpperPerpend() + beforeRp.getLowerPerpend());
+			if(!verticalWritingMode) {
+				beforeRp.setPos(posX - beforeRp.getTravel(), posY - getUpperPerpend() + beforeRp.getLowerPerpend());
+			}
+			else {
+				beforeRp.setPos(posX + getUpperPerpend() - beforeRp.getLowerPerpend(), posY - beforeRp.getTravel());
+			}
 			pageContext.addRuby(beforeRp);
 		}
 		if(rubyList!=null) {
 			for(MyLayoutInlineText ruby : rubyList) {
-				ruby.setPos(posX + ruby.getDx(), posY - getUpperPerpend() + ruby.getLowerPerpend());
+				if(!verticalWritingMode) {
+					ruby.setPos(posX + ruby.getRubyTravelDiff(), posY - getUpperPerpend() + ruby.getLowerPerpend());
+				}
+				else {
+					ruby.setPos(posX + getUpperPerpend() - ruby.getLowerPerpend(), posY + ruby.getRubyTravelDiff());
+				}
 				pageContext.addRuby(ruby);
 			}
 		}
 		if(afterRp!=null) {
-			afterRp.setPos(posX + this.getTravel(), posY - getUpperPerpend() + afterRp.getLowerPerpend());
+			if(!verticalWritingMode) {
+				afterRp.setPos(posX + this.getTravel(), posY - getUpperPerpend() + afterRp.getLowerPerpend());
+			}
+			else {
+				afterRp.setPos(posX + getUpperPerpend() - afterRp.getLowerPerpend(), posY + getTravel());
+			}
 			pageContext.addRuby(afterRp);
 		}
 		if(rubyLastFlag) {
@@ -83,13 +99,13 @@ class MyLayoutInlineText extends MyLayoutInline {
 		}
 		return result;
 	}
-	double dx = 0;
+	double rubyTravelDiff = 0;
 	boolean rubyLastFlag = false;
-	public double getDx() {
-		return dx;
+	public double getRubyTravelDiff() {
+		return rubyTravelDiff;
 	}
-	public void setDx(double dx) {
-		this.dx = dx;
+	public void setRubyTravelDiff(double rubyTravelDiff) {
+		this.rubyTravelDiff = rubyTravelDiff;
 	}
 	List<MyLayoutInlineText> rubyList;
 	public void setRuby(List<MyLayoutInlineText> rubyList) {

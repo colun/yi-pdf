@@ -106,10 +106,31 @@ class MyDomContext {
 				case TAG_RB: visitRb(child); break;
 				case TAG_RT: visitRt(child); break;
 				case TAG_RP: visitRp(child); break;
+				case TAG_DIV: visitDiv(child); break;
 				}
 				layoutContext.popStyle();
 			}
 		}
+	}
+	private void visitDiv(YiDomNode child) throws IOException {
+		MyLayoutStyle style = layoutContext.getNowStyle();
+		assert(!style.hasFloat()) : "TODO: MyDomContext.visitDiv() ... floatの実装";
+		boolean newPageFlag = false;
+		if(style.hasNewlyPage()) {
+			newPageFlag = true;
+		}
+		boolean floatFlag = false;
+		if(style.hasFloat()) {
+			floatFlag = true;
+		}
+		assert(!(newPageFlag && floatFlag)) : "改頁とfloat指定は、同時には行えません。";
+		if(style.hasWritingMode()) {
+			assert(newPageFlag || floatFlag) : "文字方向を変更する時、改頁またはfloat指定が行われている必要があります。（ただし、この制限は将来的に解除される可能性があります。）";
+		}
+		if(newPageFlag) {
+			layoutContext.clearNowBlock();
+		}
+		assert(false) : "TODO: MyDomContext.visitDiv()";
 	}
 	private void visitRuby(YiDomNode node) throws IOException {
 		layoutContext.lockLazyDraw();
@@ -159,7 +180,7 @@ class MyDomContext {
 				if(rbNextTravelPos<rbt) {
 					break;
 				}
-				rt.setDx((rbt - trvl2) - rbTravelPos);
+				rt.setRubyTravelDiff((rbt - trvl2) - rbTravelPos);
 				rtTravelPos += trvl;
 				++rtPos2;
 			}
@@ -174,8 +195,8 @@ class MyDomContext {
 	private void visitRt(YiDomNode node) throws IOException {
 		assert(rbInlineText!=null) : "rtタグよりも前にrbタグが必要です。";
 		Map<String, String> halfFontSizeMap = new HashMap<String, String>();
-		halfFontSizeMap.put("font-size", String.format("%fpt", layoutContext.getNowFontSize() * 0.5));
-		MyLayoutLine infLine = MyLayoutLine.createInfLine();
+		halfFontSizeMap.put("font-size", String.format("%fpt", layoutContext.getNowStyle().getFontSize() * 0.5));
+		MyLayoutLine infLine = MyLayoutLine.createInfLine(layoutContext.getNowLine().isVerticalWritingMode());
 		layoutContext.pushLine(infLine);
 		layoutContext.pushStyle(halfFontSizeMap);
 		visitChildren(node, rbTagSet);
@@ -203,7 +224,7 @@ class MyDomContext {
 		if(1<=builder.length()) {
 			String text = builder.toString();
 			Map<String, String> halfFontSizeMap = new HashMap<String, String>();
-			halfFontSizeMap.put("font-size", String.format("%fpt", layoutContext.getNowFontSize() * 0.015625));
+			halfFontSizeMap.put("font-size", String.format("%fpt", layoutContext.getNowStyle().getFontSize() * 0.015625));
 			layoutContext.pushStyle(halfFontSizeMap);
 			MyLayoutInlineText rp = layoutContext.createNobrInlineText(text);
 			rp.setTransparentFlag(true);

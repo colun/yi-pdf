@@ -35,6 +35,7 @@ public abstract class YiPdfJapaneseUnicodeFont extends YiPdfFont {
 	public int getXHeight() {
 		return xHeight;
 	}
+	@Override
 	public int getTravel(char c) {
 		if(c<128) {
 			return 500;
@@ -43,11 +44,16 @@ public abstract class YiPdfJapaneseUnicodeFont extends YiPdfFont {
 			return 1000;
 		}
 	}
+	@Override
 	public int getLowerPerpend(char c) {
 		return descent;
 	}
+	@Override
 	public int getUpperPerpend(char c) {
 		return ascent;
 	}
-
+	@Override
+	public boolean isVertical() {
+		return false;
+	}
 }
