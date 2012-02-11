@@ -5,6 +5,8 @@ package yi.report;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfFont;
@@ -50,6 +52,65 @@ public class MyLayoutStyle {
 			}
 		}
 	}
+	static Pattern unitPattern = Pattern.compile("([0-9]+(\\.[0-9]*)?)([%\\w]*)");
+	double evalUnit(String str, boolean fsFlag, double base) {
+		if(str==null) {
+			return 0;
+		}
+		Matcher m = unitPattern.matcher(str);
+		boolean f = m.matches();
+		assert(f) : "不正な数値[単位]が指定されました。";
+		double val = Double.valueOf(m.group(1));
+		String unit = m.group(3);
+		if(unit.isEmpty() || "pt".equals(unit)) {
+			return val;
+		}
+		if("in".equals(unit)) {
+			return val * 72;
+		}
+		if("mm".equals(unit)) {
+			return val * (72/25.4);
+		}
+		if("cm".equals(unit)) {
+			return val * (72/2.54);
+		}
+		if("%".equals(unit)) {
+			return base * val / 100;
+		}
+		if("em".equals(unit)) {
+			double fontSize = fsFlag ? 10.5 : getFontSize();
+			return fontSize * val;
+		}
+		assert(false) : "知らない単位が指定されました。";
+		return 0;
+	}
+	double evalUnit(String str, boolean fsFlag) {
+		return evalUnit(str, fsFlag, 0);
+	}
+	double evalUnit(String str) {
+		return evalUnit(str, false, 0);
+	}
+	final static Map<String, YiPdfColor> colorMap = new HashMap<String, YiPdfColor>();
+	static {
+		colorMap.put("black", new YiPdfColor(0, 0, 0));
+		colorMap.put("red", new YiPdfColor(1, 0, 0));
+		colorMap.put("green", new YiPdfColor(0, 1, 0));
+		colorMap.put("blue", new YiPdfColor(0, 0, 1));
+	}
+	static Pattern colorPattern = Pattern.compile("#([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})");
+	static YiPdfColor evalColor(String color) {
+		YiPdfColor result = colorMap.get(color);
+		if(result!=null) {
+			return result;
+		}
+		Matcher m = colorPattern.matcher(color);
+		boolean f = m.matches();
+		assert(f) : "不正な色が指定されました。";
+		double r = Integer.valueOf(m.group(1), 16) / 255.0;
+		double g = Integer.valueOf(m.group(2), 16) / 255.0;
+		double b = Integer.valueOf(m.group(3), 16) / 255.0;
+		return new YiPdfColor(r, g, b);
+	}
 	boolean isVerticalWritingMode() {
 		String str = style.get("writing-mode");
 		if(str==null) {
@@ -65,14 +126,21 @@ public class MyLayoutStyle {
 		if(str==null) {
 			return 10.5;
 		}
-		return MyUtil.evalUnit(str);
+		return evalUnit(str, true);
+	}
+	Double getLineHeight() {
+		String str = style.get("line-height");
+		if(str==null) {
+			return null;
+		}
+		return evalUnit(str);
 	}
 	YiPdfColor getFontColor() {
 		String str = style.get("color");
 		if(str==null) {
 			return new YiPdfColor(0, 0, 0);
 		}
-		return MyUtil.evalColor(str);
+		return evalColor(str);
 	}
 	boolean getLineBreakHang() {
 		String str = style.get("line-break-hang");
@@ -82,22 +150,22 @@ public class MyLayoutStyle {
 		return true;
 	}
 	double getPageWidth() {
-		return MyUtil.evalUnit(style.get("page-width"));
+		return evalUnit(style.get("page-width"));
 	}
 	double getPageHeight() {
-		return MyUtil.evalUnit(style.get("page-height"));
+		return evalUnit(style.get("page-height"));
 	}
 	double getMarginLeft() {
-		return MyUtil.evalUnit(style.get("margin-left"));
+		return evalUnit(style.get("margin-left"));
 	}
 	double getMarginTop() {
-		return MyUtil.evalUnit(style.get("margin-top"));
+		return evalUnit(style.get("margin-top"));
 	}
 	double getMarginRight() {
-		return MyUtil.evalUnit(style.get("margin-right"));
+		return evalUnit(style.get("margin-right"));
 	}
 	double getMarginBottom() {
-		return MyUtil.evalUnit(style.get("margin-bottom"));
+		return evalUnit(style.get("margin-bottom"));
 	}
 	boolean hasFloat() {
 		return diff.containsKey("float");

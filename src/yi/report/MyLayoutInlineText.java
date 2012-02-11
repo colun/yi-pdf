@@ -20,13 +20,30 @@ class MyLayoutInlineText extends MyLayoutInline {
 	double travel;
 	YiPdfTag lineTag;
 	boolean transparentFlag = false;
-	public MyLayoutInlineText(YiPdfFont font, double fontSize, YiPdfColor color, String text, double travel, YiPdfTag lineTag) {
+	double lowerPerpend;
+	double upperPerpend;
+	double fontLowerPerpend;
+	double fontUpperPerpend;
+	Double lineHeight;
+	public MyLayoutInlineText(YiPdfFont font, double fontSize, YiPdfColor color, String text, double travel, YiPdfTag lineTag, Double lineHeight) {
 		this.font = font;
 		this.fontSize = fontSize;
 		this.color = color;
 		this.text = text;
 		this.travel = travel;
 		this.lineTag = lineTag;
+		this.lineHeight = lineHeight;
+		lowerPerpend = fontSize * font.getLowerPerpend('A') / 1000;
+		upperPerpend = fontSize * font.getUpperPerpend('A') / 1000;
+		fontLowerPerpend = lowerPerpend;
+		fontUpperPerpend = upperPerpend;
+		if(lineHeight!=null) {
+			double h = upperPerpend - lowerPerpend;
+			if(h < lineHeight) {
+				upperPerpend += (lineHeight - h) / 2;
+				lowerPerpend = upperPerpend - lineHeight;
+			}
+		}
 	}
 	public void setTransparentFlag(boolean transparentFlag) {
 		this.transparentFlag = transparentFlag;
@@ -37,11 +54,11 @@ class MyLayoutInlineText extends MyLayoutInline {
 	}
 	@Override
 	public double getLowerPerpend() {
-		return fontSize * font.getLowerPerpend('A') / 1000;
+		return lowerPerpend;
 	}
 	@Override
 	public double getUpperPerpend() {
-		return fontSize * font.getUpperPerpend('A') / 1000;
+		return upperPerpend;
 	}
 	@Override
 	public void draw(MyLayoutPageContext pageContext) throws IOException {
@@ -61,30 +78,30 @@ class MyLayoutInlineText extends MyLayoutInline {
 		page.endTextTag();
 		if(beforeRp!=null) {
 			if(!verticalWritingMode) {
-				beforeRp.setPos(posX - beforeRp.getTravel(), posY - getUpperPerpend() + beforeRp.getLowerPerpend());
+				beforeRp.setPos(posX - beforeRp.getTravel(), posY - fontUpperPerpend + beforeRp.getLowerPerpend());
 			}
 			else {
-				beforeRp.setPos(posX + getUpperPerpend() - beforeRp.getLowerPerpend(), posY - beforeRp.getTravel());
+				beforeRp.setPos(posX + fontUpperPerpend - beforeRp.getLowerPerpend(), posY - beforeRp.getTravel());
 			}
 			pageContext.addRuby(beforeRp);
 		}
 		if(rubyList!=null) {
 			for(MyLayoutInlineText ruby : rubyList) {
 				if(!verticalWritingMode) {
-					ruby.setPos(posX + ruby.getRubyTravelDiff(), posY - getUpperPerpend() + ruby.getLowerPerpend());
+					ruby.setPos(posX + ruby.getRubyTravelDiff(), posY - fontUpperPerpend + ruby.getLowerPerpend());
 				}
 				else {
-					ruby.setPos(posX + getUpperPerpend() - ruby.getLowerPerpend(), posY + ruby.getRubyTravelDiff());
+					ruby.setPos(posX + fontUpperPerpend - ruby.getLowerPerpend(), posY + ruby.getRubyTravelDiff());
 				}
 				pageContext.addRuby(ruby);
 			}
 		}
 		if(afterRp!=null) {
 			if(!verticalWritingMode) {
-				afterRp.setPos(posX + this.getTravel(), posY - getUpperPerpend() + afterRp.getLowerPerpend());
+				afterRp.setPos(posX + this.getTravel(), posY - fontUpperPerpend + afterRp.getLowerPerpend());
 			}
 			else {
-				afterRp.setPos(posX + getUpperPerpend() - afterRp.getLowerPerpend(), posY + getTravel());
+				afterRp.setPos(posX + fontUpperPerpend - afterRp.getLowerPerpend(), posY + getTravel());
 			}
 			pageContext.addRuby(afterRp);
 		}
@@ -95,7 +112,7 @@ class MyLayoutInlineText extends MyLayoutInline {
 	public List<MyLayoutInlineText> explode() {
 		List<MyLayoutInlineText> result = new ArrayList<MyLayoutInlineText>();
 		for(int i=0; i<text.length(); ++i) {
-			result.add(new MyLayoutInlineText(font, fontSize, color, text.substring(i, i+1), fontSize * font.getTravel(text.charAt(i)) / 1000, lineTag));
+			result.add(new MyLayoutInlineText(font, fontSize, color, text.substring(i, i+1), fontSize * font.getTravel(text.charAt(i)) / 1000, lineTag, lineHeight));
 		}
 		return result;
 	}

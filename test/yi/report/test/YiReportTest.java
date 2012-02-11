@@ -121,4 +121,12 @@ public class YiReportTest extends TestCase {
 		YiReportEngine.build(dom, pdfFile);
 		pdfFile.close();
 	}
+	public void test9() throws Exception {
+		String html = readTextFile("test-input/test-report9.html");
+		YiDomNode dom = YiDomNode.parse(html);
+		FileOutputStream fos = new FileOutputStream("test-output/test-report9.pdf");
+		YiPdfFile pdfFile = new YiPdfFile(fos);
+		YiReportEngine.build(dom, pdfFile);
+		pdfFile.close();
+	}
 }

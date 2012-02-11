@@ -194,11 +194,12 @@ class MyDomContext {
 	}
 	private void visitRt(YiDomNode node) throws IOException {
 		assert(rbInlineText!=null) : "rtタグよりも前にrbタグが必要です。";
-		Map<String, String> halfFontSizeMap = new HashMap<String, String>();
-		halfFontSizeMap.put("font-size", String.format("%fpt", layoutContext.getNowStyle().getFontSize() * 0.5));
+		Map<String, String> wrapStyle = new HashMap<String, String>();
+		wrapStyle.put("font-size", String.format("%fpt", layoutContext.getNowStyle().getFontSize() * 0.5));
+		wrapStyle.put("line-height", null);
 		MyLayoutLine infLine = MyLayoutLine.createInfLine(layoutContext.getNowLine().isVerticalWritingMode());
 		layoutContext.pushLine(infLine);
-		layoutContext.pushStyle(halfFontSizeMap);
+		layoutContext.pushStyle(wrapStyle);
 		visitChildren(node, rbTagSet);
 		layoutContext.popStyle();
 		MyLayoutLine infLine2 = layoutContext.popLine();
@@ -223,9 +224,10 @@ class MyDomContext {
 		}
 		if(1<=builder.length()) {
 			String text = builder.toString();
-			Map<String, String> halfFontSizeMap = new HashMap<String, String>();
-			halfFontSizeMap.put("font-size", String.format("%fpt", layoutContext.getNowStyle().getFontSize() * 0.015625));
-			layoutContext.pushStyle(halfFontSizeMap);
+			Map<String, String> wrapStyle = new HashMap<String, String>();
+			wrapStyle.put("font-size", String.format("%fpt", layoutContext.getNowStyle().getFontSize() * 0.015625));
+			wrapStyle.put("line-height", null);
+			layoutContext.pushStyle(wrapStyle);
 			MyLayoutInlineText rp = layoutContext.createNobrInlineText(text);
 			rp.setTransparentFlag(true);
 			layoutContext.popStyle();
