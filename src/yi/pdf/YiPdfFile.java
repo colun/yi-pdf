@@ -49,8 +49,10 @@ public final class YiPdfFile {
 	public void setInfo(String key, String val) {
 		infoMap.put(key.toLowerCase(), val);
 	}
+	static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 	public void setCreationDate(Date date) {
-		setInfo("CreationDate", String.format("D:%s", new SimpleDateFormat("yyyyMMddHHmmss").format(date)));
+		System.out.println();
+		setInfo("CreationDate", String.format("D:%s%+03d'%02d'", dateFormat.format(date), dateFormat.getTimeZone().getRawOffset() / 3600000, (Math.abs(dateFormat.getTimeZone().getRawOffset()) % 3600000) / 60000));
 	}
 	int mcIdSequence = 0;
 	protected int publishMcId() {
