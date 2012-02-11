@@ -69,10 +69,12 @@ class MyLayoutLine {
 			blankFlag = false;
 			lowerPerpend = Math.min(lowerPerpend, nowFontSize * nowFont.getLowerPerpend('A') / 1000);
 			upperPerpend = Math.max(upperPerpend, nowFontSize * nowFont.getUpperPerpend('A') / 1000);
-			double h = upperPerpend - upperPerpend;
-			if(h < lineHeight) {
-				upperPerpend += (lineHeight - h) / 2;
-				lowerPerpend = upperPerpend - lineHeight;
+			if(lineHeight!=null) {
+				double h = upperPerpend - upperPerpend;
+				if(h < lineHeight) {
+					upperPerpend += (lineHeight - h) / 2;
+					lowerPerpend = upperPerpend - lineHeight;
+				}
 			}
 			lineTag.makeChild("Span");
 		}

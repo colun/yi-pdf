@@ -164,6 +164,14 @@ class MyDomContext {
 		if(rbTravelSum==0 || rtTravelSum==0) {
 			return;
 		}
+		if(rbTravelSum < rtTravelSum) {
+			double rate = rbTravelSum / rtTravelSum;
+			rtTravelSum = 0;
+			for(MyLayoutInlineText rt : rtList) {
+				rt.changeScale(rate);
+				rtTravelSum += rt.getTravel();
+			}
+		}
 		double rbrtRate = rbTravelSum / rtTravelSum;
 		double rbTravelPos = 0;
 		int rtPos = 0;

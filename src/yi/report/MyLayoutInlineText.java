@@ -48,6 +48,17 @@ class MyLayoutInlineText extends MyLayoutInline {
 	public void setTransparentFlag(boolean transparentFlag) {
 		this.transparentFlag = transparentFlag;
 	}
+	public void changeScale(double rate) {
+		fontSize *= rate;
+		travel *= rate;
+		lowerPerpend *= rate;
+		upperPerpend *= rate;
+		fontLowerPerpend *= rate;
+		fontUpperPerpend *= rate;
+		if(lineHeight!=null) {
+			lineHeight *= rate;
+		}
+	}
 	@Override
 	public double getTravel() {
 		return travel;
