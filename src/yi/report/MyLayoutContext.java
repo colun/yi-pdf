@@ -250,7 +250,7 @@ public class MyLayoutContext {
 		return new MyQuartet<Integer, String, Double, Object>(pos, str, (fontSize * totalTravel) / 1000, null);
 	}
 	public void writeBr() throws IOException {
-		getNowLine().addBlankText(nowStyle.getFont(), nowStyle.getFontSize(), getLineTag());
+		getNowLine().addBlankText(nowStyle.getFont(), nowStyle.getFontSize(), getLineTag(), nowStyle.getLineHeight());
 		clearLineTag();
 		writeNewLine();
 	}

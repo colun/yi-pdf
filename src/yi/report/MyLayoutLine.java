@@ -64,11 +64,16 @@ class MyLayoutLine {
 			item.draw(pageContext);
 		}
 	}
-	public void addBlankText(YiPdfFont nowFont, double nowFontSize, YiPdfTag lineTag) {
+	public void addBlankText(YiPdfFont nowFont, double nowFontSize, YiPdfTag lineTag, Double lineHeight) {
 		if(blankFlag) {
 			blankFlag = false;
 			lowerPerpend = Math.min(lowerPerpend, nowFontSize * nowFont.getLowerPerpend('A') / 1000);
 			upperPerpend = Math.max(upperPerpend, nowFontSize * nowFont.getUpperPerpend('A') / 1000);
+			double h = upperPerpend - upperPerpend;
+			if(h < lineHeight) {
+				upperPerpend += (lineHeight - h) / 2;
+				lowerPerpend = upperPerpend - lineHeight;
+			}
 			lineTag.makeChild("Span");
 		}
 	}
