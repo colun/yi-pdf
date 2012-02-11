@@ -6,6 +6,7 @@ package yi.pdf.test;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Date;
 
 import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfFont;
@@ -20,6 +21,7 @@ public class YiPdfTest extends TestCase {
 	public void test1() throws Exception {
 		OutputStream stream = new FileOutputStream("test-output/test1.pdf");
 		YiPdfFile pdf = new YiPdfFile(stream);
+		pdf.setCreationDate(new Date(0));
 
 		pdf.newPage(800, 600);
 		pdf.newPage(600, 800);
@@ -27,14 +29,15 @@ public class YiPdfTest extends TestCase {
 
 		stream.close();
 	}
+	static YiPdfFont minchoFont = new YiPdfJMinchoFont();
+	static YiPdfFont gothicFont = new YiPdfJGothicFontV();
 	public void test2() throws IOException {
 		OutputStream stream = new FileOutputStream("test-output/test2.pdf");
 		YiPdfFile pdf = new YiPdfFile(stream);
-		YiPdfFont font = new YiPdfJMinchoFont();
-		YiPdfFont gothicFont = new YiPdfJGothicFontV();
+		pdf.setCreationDate(new Date(0));
 
 		YiPdfPage page = pdf.newPage(800, 600);
-		page.setFont(font);
+		page.setFont(minchoFont);
 		page.setFontSize(10.5);
 		page.drawText(100, 100, "Hello World!");
 		page.drawText(100, 150, "こんにちは、世界!!");
@@ -49,12 +52,12 @@ public class YiPdfTest extends TestCase {
 	public void test3() throws IOException {
 		OutputStream stream = new FileOutputStream("test-output/test3.pdf");
 		YiPdfFile pdf = new YiPdfFile(stream);
-		YiPdfFont font = new YiPdfJMinchoFont();
-		YiPdfFont gothicFont = new YiPdfJGothicFontV();
+		pdf.setCreationDate(new Date(0));
+
 		YiPdfTag document = pdf.getDocument();
 
 		YiPdfPage page = pdf.newPage(800, 600);
-		page.setFont(font);
+		page.setFont(minchoFont);
 		page.setFontSize(10.5);
 		YiPdfTag table = document.makeChild("Table");
 		YiPdfTag trA = table.makeChild("TR");
@@ -85,11 +88,12 @@ public class YiPdfTest extends TestCase {
 	public void test4() throws IOException {
 		OutputStream stream = new FileOutputStream("test-output/test4.pdf");
 		YiPdfFile pdf = new YiPdfFile(stream);
-		YiPdfFont font = new YiPdfJMinchoFont();
+		pdf.setCreationDate(new Date(0));
+
 		YiPdfTag document = pdf.getDocument();
 
 		YiPdfPage page = pdf.newPage(800, 600);
-		page.setFont(font);
+		page.setFont(minchoFont);
 		page.setFontSize(10.5);
 		YiPdfTag nowLine;
 
@@ -137,14 +141,15 @@ public class YiPdfTest extends TestCase {
 	public void test5() throws IOException {
 		OutputStream stream = new FileOutputStream("test-output/test5.pdf");
 		YiPdfFile pdf = new YiPdfFile(stream);
-		YiPdfFont font = new YiPdfJMinchoFont();
+		pdf.setCreationDate(new Date(0));
+
 		YiPdfTag document = pdf.getDocument();
 
 		YiPdfPage page1 = pdf.newPage(800, 600);
-		page1.setFont(font);
+		page1.setFont(minchoFont);
 		page1.setFontSize(10.5);
 		YiPdfPage page2 = pdf.newPage(800, 600);
-		page2.setFont(font);
+		page2.setFont(minchoFont);
 		page2.setFontSize(10.5);
 
 		YiPdfTag nowLine;
@@ -170,14 +175,15 @@ public class YiPdfTest extends TestCase {
 	public void test6() throws IOException {
 		OutputStream stream = new FileOutputStream("test-output/test6.pdf");
 		YiPdfFile pdf = new YiPdfFile(stream);
-		YiPdfFont font = new YiPdfJMinchoFont();
+		pdf.setCreationDate(new Date(0));
+
 		YiPdfTag document = pdf.getDocument();
 
 		YiPdfPage page1 = pdf.newPage(800, 600);
-		page1.setFont(font);
+		page1.setFont(minchoFont);
 		page1.setFontSize(10.5);
 		YiPdfPage page2 = pdf.newPage(800, 600);
-		page2.setFont(font);
+		page2.setFont(minchoFont);
 		page2.setFontSize(10.5);
 
 		YiPdfTag nowLine;
@@ -205,6 +211,23 @@ public class YiPdfTest extends TestCase {
 		page2.drawText(100, 120, "DDD");
 		page2.endTextTag();
 
+		pdf.close();
+
+		stream.close();
+	}
+	public void test7() throws Exception {
+		OutputStream stream = new FileOutputStream("test-output/test7.pdf");
+		YiPdfFile pdf = new YiPdfFile(stream);
+		pdf.setCreationDate(new Date(0));
+
+		pdf.setInfo("Title", "Title タイトル");
+		pdf.setInfo("Author", "Author");
+		pdf.setInfo("Subject", "さぶじぇくと");
+		pdf.setInfo("Keywords", "key1 key2 キー3 キー4");
+		pdf.setInfo("Creator", "クリエイター（情報源の作成プログラム）");
+		pdf.setInfo("Producer", "My プロデューサー（変換プログラム）");
+		pdf.newPage(800, 600);
+		pdf.newPage(600, 800);
 		pdf.close();
 
 		stream.close();

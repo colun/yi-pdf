@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ public final class YiPdfFile {
 	Set<YiPdfFont> fontObjSet;
 	YiPdfTag documentTag;
 	//Map<String, Integer> imageObjIdMap;
+	Map<String, String> infoMap = new HashMap<String, String>();
 	public YiPdfFile(OutputStream stream) throws IOException {
 		this.stream = stream;
 		streamPos = 0;
@@ -38,8 +40,17 @@ public final class YiPdfFile {
 		}
 		fontObjSet = new LinkedHashSet<YiPdfFont>();
 		documentTag = new YiPdfTag(this, null, "Document");
+
+		setInfo("Producer", "yi-pdf");
+		setCreationDate(new Date());
 		//imageObjIdMap = new LinkedHashMap<String, Integer>();
 		writeAscii("%PDF-1.4\n%\0\0\0\0\0\0\0\n\n"); // There are seven null characters. Because saying that this file is binary with all 4bytes alignment.
+	}
+	public void setInfo(String key, String val) {
+		infoMap.put(key.toLowerCase(), val);
+	}
+	public void setCreationDate(Date date) {
+		setInfo("CreationDate", String.format("D:%s", new SimpleDateFormat("yyyyMMddHHmmss").format(date)));
 	}
 	int mcIdSequence = 0;
 	protected int publishMcId() {
@@ -314,11 +325,42 @@ public final class YiPdfFile {
 		writeAscii(">>\n");
 		closeObj();
 	}
+	private void putInfoItem(String itemName) throws IOException {
+		String str = infoMap.get(itemName.toLowerCase());
+		if(str==null) {
+			return;
+		}
+		boolean asciiFlag = true;
+		for(int i=0; i<str.length(); ++i) {
+			char c = str.charAt(i);
+			if(c=='\\' || c=='(' || c==')' || c=='\r' || c<0 || 128<=c) {
+				asciiFlag = false;
+				break;
+			}
+		}
+		if(asciiFlag) {
+			writeAscii(String.format("/%s (%s)\n", itemName, str));
+		}
+		else {
+			StringBuilder builder = new StringBuilder();
+			builder.append("FEFF");
+			for(int i=0; i<str.length(); ++i) {
+				char c = str.charAt(i);
+				builder.append(String.format("%04X", (int)c & 0xFFFF));
+			}
+			writeAscii(String.format("/%s <%s>\n", itemName, builder.toString()));
+		}
+	}
 	private void putInfo() throws IOException {
 		openObj(1);
 		writeAscii("<<\n");
-		writeAscii("/Producer (yi-pdf)\n");
-		writeAscii(String.format("/CreationDate (D:%s)\n", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())));
+		putInfoItem("Title");
+		putInfoItem("Author");
+		putInfoItem("Subject");
+		putInfoItem("Keywords");
+		putInfoItem("Creator");
+		putInfoItem("Producer");
+		putInfoItem("CreationDate");
 		writeAscii(">>\n");
 		closeObj();
 	}
