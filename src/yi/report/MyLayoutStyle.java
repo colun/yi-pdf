@@ -35,7 +35,7 @@ public class MyLayoutStyle {
 	static YiPdfFont minchoFontV = new YiPdfJMinchoFontV();
 	YiPdfFont getFont() {
 		String str = style.get("font-family");
-		if(str!=null && 0<=str.toLowerCase().indexOf("min")) {
+		if(str!=null && str.toLowerCase().contains("min")) {
 			if(isVerticalWritingMode()) {
 				return minchoFontV;
 			}

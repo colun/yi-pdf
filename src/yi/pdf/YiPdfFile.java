@@ -261,7 +261,7 @@ public final class YiPdfFile {
 		writeAscii("/Type /FontDescriptor\n");
 		writeAscii(String.format("/FontName /%s\n", familyName));
 		writeAscii("/Flags 6\n");
-		writeAscii(String.format("/FontBBox [ -100 %d 1100 %d ]\n", font.getDescent(), font.getAscent()));
+		writeAscii(String.format("/FontBBox [ 0 %d 1000 %d ]\n", font.getDescent(), font.getAscent()));
 		writeAscii("/ItalicAngle 0\n");
 		writeAscii(String.format("/Ascent %d\n", font.getAscent()));//TODO
 		writeAscii(String.format("/Descent %d\n", font.getDescent()));//TODO
@@ -273,7 +273,7 @@ public final class YiPdfFile {
 		writeAscii("/AvgWidth 507\n");//TODO
 		writeAscii("/MaxWidth 1000\n");//TODO
 		writeAscii("/MissingWidth 507\n");//TODO
-		writeAscii("/Style << /Panose <08 05 02 0B 06 09 00 00 00 00 00 00> >>\n");//TODO
+		writeAscii(String.format("/Style << /Panose <%s> >>\n", font.getPanose()));
 		writeAscii(">>\n");
 		closeObj();
 		int cidId = openObj();

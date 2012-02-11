@@ -7,7 +7,11 @@ public class YiPdfJGothicFont extends YiPdfJapaneseUnicodeFont {
 
 	@Override
 	public String getFontName() {
-		return "KozGoPro-Medium-Acro";
+		return "KozGoPro-Medium";
+	}
+	@Override
+	public String getPanose() {
+		return "08 05 02 0B 07 00 00 00 00 00 00 00";
 	}
 
 }

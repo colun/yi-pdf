@@ -7,7 +7,11 @@ public class YiPdfJMinchoFont extends YiPdfJapaneseUnicodeFont {
 
 	@Override
 	public String getFontName() {
-		return "KozMinPro-Regular-Acro";
+		return "KozMinPro-Regular";
+	}
+	@Override
+	public String getPanose() {
+		return "01 05 02 02 04 00 00 00 00 00 00 00";
 	}
 
 }
