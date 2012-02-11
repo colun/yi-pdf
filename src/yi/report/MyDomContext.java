@@ -4,7 +4,10 @@
 package yi.report;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -127,6 +130,8 @@ class MyDomContext {
 				switch(tagType) {
 				case TAG_HTML: visitHtml(child); break;
 				case TAG_HEAD: visitHead(child); break;
+				case TAG_TITLE: visitTitle(child); break;
+				case TAG_META: visitMeta(child); break;
 				case TAG_STYLE: visitStyle(child); break;
 				case TAG_BODY: visitBody(child); break;
 				case TAG_H1: visitH1(child); break;
@@ -139,6 +144,39 @@ class MyDomContext {
 				case TAG_DIV: visitDiv(child); break;
 				}
 				layoutContext.popStyle();
+			}
+		}
+	}
+	static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+	private void visitMeta(YiDomNode node) {
+		Map<String, String> attr = node.getAttr();
+		if(attr!=null) {
+			String name = attr.get("name");
+			String content = attr.get("content");
+			if("CreationDate".equalsIgnoreCase(name)) {
+				try {
+					Date date = dateFormat.parse(content);
+					layoutContext.getPdfFile().setCreationDate(date);
+				} catch (ParseException e) {
+				}
+			}
+			else if(name!=null){
+				layoutContext.getPdfFile().setInfo(name, content);
+			}
+		}
+	}
+	private void visitTitle(YiDomNode node) {
+		List<YiDomNode> children = node.getChildren();
+		if(children!=null) {
+			StringBuilder builder = new StringBuilder();
+			for(YiDomNode child : children) {
+				if(child.getNodeType()==YiDomNode.TYPE_OF_TEXT) {
+					builder.append(child.getText());
+				}
+			}
+			String text = builder.toString();
+			if(text!=null && !text.isEmpty()) {
+				layoutContext.getPdfFile().setInfo("Title", text);
 			}
 		}
 	}
@@ -339,6 +377,7 @@ class MyDomContext {
 		layoutContext.writeText(node.getText());
 	}
 	public void exec(YiDomNode dom, YiPdfFile pdfFile) throws IOException {
+		pdfFile.setInfo("Producer", "yi-report & yi-pdf");
 		layoutContext = new MyLayoutContext(pdfFile);
 		visitChildren(dom, rootTagSet);
 		layoutContext.clearNowBlock();

@@ -23,6 +23,9 @@ public class MyLayoutContext {
 	YiPdfTag nowTag;
 	YiPdfTag nowLineTag;
 
+	YiPdfFile getPdfFile() {
+		return pdfFile;
+	}
 	MyLayoutContext(YiPdfFile pdfFile) {
 		this.pdfFile = pdfFile;
 		nowTag = pdfFile.getDocument();
