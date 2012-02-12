@@ -51,7 +51,6 @@ public final class YiPdfFile {
 	}
 	static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 	public void setCreationDate(Date date) {
-		System.out.println();
 		setInfo("CreationDate", String.format("D:%s%+03d'%02d'", dateFormat.format(date), dateFormat.getTimeZone().getRawOffset() / 3600000, (Math.abs(dateFormat.getTimeZone().getRawOffset()) % 3600000) / 60000));
 	}
 	int mcIdSequence = 0;
