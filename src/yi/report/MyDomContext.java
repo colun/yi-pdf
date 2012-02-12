@@ -17,27 +17,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import yi.pdf.YiPdfFile;
+import yi.pdf.YiPdfTag;
 
 class MyDomContext {
 	enum TagType {
-		TAG_HTML("html"),
-		TAG_HEAD("head"),
-		TAG_TITLE("title"),
-		TAG_META("meta"),
-		TAG_STYLE("style"),
-		TAG_BODY("body"),
-		TAG_DIV("div"),
-		TAG_SPAN("span"),
-		TAG_BR("br"),
-		TAG_TABLE("table"),
-		TAG_TR("tr"),
-		TAG_TD("td"),
-		TAG_TH("th"),
-		TAG_RUBY("ruby"),
-		TAG_RB("rb"),
-		TAG_RT("rt"),
-		TAG_RP("rp"),
-		TAG_H1("h1"),
+		TAG_HTML("_html"),
+		TAG_HEAD("_head"),
+		TAG_TITLE("_title"),
+		TAG_META("_meta"),
+		TAG_STYLE("_style"),
+		TAG_BODY("_body"),
+		TAG_BR("_br"),
+		TAG_RUBY("_ruby"),
+		TAG_RB("_rb"),
+		TAG_RT("_rt"),
+		TAG_RP("_rp"),
+		DISPLAY_BLOCK("block"),
+		DISPLAY_INLINE("inline"),
+		DISPLAY_TABLE("table"),
+		DISPLAY_TABLE_ROW("table-row"),
+		DISPLAY_TABLE_CELL("table-cell"),
 		NOT_TAG_TEXT("XXXXX");
 		private final String name;
 		private TagType(String name) {
@@ -61,6 +60,22 @@ class MyDomContext {
 		}
 	}
 	MyDomContext() {
+		for(String key : new String[] { "html", "head", "title", "meta", "style", "body", "ruby", "rb", "rt", "rp", "br" }) {
+			Map<String, String> m = new HashMap<String, String>();
+			m.put("display", "_" + key);
+			regStyle(key, m);
+		}
+		{
+			Map<String, String> m = new HashMap<String, String>();
+			m.put("display", "block");
+			regStyle("div", m);
+			regStyle("h1", m);
+			regStyle("h2", m);
+			regStyle("h3", m);
+			regStyle("h4", m);
+			regStyle("h5", m);
+			regStyle("h6", m);
+		}
 	}
 	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_]+) *: *([-a-zA-Z0-9_\\.]+) *");
 	Map<String, String> fromStyle(String style) {
@@ -75,80 +90,92 @@ class MyDomContext {
 		return dic;
 	}
 	MyLayoutContext layoutContext;
+	void visitNode(YiDomNode node, Set<TagType> enableChildTag) throws IOException {
+		if(node.getNodeType()!=YiDomNode.TYPE_OF_TAG) {
+			if(node.getNodeType()==YiDomNode.TYPE_OF_TEXT) {
+				if(enableChildTag==null || enableChildTag.contains(TagType.NOT_TAG_TEXT)) {
+					visitText(node);
+				}
+			}
+			return;
+		}
+		Map<String, String> diff = new HashMap<String, String>();
+		diff.put("display", "inline");
+		{
+			{
+				Map<String, String> st = styleDic.get(node.getTagName());
+				if(st!=null) {
+					diff.putAll(st);
+				}
+			}
+			Map<String, String> attr = node.getAttr();
+			if(attr!=null) {
+				String cls = attr.get("class");
+				if(cls!=null && !cls.isEmpty()) {
+					for(String cc : cls.split(" ")) {
+						Map<String, String> st = styleDic.get("." + cc);
+						if(st!=null) {
+							diff.putAll(st);
+						}
+					}
+				}
+				String id = attr.get("id");
+				if(id!=null && !id.isEmpty()) {
+					Map<String, String> st = styleDic.get("#" + id);
+					if(st!=null) {
+						diff.putAll(st);
+					}
+				}
+				String style = attr.get("style");
+				if(style!=null) {
+					diff.putAll(fromStyle(style));
+				}
+			}
+		}
+		String display = diff.get("display");
+		TagType tagType = TagType.fromString(display);
+		if(tagType==null || enableChildTag!=null && !enableChildTag.contains(tagType)) {
+			return;
+		}
+		YiPdfTag tag = null;
+		if("h1".equals(node.getTagName())) {
+			tag = layoutContext.getNowTag().makeChild("H1");
+		}
+		if(tag!=null) {
+			layoutContext.pushPdfTag(tag);
+		}
+		layoutContext.pushStyle(diff);
+		switch(tagType) {
+		case TAG_HTML: visitHtmlTag(node); break;
+		case TAG_HEAD: visitHeadTag(node); break;
+		case TAG_TITLE: visitTitleTag(node); break;
+		case TAG_META: visitMetaTag(node); break;
+		case TAG_STYLE: visitStyleTag(node); break;
+		case TAG_BODY: visitBodyTag(node); break;
+		//case TAG_H1: visitH1(node); break;
+		case TAG_BR: visitBrTag(node); break;
+		case DISPLAY_INLINE: visitInline(node); break;
+		case TAG_RUBY: visitRubyTag(node); break;
+		case TAG_RB: visitRbTag(node); break;
+		case TAG_RT: visitRtTag(node); break;
+		case TAG_RP: visitRpTag(node); break;
+		case DISPLAY_BLOCK: visitBlock(node); break;
+		}
+		layoutContext.popStyle();
+		if(tag!=null) {
+			layoutContext.popPdfTag();
+		}
+	}
 	void visitChildren(YiDomNode node, Set<TagType> enableChildTag) throws IOException {
 		List<YiDomNode> children = node.getChildren();
 		for(YiDomNode child : children) {
 			if(child!=null) {
-				if(child.getNodeType()==YiDomNode.TYPE_OF_TEXT) {
-					if(enableChildTag==null || enableChildTag.contains(TagType.NOT_TAG_TEXT)) {
-						visitText(child);
-					}
-					continue;
-				}
-				{
-					Map<String, String> diff = null;
-					Map<String, String> attr = child.getAttr();
-					if(attr!=null) {
-						String cls = attr.get("class");
-						if(cls!=null && !cls.isEmpty()) {
-							for(String cc : cls.split(" ")) {
-								Map<String, String> clsStyle = styleDic.get("." + cc);
-								if(clsStyle!=null) {
-									if(diff==null) {
-										diff = new HashMap<String, String>();
-									}
-									diff.putAll(clsStyle);
-								}
-							}
-						}
-						String id = attr.get("id");
-						if(id!=null && !id.isEmpty()) {
-							Map<String, String> idStyle = styleDic.get("#" + id);
-							if(idStyle!=null) {
-								if(diff==null) {
-									diff = new HashMap<String, String>();
-								}
-								diff.putAll(idStyle);
-							}
-						}
-						String style = attr.get("style");
-						if(style!=null) {
-							if(diff==null) {
-								diff = fromStyle(style);
-							}
-							else {
-								diff.putAll(fromStyle(style));
-							}
-						}
-					}
-					layoutContext.pushStyle(diff);
-				}
-				TagType tagType = TagType.fromString(child.getTagName());
-				if(tagType==null || enableChildTag!=null && !enableChildTag.contains(tagType)) {
-					continue;
-				}
-				switch(tagType) {
-				case TAG_HTML: visitHtml(child); break;
-				case TAG_HEAD: visitHead(child); break;
-				case TAG_TITLE: visitTitle(child); break;
-				case TAG_META: visitMeta(child); break;
-				case TAG_STYLE: visitStyle(child); break;
-				case TAG_BODY: visitBody(child); break;
-				case TAG_H1: visitH1(child); break;
-				case TAG_BR: visitBr(child); break;
-				case TAG_SPAN: visitSpan(child); break;
-				case TAG_RUBY: visitRuby(child); break;
-				case TAG_RB: visitRb(child); break;
-				case TAG_RT: visitRt(child); break;
-				case TAG_RP: visitRp(child); break;
-				case TAG_DIV: visitDiv(child); break;
-				}
-				layoutContext.popStyle();
+				visitNode(child, enableChildTag);
 			}
 		}
 	}
 	static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-	private void visitMeta(YiDomNode node) {
+	private void visitMetaTag(YiDomNode node) {
 		Map<String, String> attr = node.getAttr();
 		if(attr!=null) {
 			String name = attr.get("name");
@@ -165,7 +192,7 @@ class MyDomContext {
 			}
 		}
 	}
-	private void visitTitle(YiDomNode node) {
+	private void visitTitleTag(YiDomNode node) {
 		List<YiDomNode> children = node.getChildren();
 		if(children!=null) {
 			StringBuilder builder = new StringBuilder();
@@ -184,7 +211,7 @@ class MyDomContext {
 	public void regStyle(String key, Map<String, String> style) {
 		styleDic.put(key, style);
 	}
-	private void visitStyle(YiDomNode node) {
+	private void visitStyleTag(YiDomNode node) {
 		List<YiDomNode> children = node.getChildren();
 		if(children!=null) {
 			StringBuilder builder = new StringBuilder();
@@ -205,10 +232,10 @@ class MyDomContext {
 			}
 		}
 	}
-	private void visitHead(YiDomNode node) throws IOException {
+	private void visitHeadTag(YiDomNode node) throws IOException {
 		visitChildren(node, headTagSet);
 	}
-	private void visitDiv(YiDomNode node) throws IOException {
+	private void visitBlock(YiDomNode node) throws IOException {
 		MyLayoutStyle style = layoutContext.getNowStyle();
 		assert(!style.hasFloat()) : "TODO: MyDomContext.visitDiv() ... floatの実装";
 		boolean newPageFlag = false;
@@ -226,15 +253,17 @@ class MyDomContext {
 		if(newPageFlag) {
 			layoutContext.clearNowBlock();
 		}
+		layoutContext.writeClearLine();
 		visitChildren(node, normalTagSet);
+		layoutContext.writeClearLine();
 	}
-	private void visitRuby(YiDomNode node) throws IOException {
+	private void visitRubyTag(YiDomNode node) throws IOException {
 		layoutContext.lockLazyDraw();
 		visitChildren(node, rubyTagSet);
 		layoutContext.unlockLazyDraw();
 	}
 	List<MyLayoutInlineText> rbInlineText;
-	private void visitRb(YiDomNode node) throws IOException {
+	private void visitRbTag(YiDomNode node) throws IOException {
 		layoutContext.unlockLazyDraw();
 		layoutContext.lockLazyDraw();
 		layoutContext.clearLockedInlineTextList();
@@ -296,7 +325,7 @@ class MyDomContext {
 		}
 		assert(rtPos==rtList.size());
 	}
-	private void visitRt(YiDomNode node) throws IOException {
+	private void visitRtTag(YiDomNode node) throws IOException {
 		assert(rbInlineText!=null) : "rtタグよりも前にrbタグが必要です。";
 		Map<String, String> wrapStyle = new HashMap<String, String>();
 		wrapStyle.put("font-size", String.format("%fpt", layoutContext.getNowStyle().getFontSize() * 0.5));
@@ -315,7 +344,7 @@ class MyDomContext {
 		mergeRuby(rbInlineText, rtList);
 		afterRtFlag = true;
 	}
-	private void visitRp(YiDomNode node) throws IOException {
+	private void visitRpTag(YiDomNode node) throws IOException {
 		assert(rbInlineText!=null) : "rpタグよりも前にrbタグが必要です。";
 		if(rbInlineText.isEmpty()) {
 			return;
@@ -343,7 +372,7 @@ class MyDomContext {
 			}
 		}
 	}
-	private void visitSpan(YiDomNode node) throws IOException {
+	private void visitInline(YiDomNode node) throws IOException {
 		MyLayoutStyle style = layoutContext.getNowStyle();
 		boolean writingModeFlag = style.hasWritingMode();
 		if(writingModeFlag) {
@@ -358,19 +387,13 @@ class MyDomContext {
 			visitChildren(node, normalTagSet);
 		}
 	}
-	private void visitH1(YiDomNode node) throws IOException {
-		layoutContext.pushPdfTag(layoutContext.getNowTag().makeChild("H1"));
-		visitChildren(node, normalTagSet);
-		layoutContext.writeBr();
-		layoutContext.popPdfTag();
-	}
-	private void visitBr(YiDomNode child) throws IOException {
+	private void visitBrTag(YiDomNode child) throws IOException {
 		layoutContext.writeBr();
 	}
-	void visitHtml(YiDomNode node) throws IOException {
+	void visitHtmlTag(YiDomNode node) throws IOException {
 		visitChildren(node, htmlTagSet);
 	}
-	void visitBody(YiDomNode node) throws IOException {
+	void visitBodyTag(YiDomNode node) throws IOException {
 		visitChildren(node, normalTagSet);
 	}
 	void visitText(YiDomNode node) throws IOException {
@@ -404,19 +427,17 @@ class MyDomContext {
 		normalTagSet.remove(TagType.TAG_BODY);
 		normalTagSet.remove(TagType.TAG_TITLE);
 		normalTagSet.remove(TagType.TAG_META);
-		normalTagSet.remove(TagType.TAG_TR);
-		normalTagSet.remove(TagType.TAG_TD);
-		normalTagSet.remove(TagType.TAG_TH);
+		normalTagSet.remove(TagType.DISPLAY_TABLE_ROW);
+		normalTagSet.remove(TagType.DISPLAY_TABLE_CELL);
 		normalTagSet.remove(TagType.TAG_RB);
 		normalTagSet.remove(TagType.TAG_RT);
 		normalTagSet.remove(TagType.TAG_RP);
-		tableTagSet.add(TagType.TAG_TR);
-		trTagSet.add(TagType.TAG_TD);
-		trTagSet.add(TagType.TAG_TH);
+		tableTagSet.add(TagType.DISPLAY_TABLE_ROW);
+		trTagSet.add(TagType.DISPLAY_TABLE_ROW);
 		rubyTagSet.add(TagType.TAG_RB);
 		rubyTagSet.add(TagType.TAG_RT);
 		rubyTagSet.add(TagType.TAG_RP);
 		rbTagSet.add(TagType.NOT_TAG_TEXT);
-		rbTagSet.add(TagType.TAG_SPAN);
+		rbTagSet.add(TagType.DISPLAY_INLINE);
 	}
 }

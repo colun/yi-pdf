@@ -257,6 +257,10 @@ public class MyLayoutContext {
 		clearLineTag();
 		writeNewLine();
 	}
+	public void writeClearLine() throws IOException {
+		clearLineTag();
+		writeNewLine();
+	}
 	public void writeNewLine() throws IOException {
 		clearNowLine();
 	}
