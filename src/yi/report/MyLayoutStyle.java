@@ -15,7 +15,7 @@ import yi.pdf.font.YiPdfJGothicFontV;
 import yi.pdf.font.YiPdfJMinchoFont;
 import yi.pdf.font.YiPdfJMinchoFontV;
 
-public class MyLayoutStyle {
+class MyLayoutStyle {
 	Map<String, String> style = new HashMap<String, String>();
 	Map<String, String> diff = null;
 	MyLayoutStyle() {
