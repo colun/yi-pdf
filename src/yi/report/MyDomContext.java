@@ -152,7 +152,6 @@ class MyDomContext {
 		case TAG_META: visitMetaTag(node); break;
 		case TAG_STYLE: visitStyleTag(node); break;
 		case TAG_BODY: visitBodyTag(node); break;
-		//case TAG_H1: visitH1(node); break;
 		case TAG_BR: visitBrTag(node); break;
 		case DISPLAY_INLINE: visitInline(node); break;
 		case TAG_RUBY: visitRubyTag(node); break;
