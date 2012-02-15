@@ -236,15 +236,9 @@ class MyDomContext {
 	}
 	private void visitBlock(YiDomNode node) throws IOException {
 		MyLayoutStyle style = layoutContext.getNowStyle();
-		assert(!style.hasFloat()) : "TODO: MyDomContext.visitDiv() ... floatの実装";
-		boolean newPageFlag = false;
-		if(style.hasNewlyPage()) {
-			newPageFlag = true;
-		}
-		boolean floatFlag = false;
-		if(style.hasFloat()) {
-			floatFlag = true;
-		}
+		boolean newPageFlag = style.hasNewlyPage();
+		boolean floatFlag = style.hasFloat();
+		assert(!floatFlag) : "TODO: MyDomContext.visitDiv() ... floatの実装";
 		assert(!(newPageFlag && floatFlag)) : "改頁とfloat指定は、同時には行えません。";
 		if(style.hasWritingMode()) {
 			assert(newPageFlag || floatFlag) : "文字方向を変更する時、改頁またはfloat指定が行われている必要があります。（ただし、この制限は将来的に解除される可能性があります。）";
