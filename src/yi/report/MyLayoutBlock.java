@@ -115,6 +115,12 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		}
 		drawableList.add(line);
 		divePos += perpend;
+		while(!earthStack.isEmpty() && earthStack.lastElement().first <= divePos) {
+			earthStack.pop();
+		}
+		while(!skyStack.isEmpty() && skyStack.lastElement().first <= divePos) {
+			skyStack.pop();
+		}
 		return true;
 	}
 	public double getRemainDive() {
