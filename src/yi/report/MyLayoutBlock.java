@@ -99,16 +99,19 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	}
 	List<MyLayoutDrawable> drawableList = new ArrayList<MyLayoutDrawable>();
 	public boolean addLine(MyLayoutLine line, boolean fourceBlockFlag) {
+		if(fullFlag) {
+			return false;
+		}
 		double perpend = line.getPerpend();
 		if(!fourceBlockFlag && getRemainDive() < perpend) {
 			fullFlag = true;
 			return false;
 		}
 		if(!verticalWritingMode) {
-			line.setPos(0, divePos + line.getUpperPerpend());
+			line.setPos(getEarthStackTravel(), divePos + line.getUpperPerpend());
 		}
 		else {
-			line.setPos(-(divePos + line.getUpperPerpend()), 0);
+			line.setPos(-(divePos + line.getUpperPerpend()), getEarthStackTravel());
 		}
 		drawableList.add(line);
 		divePos += perpend;
@@ -149,16 +152,14 @@ class MyLayoutBlock implements MyLayoutDrawable {
 			double width = style.hasWidth() ? style.getWidth() : getLineWidth();
 			double height = style.hasHeight() ? style.getHeight() : getRemainDive();
 			MyRectSize rectSize = new MyRectSize(width, height);
-			MyLayoutBlock block = new MyLayoutBlock(style, rectSize);
-			return block;
+			return new MyLayoutBlock(style, rectSize);
 		}
 		else {
 			assert(style.hasHeight()) : "heightスタイルが必要";
 			double width = style.hasWidth() ? style.getWidth() : getRemainDive();
 			double height = style.hasHeight() ? style.getHeight() : getLineWidth();
 			MyRectSize rectSize = new MyRectSize(width, height);
-			MyLayoutBlock block = new MyLayoutBlock(style, rectSize);
-			return block;
+			return new MyLayoutBlock(style, rectSize);
 		}
 	}
 	public void justify() {

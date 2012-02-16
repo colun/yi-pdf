@@ -252,12 +252,12 @@ class MyDomContext {
 			layoutContext.pushBlock(block);
 		}
 		visitChildren(node, normalTagSet);
+		layoutContext.writeClearLine();
 		if(floatFlag) {
 			MyLayoutBlock block = layoutContext.popBlock();
 			block.justify();
 			layoutContext.getNowBlock().addFloatBlock(block, style.getFloat());
 		}
-		layoutContext.writeClearLine();
 	}
 	private void visitRubyTag(YiDomNode node) throws IOException {
 		layoutContext.lockLazyDraw();

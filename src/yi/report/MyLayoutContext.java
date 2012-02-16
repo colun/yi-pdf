@@ -141,8 +141,9 @@ public class MyLayoutContext {
 	void clearNowLine() throws IOException {
 		if(nowLine!=null) {
 			while(true) {
-				boolean f = getNowBlock().addLine(nowLine, fourceBlockFlag);
-				if(!f) {
+				MyLayoutBlock block = getNowBlock();
+				boolean f = block.addLine(nowLine, fourceBlockFlag);
+				if(!f && block.isPageRoot()) {
 					MyLayoutLine hold = nowLine;
 					nowLine = null;
 					clearNowBlock();
