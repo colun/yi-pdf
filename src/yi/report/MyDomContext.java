@@ -248,20 +248,13 @@ class MyDomContext {
 			layoutContext.clearNowBlock();
 		}
 		if(floatFlag) {
-			MyLayoutBlock parent = layoutContext.getNowBlock();
-			boolean vertical = style.isVerticalWritingMode();
-			boolean widthFlag = style.hasWidth();
-			boolean heightFlag = style.hasHeight();
-			assert(vertical ? heightFlag : widthFlag) : "floatには、横書きの場合はwidthが、縦書きの場合はheightが、それぞれ必須となります。";
-			double width = widthFlag ? style.getWidth() : parent.getRemainDive();
-			double height = heightFlag ? style.getHeight() : parent.getRemainDive();
-			MyLayoutBlock block = parent.makeChildFloatBlock(style);
+			MyLayoutBlock block = layoutContext.getNowBlock().makeChildFloatBlock(style);
 			layoutContext.pushBlock(block);
 		}
 		visitChildren(node, normalTagSet);
 		if(floatFlag) {
 			MyLayoutBlock block = layoutContext.popBlock();
-			//block.justify();
+			block.justify();
 			layoutContext.getNowBlock().addFloatBlock(block, style.getFloat());
 		}
 		layoutContext.writeClearLine();

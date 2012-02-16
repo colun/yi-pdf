@@ -78,7 +78,7 @@ public class MyLayoutContext {
 		}
 		return nowBlock;
 	}
-	Stack<MyLayoutBlock> blockStack;
+	Stack<MyLayoutBlock> blockStack = new Stack<MyLayoutBlock>();
 	void pushBlock(MyLayoutBlock block) {
 		blockStack.push(getNowBlock());
 		nowBlock = block;

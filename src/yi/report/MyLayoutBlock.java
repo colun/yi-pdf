@@ -16,11 +16,15 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	boolean pageRootFlag;
 	Stack<MyPair<Double, Double>> earthStack = new Stack<MyPair<Double,Double>>();//earth = left or top
 	Stack<MyPair<Double, Double>> skyStack = new Stack<MyPair<Double,Double>>();//sky = right or bottom
+	MyLayoutStyle nowStyle;
+	boolean fullFlag;
 	protected MyLayoutBlock(MyLayoutStyle style, MyRectSize rectSize) {
+		nowStyle = style;
 		verticalWritingMode = style.isVerticalWritingMode();
 		divePos = 0;
 		contentRectSize = rectSize;
 		pageRootFlag = false;
+		fullFlag = false;
 	}
 	double getEarthStackTravel() {
 		double eWidth = 0;
@@ -49,19 +53,62 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		return pageRootFlag;
 	}
 	public void addFloatBlock(MyLayoutBlock childBlock, String fl) {
-		assert(false) : "TODO: MyLayoutBlock.addFloatBlock()";
+		double childWidth = childBlock.contentRectSize.width;
+		double childHeight = childBlock.contentRectSize.height;
+		if(!verticalWritingMode) {
+			double di = divePos + childHeight;
+			if("left".equals(fl)) {
+				double stackTravel = getEarthStackTravel();
+				childBlock.contentPos = new MyPosition(stackTravel, divePos);
+				while(!earthStack.isEmpty() && earthStack.lastElement().first <= di) {
+					earthStack.pop();
+				}
+				earthStack.push(new MyPair<Double, Double>(di, stackTravel + childWidth));
+			}
+			else if("right".equals(fl)) {
+				double stackTravel = getSkyStackTravel();
+				childBlock.contentPos = new MyPosition(contentRectSize.width - stackTravel - childWidth, divePos);
+				while(!skyStack.isEmpty() && skyStack.lastElement().first <= di) {
+					skyStack.pop();
+				}
+				skyStack.push(new MyPair<Double, Double>(di, stackTravel + childWidth));
+			}
+			else assert(false) : "横書きの場合、floatのスタイル指定をleftまたはrightにする必要があります";
+		}
+		else {
+			double di = divePos + childWidth;
+			if("top".equals(fl)) {
+				double stackTravel = getEarthStackTravel();
+				childBlock.contentPos = new MyPosition(-(divePos+childWidth), stackTravel);
+				while(!earthStack.isEmpty() && earthStack.lastElement().first <= di) {
+					earthStack.pop();
+				}
+				earthStack.push(new MyPair<Double, Double>(di, stackTravel + childHeight));
+			}
+			else if("bottom".equals(fl)) {
+				double stackTravel = getSkyStackTravel();
+				childBlock.contentPos = new MyPosition(-(divePos+childWidth), contentRectSize.height - stackTravel - childHeight);
+				while(!skyStack.isEmpty() && skyStack.lastElement().first <= di) {
+					skyStack.pop();
+				}
+				skyStack.push(new MyPair<Double, Double>(di, stackTravel + childHeight));
+			}
+			else assert(false) : "横書きの場合、floatのスタイル指定をleftまたはrightにする必要があります";
+		}
+		drawableList.add(childBlock);
 	}
 	List<MyLayoutDrawable> drawableList = new ArrayList<MyLayoutDrawable>();
 	public boolean addLine(MyLayoutLine line, boolean fourceBlockFlag) {
 		double perpend = line.getPerpend();
 		if(!fourceBlockFlag && getRemainDive() < perpend) {
+			fullFlag = true;
 			return false;
 		}
 		if(!verticalWritingMode) {
 			line.setPos(0, divePos + line.getUpperPerpend());
 		}
 		else {
-			line.setPos(0 + contentRectSize.width - divePos - line.getUpperPerpend(), 0);
+			line.setPos(-(divePos + line.getUpperPerpend()), 0);
 		}
 		drawableList.add(line);
 		divePos += perpend;
@@ -78,6 +125,9 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	public void draw(MyLayoutPageContext pageContext, double x, double y) throws IOException {
 		x += contentPos.x;
 		y += contentPos.y;
+		if(verticalWritingMode) {
+			x += contentRectSize.width;
+		}
 		for(MyLayoutDrawable line : drawableList) {
 			line.draw(pageContext, x, y);
 		}
@@ -109,6 +159,25 @@ class MyLayoutBlock implements MyLayoutDrawable {
 			MyRectSize rectSize = new MyRectSize(width, height);
 			MyLayoutBlock block = new MyLayoutBlock(style, rectSize);
 			return block;
+		}
+	}
+	public void justify() {
+		if(fullFlag) {
+			return;
+		}
+		if(!verticalWritingMode) {
+			if(!nowStyle.hasHeight()) {
+				if(divePos < contentRectSize.height) {
+					contentRectSize = new MyRectSize(contentRectSize.width, divePos);
+				}
+			}
+		}
+		else {
+			if(!nowStyle.hasWidth()) {
+				if(divePos < contentRectSize.width) {
+					contentRectSize = new MyRectSize(divePos, contentRectSize.height);
+				}
+			}
 		}
 	}
 }

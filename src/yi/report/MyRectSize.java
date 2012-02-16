@@ -5,6 +5,6 @@ public class MyRectSize {
 		this.width = width;
 		this.height = height;
 	}
-	double width;
-	double height;
+	final double width;
+	final double height;
 }
