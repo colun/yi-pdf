@@ -10,7 +10,7 @@ import java.util.List;
 import yi.pdf.YiPdfFont;
 import yi.pdf.YiPdfTag;
 
-class MyLayoutLine {
+class MyLayoutLine implements MyLayoutDrawable {
 	boolean verticalWritingMode;
 	double width;
 	double totalTravel;
@@ -59,9 +59,9 @@ class MyLayoutLine {
 			}
 		}
 	}
-	public void draw(MyLayoutPageContext pageContext) throws IOException {
+	public void draw(MyLayoutPageContext pageContext, double x, double y) throws IOException {
 		for(MyLayoutInline item : inlineList) {
-			item.draw(pageContext);
+			item.draw(pageContext, x, y);
 		}
 	}
 	public void addBlankText(YiPdfFont nowFont, double nowFontSize, YiPdfTag lineTag, Double lineHeight) {

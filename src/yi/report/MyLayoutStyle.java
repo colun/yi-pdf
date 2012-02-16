@@ -180,4 +180,19 @@ class MyLayoutStyle {
 		|| diff.containsKey("page-break-before")
 		;
 	}
+	boolean hasWidth() {
+		return diff.containsKey("width");
+	}
+	boolean hasHeight() {
+		return diff.containsKey("height");
+	}
+	double getWidth() {
+		return evalUnit(diff.get("width"));
+	}
+	double getHeight() {
+		return evalUnit(diff.get("height"));
+	}
+	public String getFloat() {
+		return diff.get("float");
+	}
 }

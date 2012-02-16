@@ -72,7 +72,9 @@ class MyLayoutInlineText extends MyLayoutInline {
 		return upperPerpend;
 	}
 	@Override
-	public void draw(MyLayoutPageContext pageContext) throws IOException {
+	public void draw(MyLayoutPageContext pageContext, double x, double y) throws IOException {
+		x += posX;
+		y += posY;
 		boolean verticalWritingMode = font.isVertical();
 		YiPdfPage page = pageContext.getPdfPage();
 		page.beginTextTag(lineTag.makeChild("Span"));
@@ -82,39 +84,39 @@ class MyLayoutInlineText extends MyLayoutInline {
 		if(transparentFlag) {
 			page.setTextRenderingMode(3);
 		}
-		page.drawText(posX, posY, text);
+		page.drawText(x, y, text);
 		if(transparentFlag) {
 			page.setTextRenderingMode(0);
 		}
 		page.endTextTag();
 		if(beforeRp!=null) {
 			if(!verticalWritingMode) {
-				beforeRp.setPos(posX - beforeRp.getTravel(), posY - fontUpperPerpend + beforeRp.getLowerPerpend());
+				beforeRp.setPos(-beforeRp.getTravel(), - fontUpperPerpend + beforeRp.getLowerPerpend());
 			}
 			else {
-				beforeRp.setPos(posX + fontUpperPerpend - beforeRp.getLowerPerpend(), posY - beforeRp.getTravel());
+				beforeRp.setPos(fontUpperPerpend - beforeRp.getLowerPerpend(), - beforeRp.getTravel());
 			}
-			pageContext.addRuby(beforeRp);
+			pageContext.addRuby(beforeRp, x, y);
 		}
 		if(rubyList!=null) {
 			for(MyLayoutInlineText ruby : rubyList) {
 				if(!verticalWritingMode) {
-					ruby.setPos(posX + ruby.getRubyTravelDiff(), posY - fontUpperPerpend + ruby.getLowerPerpend());
+					ruby.setPos(ruby.getRubyTravelDiff(), - fontUpperPerpend + ruby.getLowerPerpend());
 				}
 				else {
-					ruby.setPos(posX + fontUpperPerpend - ruby.getLowerPerpend(), posY + ruby.getRubyTravelDiff());
+					ruby.setPos(fontUpperPerpend - ruby.getLowerPerpend(), ruby.getRubyTravelDiff());
 				}
-				pageContext.addRuby(ruby);
+				pageContext.addRuby(ruby, x, y);
 			}
 		}
 		if(afterRp!=null) {
 			if(!verticalWritingMode) {
-				afterRp.setPos(posX + this.getTravel(), posY - fontUpperPerpend + afterRp.getLowerPerpend());
+				afterRp.setPos(this.getTravel(), - fontUpperPerpend + afterRp.getLowerPerpend());
 			}
 			else {
-				afterRp.setPos(posX + fontUpperPerpend - afterRp.getLowerPerpend(), posY + getTravel());
+				afterRp.setPos(fontUpperPerpend - afterRp.getLowerPerpend(), getTravel());
 			}
-			pageContext.addRuby(afterRp);
+			pageContext.addRuby(afterRp, x, y);
 		}
 		if(rubyLastFlag) {
 			pageContext.invokeRuby();

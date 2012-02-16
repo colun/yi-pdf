@@ -238,16 +238,32 @@ class MyDomContext {
 		MyLayoutStyle style = layoutContext.getNowStyle();
 		boolean newPageFlag = style.hasNewlyPage();
 		boolean floatFlag = style.hasFloat();
-		assert(!floatFlag) : "TODO: MyDomContext.visitDiv() ... floatの実装";
+		//assert(!floatFlag) : "TODO: MyDomContext.visitDiv() ... floatの実装";
 		assert(!(newPageFlag && floatFlag)) : "改頁とfloat指定は、同時には行えません。";
 		if(style.hasWritingMode()) {
 			assert(newPageFlag || floatFlag) : "文字方向を変更する時、改頁またはfloat指定が行われている必要があります。（ただし、この制限は将来的に解除される可能性があります。）";
 		}
+		layoutContext.writeClearLine();
 		if(newPageFlag) {
 			layoutContext.clearNowBlock();
 		}
-		layoutContext.writeClearLine();
+		if(floatFlag) {
+			MyLayoutBlock parent = layoutContext.getNowBlock();
+			boolean vertical = style.isVerticalWritingMode();
+			boolean widthFlag = style.hasWidth();
+			boolean heightFlag = style.hasHeight();
+			assert(vertical ? heightFlag : widthFlag) : "floatには、横書きの場合はwidthが、縦書きの場合はheightが、それぞれ必須となります。";
+			double width = widthFlag ? style.getWidth() : parent.getRemainDive();
+			double height = heightFlag ? style.getHeight() : parent.getRemainDive();
+			MyLayoutBlock block = parent.makeChildFloatBlock(style);
+			layoutContext.pushBlock(block);
+		}
 		visitChildren(node, normalTagSet);
+		if(floatFlag) {
+			MyLayoutBlock block = layoutContext.popBlock();
+			//block.justify();
+			layoutContext.getNowBlock().addFloatBlock(block, style.getFloat());
+		}
 		layoutContext.writeClearLine();
 	}
 	private void visitRubyTag(YiDomNode node) throws IOException {

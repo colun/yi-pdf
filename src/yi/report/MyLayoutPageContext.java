@@ -11,19 +11,19 @@ import yi.pdf.YiPdfPage;
 
 class MyLayoutPageContext {
 	YiPdfPage pdfPage;
-	List<MyLayoutInline> rubyList = new ArrayList<MyLayoutInline>();
+	List<MyQuartet<MyLayoutInline, Double, Double, Object>> rubyList = new ArrayList<MyQuartet<MyLayoutInline,Double,Double,Object>>();
 	MyLayoutPageContext(YiPdfPage pdfPage) {
 		this.pdfPage = pdfPage;
 	}
 	YiPdfPage getPdfPage() {
 		return pdfPage;
 	}
-	void addRuby(MyLayoutInline ruby) {
-		rubyList.add(ruby);
+	void addRuby(MyLayoutInline ruby, double x, double y) {
+		rubyList.add(new MyQuartet<MyLayoutInline, Double, Double, Object>(ruby, x, y, null));
 	}
 	void invokeRuby() throws IOException {
-		for(MyLayoutInline ruby : rubyList) {
-			ruby.draw(this);
+		for(MyQuartet<MyLayoutInline, Double, Double, Object> ruby : rubyList) {
+			ruby.first.draw(this, ruby.second, ruby.third);
 		}
 		rubyList.clear();
 	}

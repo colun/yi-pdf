@@ -15,5 +15,5 @@ abstract class MyLayoutInline {
 	public abstract double getTravel();
 	public abstract double getLowerPerpend();
 	public abstract double getUpperPerpend();
-	public abstract void draw(MyLayoutPageContext pageContext) throws IOException;
+	public abstract void draw(MyLayoutPageContext pageContext, double x, double y) throws IOException;
 }

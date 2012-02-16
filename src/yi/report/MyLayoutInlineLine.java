@@ -61,7 +61,7 @@ class MyLayoutInlineLine extends MyLayoutInline {
 		childLine.setPos(x + dx, y + dy);
 	}
 	@Override
-	public void draw(MyLayoutPageContext pageContext) throws IOException {
-		childLine.draw(pageContext);
+	public void draw(MyLayoutPageContext pageContext, double x, double y) throws IOException {
+		childLine.draw(pageContext, x, y);
 	}
 }

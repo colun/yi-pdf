@@ -74,20 +74,19 @@ public class MyLayoutContext {
 	}
 	MyLayoutBlock getNowBlock() {
 		if(nowBlock==null) {
-			nowBlock = MyLayoutBlock.createPageRoot(nowStyle);
+			nowBlock = new MyLayoutPage(nowStyle);
 		}
 		return nowBlock;
 	}
 	Stack<MyLayoutBlock> blockStack;
-	//void pushNewBlock() {
-	//	blockStack.push(getNowBlock());
-	//	nowBlock = MyLayoutBlock.createChildBlock();
-	//}
-	void popBlock() {
-		MyLayoutBlock childBlock = nowBlock;
+	void pushBlock(MyLayoutBlock block) {
+		blockStack.push(getNowBlock());
+		nowBlock = block;
+	}
+	MyLayoutBlock popBlock() {
+		MyLayoutBlock result = nowBlock;
 		nowBlock = blockStack.pop();
-		nowBlock.addBlock(childBlock);
-		assert(false) : "TODO: MyLayoutContext.popBlock()";
+		return result;
 	}
 	private int lazyDrawLockCount = 0;
 	private List<MyLayoutBlock> lazyDrawBlockList = new ArrayList<MyLayoutBlock>();
@@ -100,7 +99,7 @@ public class MyLayoutContext {
 		--lazyDrawLockCount;
 		if(lazyDrawLockCount==0) {
 			for(MyLayoutBlock block : lazyDrawBlockList) {
-				block.drawPage(pdfFile);
+				((MyLayoutPage)block).drawPage(pdfFile);
 			}
 			lazyDrawBlockList.clear();
 			lockedInlineTextList.clear();
@@ -120,7 +119,7 @@ public class MyLayoutContext {
 			lazyDrawBlockList.add(block);
 		}
 		else {
-			block.drawPage(pdfFile);
+			((MyLayoutPage)block).drawPage(pdfFile);
 		}
 	}
 	void clearNowBlock() throws IOException {
