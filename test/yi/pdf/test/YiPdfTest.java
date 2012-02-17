@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
 
+import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfFont;
 import yi.pdf.YiPdfPage;
@@ -228,6 +229,27 @@ public class YiPdfTest extends TestCase {
 		pdf.setInfo("Producer", "My プロデューサー（変換プログラム）");
 		pdf.newPage(800, 600);
 		pdf.newPage(600, 800);
+		pdf.close();
+
+		stream.close();
+	}
+	public void test8() throws IOException {
+		OutputStream stream = new FileOutputStream("test-output/test8.pdf");
+		YiPdfFile pdf = new YiPdfFile(stream);
+		pdf.setCreationDate(new Date(0));
+
+		YiPdfPage page1 = pdf.newPage(800, 600);
+		page1.drawLine(100, 100, 200, 200);
+		page1.setLineCap(0);
+		page1.drawLine(100, 300, 200, 300);
+		page1.setDrawColor(new YiPdfColor(1, 0, 0));
+		page1.setLineCap(1);
+		page1.drawLine(100, 310, 200, 310);
+		page1.setDrawColor(new YiPdfColor(0, 0, 1));
+		page1.setLineCap(2);
+		page1.drawLine(100, 320, 200, 320);
+		page1.setFillColor(new YiPdfColor(1, 1, 0));
+		page1.fillRect(100, 400, 100, 100);
 		pdf.close();
 
 		stream.close();
