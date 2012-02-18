@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import yi.pdf.YiPdfPage;
+
 class MyLayoutBlock implements MyLayoutDrawable {
 	boolean verticalWritingMode;
 	MyRectSize contentRectSize;
@@ -134,6 +136,11 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	public void draw(MyLayoutPageContext pageContext, double x, double y) throws IOException {
 		x += contentPos.x;
 		y += contentPos.y;
+		if(!pageRootFlag && nowStyle.hasBackgroundColor()) {
+			YiPdfPage page = pageContext.getPdfPage();
+			page.setFillColor(nowStyle.getBackgroundColor());
+			page.fillRect(x, y, contentRectSize.width, contentRectSize.height);
+		}
 		if(verticalWritingMode) {
 			x += contentRectSize.width;
 		}

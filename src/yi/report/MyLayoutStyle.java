@@ -195,4 +195,10 @@ class MyLayoutStyle {
 	public String getFloat() {
 		return diff.get("float");
 	}
+	public boolean hasBackgroundColor() {
+		return diff.containsKey("background-color");
+	}
+	YiPdfColor getBackgroundColor() {
+		return evalColor(diff.get("background-color"));
+	}
 }
