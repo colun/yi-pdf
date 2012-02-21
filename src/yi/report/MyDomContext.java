@@ -245,6 +245,7 @@ class MyDomContext {
 		layoutContext.writeClearLine();
 		if(newPageFlag) {
 			layoutContext.clearNowBlock();
+			layoutContext.pushPageBackgroundColor(style.getBackgroundColor());
 		}
 		if(floatFlag) {
 			MyLayoutBlock block = layoutContext.getNowBlock().makeChildFloatBlock(style);
@@ -267,6 +268,9 @@ class MyDomContext {
 			block.justify(layoutContext.getNowNest());
 			layoutContext.popNest();
 			layoutContext.getNowBlock().addFloatBlock(block, style.getFloat());
+		}
+		if(newPageFlag) {
+			layoutContext.popPageBackgroundColor();
 		}
 	}
 	private void visitRubyTag(YiDomNode node) throws IOException {
@@ -407,7 +411,7 @@ class MyDomContext {
 	}
 	private void visitBodyTag(YiDomNode node) throws IOException {
 		layoutContext.pushChildNest();
-		visitChildren(node, normalTagSet);
+		visitBlock(node);
 		layoutContext.popNest();
 	}
 	private void visitText(YiDomNode node) throws IOException {

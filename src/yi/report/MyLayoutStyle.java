@@ -199,6 +199,10 @@ class MyLayoutStyle {
 		return diff.containsKey("background-color");
 	}
 	YiPdfColor getBackgroundColor() {
-		return evalColor(diff.get("background-color"));
+		String colorStr = diff.get("background-color");
+		if(colorStr==null) {
+			return null;
+		}
+		return evalColor(colorStr);
 	}
 }
