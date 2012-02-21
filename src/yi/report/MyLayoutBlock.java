@@ -28,22 +28,22 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		pageRootFlag = false;
 		fullFlag = false;
 	}
-	private double getEarthStackTravel() {
+	private double getEarthStackTravel(MyLayoutNest nest) {
 		double eWidth = 0;
 		if(!earthStack.isEmpty()) {
 			eWidth = earthStack.lastElement().second;
 		}
-		return eWidth;
+		return Math.max(eWidth, nest.getEarthTravelMargin(verticalWritingMode));
 	}
-	private double getSkyStackTravel() {
+	private double getSkyStackTravel(MyLayoutNest nest) {
 		double sWidth = 0;
 		if(!skyStack.isEmpty()) {
 			sWidth = skyStack.lastElement().second;
 		}
-		return sWidth;
+		return Math.max(sWidth, nest.getSkyTravelMargin(verticalWritingMode));
 	}
-	public double getLineWidth() {
-		double d = getEarthStackTravel() + getSkyStackTravel();
+	public double getLineWidth(MyLayoutNest nest) {
+		double d = getEarthStackTravel(nest) + getSkyStackTravel(nest);
 		return getBlockTravel() - d;
 	}
 	public double getBlockTravel() {
@@ -57,13 +57,13 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	public boolean isPageRoot() {
 		return pageRootFlag;
 	}
-	public void addFloatBlock(MyLayoutBlock childBlock, String fl) {
+	public void addFloatBlock(MyLayoutBlock childBlock, String fl, MyLayoutNest nest) {
 		double childWidth = childBlock.contentRectSize.width;
 		double childHeight = childBlock.contentRectSize.height;
 		if(!verticalWritingMode) {
 			double di = divePos + childHeight;
 			if("left".equals(fl)) {
-				double stackTravel = getEarthStackTravel();
+				double stackTravel = getEarthStackTravel(nest);
 				childBlock.contentPos = new MyPosition(stackTravel, divePos);
 				while(!earthStack.isEmpty() && earthStack.lastElement().first <= di) {
 					earthStack.pop();
@@ -71,7 +71,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 				earthStack.push(new MyPair<Double, Double>(di, stackTravel + childWidth));
 			}
 			else if("right".equals(fl)) {
-				double stackTravel = getSkyStackTravel();
+				double stackTravel = getSkyStackTravel(nest);
 				childBlock.contentPos = new MyPosition(contentRectSize.width - stackTravel - childWidth, divePos);
 				while(!skyStack.isEmpty() && skyStack.lastElement().first <= di) {
 					skyStack.pop();
@@ -83,7 +83,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		else {
 			double di = divePos + childWidth;
 			if("top".equals(fl)) {
-				double stackTravel = getEarthStackTravel();
+				double stackTravel = getEarthStackTravel(nest);
 				childBlock.contentPos = new MyPosition(-(divePos+childWidth), stackTravel);
 				while(!earthStack.isEmpty() && earthStack.lastElement().first <= di) {
 					earthStack.pop();
@@ -91,7 +91,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 				earthStack.push(new MyPair<Double, Double>(di, stackTravel + childHeight));
 			}
 			else if("bottom".equals(fl)) {
-				double stackTravel = getSkyStackTravel();
+				double stackTravel = getSkyStackTravel(nest);
 				childBlock.contentPos = new MyPosition(-(divePos+childWidth), contentRectSize.height - stackTravel - childHeight);
 				while(!skyStack.isEmpty() && skyStack.lastElement().first <= di) {
 					skyStack.pop();
@@ -123,10 +123,10 @@ class MyLayoutBlock implements MyLayoutDrawable {
 			return false;
 		}
 		if(!verticalWritingMode) {
-			line.setPos(getEarthStackTravel(), divePos + line.getUpperPerpend());
+			line.setPos(getEarthStackTravel(nest), divePos + line.getUpperPerpend());
 		}
 		else {
-			line.setPos(-(divePos + line.getUpperPerpend()), getEarthStackTravel());
+			line.setPos(-(divePos + line.getUpperPerpend()), getEarthStackTravel(nest));
 		}
 		drawableList.add(line);
 		nest.registerNestRange(this, divePos, divePos + perpend);
@@ -176,7 +176,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	public boolean isVerticalWritingMode() {
 		return verticalWritingMode;
 	}
-	public MyLayoutBlock makeChildFloatBlock(MyLayoutStyle style) {
+	public MyLayoutBlock makeChildFloatBlock(MyLayoutStyle style, MyLayoutNest nest) {
 		boolean childVertival = style.isVerticalWritingMode();
 		if(!childVertival) {
 			assert(style.hasWidth()) : "横書きの場合はwidth指定が必要";
@@ -186,7 +186,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		}
 		assert(!childVertival ? style.hasWidth() : style.hasHeight());
 		if(!verticalWritingMode) {
-			double width = style.hasWidth() ? style.getWidth() : getLineWidth();
+			double width = style.hasWidth() ? style.getWidth() : getLineWidth(nest);
 			double height = style.hasHeight() ? style.getHeight() : getRemainDive();
 			MyRectSize rectSize = new MyRectSize(width, height);
 			return new MyLayoutBlock(style, rectSize);
@@ -194,7 +194,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		else {
 			assert(style.hasHeight()) : "heightスタイルが必要";
 			double width = style.hasWidth() ? style.getWidth() : getRemainDive();
-			double height = style.hasHeight() ? style.getHeight() : getLineWidth();
+			double height = style.hasHeight() ? style.getHeight() : getLineWidth(nest);
 			MyRectSize rectSize = new MyRectSize(width, height);
 			return new MyLayoutBlock(style, rectSize);
 		}

@@ -248,7 +248,7 @@ class MyDomContext {
 			layoutContext.pushPageStyle();
 		}
 		if(floatFlag) {
-			MyLayoutBlock block = layoutContext.getNowBlock().makeChildFloatBlock(style);
+			MyLayoutBlock block = layoutContext.getNowBlock().makeChildFloatBlock(style, layoutContext.getNowNest());
 			layoutContext.pushBlock(block);
 			layoutContext.pushNewNest();
 		}
@@ -267,7 +267,7 @@ class MyDomContext {
 			MyLayoutBlock block = layoutContext.popBlock();
 			block.justify(layoutContext.getNowNest());
 			layoutContext.popNest();
-			layoutContext.getNowBlock().addFloatBlock(block, style.getFloat());
+			layoutContext.getNowBlock().addFloatBlock(block, style.getFloat(), layoutContext.getNowNest());
 		}
 		if(newPageFlag) {
 			layoutContext.popPageStyle();

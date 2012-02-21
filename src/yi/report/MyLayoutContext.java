@@ -163,7 +163,7 @@ public class MyLayoutContext {
 	}
 	MyLayoutLine getNowLine() {
 		if(nowLine==null) {
-			double lineWidth = getNowBlock().getLineWidth();
+			double lineWidth = getNowBlock().getLineWidth(nowNest);
 			nowLine = new MyLayoutLine(lineWidth, getNowBlock().isVerticalWritingMode());
 		}
 		return nowLine;
