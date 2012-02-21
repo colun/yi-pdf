@@ -11,13 +11,15 @@ import yi.pdf.YiPdfPage;
 class MyLayoutNest {
 	final MyLayoutNest parent;
 	final YiPdfColor backgroundColor;
-	final MyLayoutMargin padding;
 	final MyLayoutMargin margin;
+	final MyLayoutMargin borderWidth;
+	final MyLayoutMargin padding;
 	MyLayoutNest() {
 		parent = null;
 		backgroundColor = null;
-		padding = new MyLayoutMargin(0, 0, 0, 0);
 		margin = new MyLayoutMargin(0, 0, 0, 0);
+		borderWidth = new MyLayoutMargin(0, 0, 0, 0);
+		padding = new MyLayoutMargin(0, 0, 0, 0);
 	}
 	MyLayoutNest(MyLayoutStyle nowStyle) {
 		this(null, nowStyle);
@@ -25,19 +27,20 @@ class MyLayoutNest {
 	MyLayoutNest(MyLayoutNest parent, MyLayoutStyle nowStyle) {
 		this.parent = parent;
 		backgroundColor = nowStyle.hasBackgroundColor() ? nowStyle.getBackgroundColor() : null;
-		padding = nowStyle.getPadding();
 		margin = nowStyle.getMargin();
+		borderWidth = nowStyle.getBorderWidth();
+		padding = nowStyle.getPadding();
 	}
 	private double getEarthTravelMargin(boolean verticalFlag, double childMargin) {
 		double nowMargin;
 		double nowPadding;
 		if(!verticalFlag) {
 			nowMargin = margin.left;
-			nowPadding = padding.left;
+			nowPadding = padding.left + borderWidth.left;
 		}
 		else {
 			nowMargin = margin.top;
-			nowPadding = padding.top;
+			nowPadding = padding.top + borderWidth.top;
 		}
 		double mixMargin;
 		double mixPadding;
@@ -61,11 +64,11 @@ class MyLayoutNest {
 		double nowPadding;
 		if(!verticalFlag) {
 			nowMargin = margin.right;
-			nowPadding = padding.right;
+			nowPadding = padding.right + borderWidth.right;
 		}
 		else {
 			nowMargin = margin.bottom;
-			nowPadding = padding.bottom;
+			nowPadding = padding.bottom + borderWidth.bottom;
 		}
 		double mixMargin;
 		double mixPadding;
@@ -105,8 +108,14 @@ class MyLayoutNest {
 				}
 			}
 			else {
-				earth = 0;
-				sky = 0;
+				if(!verticalWritingMode) {
+					earth = margin.left;
+					sky = margin.right;
+				}
+				else {
+					earth = margin.top;
+					sky = margin.bottom;
+				}
 			}
 			YiPdfPage page = pageContext.getPdfPage();
 			if(!verticalWritingMode) {

@@ -185,16 +185,35 @@ class MyLayoutBlock implements MyLayoutDrawable {
 			assert(style.hasHeight()) : "縦書きの場合はheight指定が必要";
 		}
 		assert(!childVertival ? style.hasWidth() : style.hasHeight());
+		MyLayoutMargin margin = style.getMargin();
+		MyLayoutMargin border = style.getBorderWidth();
+		MyLayoutMargin padding = style.getPadding();
 		if(!verticalWritingMode) {
-			double width = style.hasWidth() ? style.getWidth() : getLineWidth(nest);
-			double height = style.hasHeight() ? style.getHeight() : getRemainDive();
+			double width = style.hasWidth()
+					? margin.left + border.left + padding.left
+					+ style.getWidth()
+					+ padding.right + border.right + margin.right
+					: getLineWidth(nest);
+			double height = style.hasHeight()
+					? margin.top + border.top + padding.top
+					+ style.getHeight()
+					+ padding.bottom + border.bottom + margin.bottom
+					: getRemainDive();
 			MyRectSize rectSize = new MyRectSize(width, height);
 			return new MyLayoutBlock(style, rectSize);
 		}
 		else {
 			assert(style.hasHeight()) : "heightスタイルが必要";
-			double width = style.hasWidth() ? style.getWidth() : getRemainDive();
-			double height = style.hasHeight() ? style.getHeight() : getLineWidth(nest);
+			double width = style.hasWidth()
+					? margin.left + border.left + padding.left
+					+ style.getWidth()
+					+ padding.right + border.right + margin.right
+					: getRemainDive();
+			double height = style.hasHeight()
+					? margin.top + border.top + padding.top
+					+ style.getHeight()
+					+ padding.bottom + border.bottom + margin.bottom
+					: getLineWidth(nest);
 			MyRectSize rectSize = new MyRectSize(width, height);
 			return new MyLayoutBlock(style, rectSize);
 		}

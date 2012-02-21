@@ -225,4 +225,11 @@ class MyLayoutStyle {
 		double bottom = evalUnit(diff.get("padding-bottom"));
 		return new MyLayoutMargin(left, top, right, bottom);
 	}
+	public MyLayoutMargin getBorderWidth() {
+		double left = evalUnit(diff.get("border-left-width"));
+		double top = evalUnit(diff.get("border-top-width"));
+		double right = evalUnit(diff.get("border-right-width"));
+		double bottom = evalUnit(diff.get("border-bottom-width"));
+		return new MyLayoutMargin(left, top, right, bottom);
+	}
 }
