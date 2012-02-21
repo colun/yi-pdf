@@ -149,23 +149,17 @@ class MyLayoutStyle {
 		}
 		return true;
 	}
+	boolean hasPageWidth() {
+		return diff.containsKey("page-width");
+	}
 	double getPageWidth() {
-		return evalUnit(style.get("page-width"));
+		return evalUnit(diff.get("page-width"));
+	}
+	boolean hasPageHeight() {
+		return diff.containsKey("page-height");
 	}
 	double getPageHeight() {
-		return evalUnit(style.get("page-height"));
-	}
-	double getMarginLeft() {
-		return evalUnit(style.get("margin-left"));
-	}
-	double getMarginTop() {
-		return evalUnit(style.get("margin-top"));
-	}
-	double getMarginRight() {
-		return evalUnit(style.get("margin-right"));
-	}
-	double getMarginBottom() {
-		return evalUnit(style.get("margin-bottom"));
+		return evalUnit(diff.get("page-height"));
 	}
 	boolean hasFloat() {
 		return diff.containsKey("float");
@@ -204,5 +198,31 @@ class MyLayoutStyle {
 			return null;
 		}
 		return evalColor(colorStr);
+	}
+	public MyLayoutMargin getPageMargin(MyLayoutMargin beforeMargin) {
+		String str;
+		str = diff.get("margin-left");
+		double left = str==null ? beforeMargin.left : evalUnit(str);
+		str = diff.get("margin-top");
+		double top = str==null ? beforeMargin.top : evalUnit(str);
+		str = diff.get("margin-right");
+		double right = str==null ? beforeMargin.right : evalUnit(str);
+		str = diff.get("margin-bottom");
+		double bottom = str==null ? beforeMargin.bottom : evalUnit(str);
+		return new MyLayoutMargin(left, top, right, bottom);
+	}
+	public MyLayoutMargin getMargin() {
+		double left = evalUnit(diff.get("margin-left"));
+		double top = evalUnit(diff.get("margin-top"));
+		double right = evalUnit(diff.get("margin-right"));
+		double bottom = evalUnit(diff.get("margin-bottom"));
+		return new MyLayoutMargin(left, top, right, bottom);
+	}
+	public MyLayoutMargin getPadding() {
+		double left = evalUnit(diff.get("padding-left"));
+		double top = evalUnit(diff.get("padding-top"));
+		double right = evalUnit(diff.get("padding-right"));
+		double bottom = evalUnit(diff.get("padding-bottom"));
+		return new MyLayoutMargin(left, top, right, bottom);
 	}
 }

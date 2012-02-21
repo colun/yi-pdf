@@ -30,14 +30,14 @@ public class MyLayoutContext {
 		this.pdfFile = pdfFile;
 		nowTag = pdfFile.getDocument();
 	}
-	YiPdfColor pageBackgroundColor = null;
-	Stack<YiPdfColor> pageBackgroundColorStack = new Stack<YiPdfColor>();
-	void pushPageBackgroundColor(YiPdfColor color) {
-		pageBackgroundColorStack.push(pageBackgroundColor);
-		pageBackgroundColor = color;
+	MyLayoutPageStyle nowPageStyle;
+	Stack<MyLayoutPageStyle> pageStyleStack = new Stack<MyLayoutPageStyle>();
+	void pushPageStyle() {
+		pageStyleStack.push(nowPageStyle);
+		nowPageStyle = new MyLayoutPageStyle(nowStyle, nowPageStyle);
 	}
-	void popPageBackgroundColor() {
-		pageBackgroundColor = pageBackgroundColorStack.pop();
+	void popPageStyle() {
+		nowPageStyle = pageStyleStack.pop();
 	}
 	Stack<YiPdfTag> tagStack = new Stack<YiPdfTag>();
 	void pushPdfTag(YiPdfTag tag) {
@@ -105,7 +105,7 @@ public class MyLayoutContext {
 	}
 	MyLayoutBlock getNowBlock() {
 		if(nowBlock==null) {
-			nowBlock = new MyLayoutPage(nowStyle, pageBackgroundColor);
+			nowBlock = new MyLayoutPage(nowStyle, nowPageStyle);
 		}
 		return nowBlock;
 	}

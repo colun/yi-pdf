@@ -245,7 +245,7 @@ class MyDomContext {
 		layoutContext.writeClearLine();
 		if(newPageFlag) {
 			layoutContext.clearNowBlock();
-			layoutContext.pushPageBackgroundColor(style.getBackgroundColor());
+			layoutContext.pushPageStyle();
 		}
 		if(floatFlag) {
 			MyLayoutBlock block = layoutContext.getNowBlock().makeChildFloatBlock(style);
@@ -270,7 +270,7 @@ class MyDomContext {
 			layoutContext.getNowBlock().addFloatBlock(block, style.getFloat());
 		}
 		if(newPageFlag) {
-			layoutContext.popPageBackgroundColor();
+			layoutContext.popPageStyle();
 		}
 	}
 	private void visitRubyTag(YiDomNode node) throws IOException {
