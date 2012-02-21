@@ -42,16 +42,8 @@ class MyLayoutNest {
 			nowMargin = margin.top;
 			nowPadding = padding.top + borderWidth.top;
 		}
-		double mixMargin;
-		double mixPadding;
-		if(nowPadding==0) {
-			mixPadding = 0;
-			mixMargin = Math.max(childMargin, nowMargin);
-		}
-		else {
-			mixPadding = childMargin + nowPadding;
-			mixMargin = nowMargin;
-		}
+		double mixPadding = childMargin + nowPadding;
+		double mixMargin = nowMargin;
 		if(parent!=null) {
 			return mixPadding + parent.getEarthTravelMargin(verticalFlag, mixMargin);
 		}
@@ -70,16 +62,8 @@ class MyLayoutNest {
 			nowMargin = margin.bottom;
 			nowPadding = padding.bottom + borderWidth.bottom;
 		}
-		double mixMargin;
-		double mixPadding;
-		if(nowPadding==0) {
-			mixPadding = 0;
-			mixMargin = Math.max(childMargin, nowMargin);
-		}
-		else {
-			mixPadding = childMargin + nowPadding;
-			mixMargin = nowMargin;
-		}
+		double mixPadding = childMargin + nowPadding;
+		double mixMargin = nowMargin;
 		if(parent!=null) {
 			return mixPadding + parent.getSkyTravelMargin(verticalFlag, mixMargin);
 		}
