@@ -11,6 +11,10 @@ import yi.pdf.YiPdfPage;
 class MyLayoutNest {
 	final MyLayoutNest parent;
 	final YiPdfColor backgroundColor;
+	MyLayoutNest() {
+		parent = null;
+		backgroundColor = null;
+	}
 	MyLayoutNest(MyLayoutStyle nowStyle) {
 		this(null, nowStyle);
 	}

@@ -253,7 +253,7 @@ class MyDomContext {
 			layoutContext.pushNewNest();
 		}
 		boolean nestFlag = false;
-		if(!floatFlag && style.hasBackgroundColor()) {
+		if(!floatFlag && !newPageFlag && style.hasBackgroundColor()) {
 			nestFlag = true;
 			layoutContext.pushChildNest();
 		}
@@ -410,9 +410,7 @@ class MyDomContext {
 		visitChildren(node, htmlTagSet);
 	}
 	private void visitBodyTag(YiDomNode node) throws IOException {
-		layoutContext.pushChildNest();
 		visitBlock(node);
-		layoutContext.popNest();
 	}
 	private void visitText(YiDomNode node) throws IOException {
 		layoutContext.writeText(node.getText());
