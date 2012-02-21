@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfFont;
