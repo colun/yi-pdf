@@ -49,6 +49,28 @@ public class MyLayoutContext {
 		}
 		return nowLineTag;
 	}
+	Stack<MyLayoutNest> nestStack = new Stack<MyLayoutNest>();
+	MyLayoutNest nowNest;
+	MyLayoutNest getNowNest() {
+		return nowNest;
+	}
+	void pushNest(MyLayoutNest newNest) {
+		nestStack.push(nowNest);
+		nowNest = newNest;
+	}
+	void pushChildNest() {
+		MyLayoutNest n = new MyLayoutNest(nowNest, nowStyle);
+		pushNest(n);
+	}
+	void pushNewNest() {
+		MyLayoutNest n = new MyLayoutNest(nowStyle);
+		pushNest(n);
+	}
+	MyLayoutNest popNest() {
+		MyLayoutNest result = nowNest;
+		nowNest = nestStack.pop();
+		return result;
+	}
 	Stack<MyLayoutLine> lineStack = new Stack<MyLayoutLine>();
 	void pushLine(MyLayoutLine newLine) {
 		lineStack.push(nowLine);
@@ -142,7 +164,7 @@ public class MyLayoutContext {
 		if(nowLine!=null) {
 			while(true) {
 				MyLayoutBlock block = getNowBlock();
-				boolean f = block.addLine(nowLine, fourceBlockFlag);
+				boolean f = block.addLine(nowLine, fourceBlockFlag, nowNest);
 				if(!f && block.isPageRoot()) {
 					MyLayoutLine hold = nowLine;
 					nowLine = null;

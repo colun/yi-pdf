@@ -5,10 +5,10 @@ package yi.report;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
-
-import yi.pdf.YiPdfPage;
 
 class MyLayoutBlock implements MyLayoutDrawable {
 	boolean verticalWritingMode;
@@ -20,7 +20,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	Stack<MyPair<Double, Double>> skyStack = new Stack<MyPair<Double,Double>>();//sky = right or bottom
 	MyLayoutStyle nowStyle;
 	boolean fullFlag;
-	protected MyLayoutBlock(MyLayoutStyle style, MyRectSize rectSize) {
+	public MyLayoutBlock(MyLayoutStyle style, MyRectSize rectSize) {
 		nowStyle = style;
 		verticalWritingMode = style.isVerticalWritingMode();
 		divePos = 0;
@@ -28,30 +28,33 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		pageRootFlag = false;
 		fullFlag = false;
 	}
-	double getEarthStackTravel() {
+	private double getEarthStackTravel() {
 		double eWidth = 0;
 		if(!earthStack.isEmpty()) {
 			eWidth = earthStack.lastElement().second;
 		}
 		return eWidth;
 	}
-	double getSkyStackTravel() {
+	private double getSkyStackTravel() {
 		double sWidth = 0;
 		if(!skyStack.isEmpty()) {
 			sWidth = skyStack.lastElement().second;
 		}
 		return sWidth;
 	}
-	double getLineWidth() {
+	public double getLineWidth() {
 		double d = getEarthStackTravel() + getSkyStackTravel();
+		return getBlockTravel() - d;
+	}
+	public double getBlockTravel() {
 		if(!verticalWritingMode) {
-			return contentRectSize.width - d;
+			return contentRectSize.width;
 		}
 		else {
-			return contentRectSize.height - d;
+			return contentRectSize.height;
 		}
 	}
-	boolean isPageRoot() {
+	public boolean isPageRoot() {
 		return pageRootFlag;
 	}
 	public void addFloatBlock(MyLayoutBlock childBlock, String fl) {
@@ -99,8 +102,18 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		}
 		drawableList.add(childBlock);
 	}
+	Map<MyLayoutNest, MyPair<Double, Double>> nestRangeMap = new LinkedHashMap<MyLayoutNest, MyPair<Double,Double>>();
+	public void registerNestRange(MyLayoutNest nest, Double start, Double end) {
+		MyPair<Double, Double> range = nestRangeMap.get(nest);
+		if(range==null) {
+			nestRangeMap.put(nest, new MyPair<Double, Double>(start, end));
+		}
+		else {
+			nestRangeMap.put(nest, new MyPair<Double, Double>(range.first, end));
+		}
+	}
 	List<MyLayoutDrawable> drawableList = new ArrayList<MyLayoutDrawable>();
-	public boolean addLine(MyLayoutLine line, boolean fourceBlockFlag) {
+	public boolean addLine(MyLayoutLine line, boolean fourceBlockFlag, MyLayoutNest nest) {
 		if(fullFlag) {
 			return false;
 		}
@@ -116,6 +129,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 			line.setPos(-(divePos + line.getUpperPerpend()), getEarthStackTravel());
 		}
 		drawableList.add(line);
+		nest.registerNestRange(this, divePos, divePos + perpend);
 		divePos += perpend;
 		while(!earthStack.isEmpty() && earthStack.lastElement().first <= divePos) {
 			earthStack.pop();
@@ -125,24 +139,34 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		}
 		return true;
 	}
-	public double getRemainDive() {
+	private double getRemainDive() {
+		return getEndDive() - divePos;
+	}
+	private double getEndDive() {
 		if(!verticalWritingMode) {
-			return contentRectSize.height - divePos;
+			return contentRectSize.height;
 		}
 		else {
-			return contentRectSize.width - divePos;
+			return contentRectSize.width;
 		}
 	}
 	public void draw(MyLayoutPageContext pageContext, double x, double y) throws IOException {
 		x += contentPos.x;
 		y += contentPos.y;
-		if(!pageRootFlag && nowStyle.hasBackgroundColor()) {
-			YiPdfPage page = pageContext.getPdfPage();
-			page.setFillColor(nowStyle.getBackgroundColor());
-			page.fillRect(x, y, contentRectSize.width, contentRectSize.height);
-		}
+
+		//if(!pageRootFlag && nowStyle.hasBackgroundColor()) {
+		//	YiPdfPage page = pageContext.getPdfPage();
+		//	page.setFillColor(nowStyle.getBackgroundColor());
+		//	page.fillRect(x, y, contentRectSize.width, contentRectSize.height);
+		//}
 		if(verticalWritingMode) {
 			x += contentRectSize.width;
+		}
+		for(MyLayoutNest nest : nestRangeMap.keySet()) {
+			MyPair<Double, Double> range = nestRangeMap.get(nest);
+			double start = range.first!=null ? range.first : 0;
+			double end = range.second!=null ? range.second : getEndDive();
+			nest.draw(pageContext, x, y, start, end, getBlockTravel(), verticalWritingMode);
 		}
 		for(MyLayoutDrawable line : drawableList) {
 			line.draw(pageContext, x, y);
@@ -175,23 +199,28 @@ class MyLayoutBlock implements MyLayoutDrawable {
 			return new MyLayoutBlock(style, rectSize);
 		}
 	}
-	public void justify() {
-		if(fullFlag) {
-			return;
-		}
-		if(!verticalWritingMode) {
-			if(!nowStyle.hasHeight()) {
-				if(divePos < contentRectSize.height) {
-					contentRectSize = new MyRectSize(contentRectSize.width, divePos);
+	public void justify(MyLayoutNest nest) {
+		boolean jFlag = false;
+		if(!fullFlag) {
+			if(!verticalWritingMode) {
+				if(!nowStyle.hasHeight()) {
+					if(divePos < contentRectSize.height) {
+						contentRectSize = new MyRectSize(contentRectSize.width, divePos);
+						jFlag = true;
+					}
+				}
+			}
+			else {
+				if(!nowStyle.hasWidth()) {
+					if(divePos < contentRectSize.width) {
+						contentRectSize = new MyRectSize(divePos, contentRectSize.height);
+						jFlag = true;
+					}
 				}
 			}
 		}
-		else {
-			if(!nowStyle.hasWidth()) {
-				if(divePos < contentRectSize.width) {
-					contentRectSize = new MyRectSize(divePos, contentRectSize.height);
-				}
-			}
+		if(!jFlag) {
+			nest.registerNestRange(this, 0.0, !verticalWritingMode ? contentRectSize.height : contentRectSize.width);
 		}
 	}
 }

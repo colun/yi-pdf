@@ -238,7 +238,6 @@ class MyDomContext {
 		MyLayoutStyle style = layoutContext.getNowStyle();
 		boolean newPageFlag = style.hasNewlyPage();
 		boolean floatFlag = style.hasFloat();
-		//assert(!floatFlag) : "TODO: MyDomContext.visitDiv() ... floatの実装";
 		assert(!(newPageFlag && floatFlag)) : "改頁とfloat指定は、同時には行えません。";
 		if(style.hasWritingMode()) {
 			assert(newPageFlag || floatFlag) : "文字方向を変更する時、改頁またはfloat指定が行われている必要があります。（ただし、この制限は将来的に解除される可能性があります。）";
@@ -250,12 +249,23 @@ class MyDomContext {
 		if(floatFlag) {
 			MyLayoutBlock block = layoutContext.getNowBlock().makeChildFloatBlock(style);
 			layoutContext.pushBlock(block);
+			layoutContext.pushNewNest();
 		}
+		boolean nestFlag = false;
+		if(!floatFlag && style.hasBackgroundColor()) {
+			nestFlag = true;
+			layoutContext.pushChildNest();
+		}
+
 		visitChildren(node, normalTagSet);
 		layoutContext.writeClearLine();
+		if(nestFlag) {
+			layoutContext.popNest();
+		}
 		if(floatFlag) {
 			MyLayoutBlock block = layoutContext.popBlock();
-			block.justify();
+			block.justify(layoutContext.getNowNest());
+			layoutContext.popNest();
 			layoutContext.getNowBlock().addFloatBlock(block, style.getFloat());
 		}
 	}
@@ -392,13 +402,15 @@ class MyDomContext {
 	private void visitBrTag(YiDomNode child) throws IOException {
 		layoutContext.writeBr();
 	}
-	void visitHtmlTag(YiDomNode node) throws IOException {
+	private void visitHtmlTag(YiDomNode node) throws IOException {
 		visitChildren(node, htmlTagSet);
 	}
-	void visitBodyTag(YiDomNode node) throws IOException {
+	private void visitBodyTag(YiDomNode node) throws IOException {
+		layoutContext.pushChildNest();
 		visitChildren(node, normalTagSet);
+		layoutContext.popNest();
 	}
-	void visitText(YiDomNode node) throws IOException {
+	private void visitText(YiDomNode node) throws IOException {
 		layoutContext.writeText(node.getText());
 	}
 	public void exec(YiDomNode dom, YiPdfFile pdfFile) throws IOException {

@@ -8,6 +8,6 @@ class MyPair<T1, T2> {
 		first = v1;
 		second = v2;
 	}
-	T1 first;
-	T2 second;
+	final T1 first;
+	final T2 second;
 }
