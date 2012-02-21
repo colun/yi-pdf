@@ -65,6 +65,14 @@ public final class YiPdfPage {
 		}
 	}
 
+	private YiPdfColor backgroundColor = null;
+	public void setBackgroundColor(YiPdfColor color) {
+		backgroundColor = color;
+	}
+	public YiPdfColor getBackgroundColor() {
+		return backgroundColor;
+	}
+
 	private YiPdfColor nowTextColor = new YiPdfColor(0, 0, 0);
 	private YiPdfColor beforeTextColor = null;
 	public void setTextColor(YiPdfColor color) {
@@ -182,23 +190,32 @@ public final class YiPdfPage {
 		return result;
 	}
 	public byte[] getStreamBytes() {
-		if(textStream.size()==0) {
-			return graphicsStream.toByteArray();
+		byte[] bg = null;
+		if(backgroundColor!=null) {
+			bg = toBytesFromAscii(String.format("%f %f %f rg\n0 0 %f %f re f\n", backgroundColor.r, backgroundColor.g, backgroundColor.b, width, height));
 		}
-		byte[] result = new byte[textStream.size() + graphicsStream.size() + 6];
+
+		byte[] result = new byte[(bg==null ? 0 : bg.length) + (textStream.size()!=0 ? textStream.size() + 6 : 0) + graphicsStream.size()];
 		int pos = 0;
+		if(bg!=null) {
+			for(byte b : bg) {
+				result[pos++] = b;
+			}
+		}
 		for(byte b : graphicsStream.toByteArray()) {
 			result[pos++] = b;
 		}
-		result[pos++] = 'B';
-		result[pos++] = 'T';
-		result[pos++] = '\n';
-		for(byte b : textStream.toByteArray()) {
-			result[pos++] = b;
+		if(textStream.size()!=0) {
+			result[pos++] = 'B';
+			result[pos++] = 'T';
+			result[pos++] = '\n';
+			for(byte b : textStream.toByteArray()) {
+				result[pos++] = b;
+			}
+			result[pos++] = 'E';
+			result[pos++] = 'T';
+			result[pos++] = '\n';
 		}
-		result[pos++] = 'E';
-		result[pos++] = 'T';
-		result[pos++] = '\n';
 		return result;
 	}
 	public double getStringWidth() {

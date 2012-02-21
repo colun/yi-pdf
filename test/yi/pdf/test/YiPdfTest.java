@@ -254,4 +254,26 @@ public class YiPdfTest extends TestCase {
 
 		stream.close();
 	}
+	public void test9() throws IOException {
+		OutputStream stream = new FileOutputStream("test-output/test9.pdf");
+		YiPdfFile pdf = new YiPdfFile(stream);
+		pdf.setCreationDate(new Date(0));
+
+		YiPdfPage page1 = pdf.newPage(800, 600);
+		page1.setBackgroundColor(new YiPdfColor(1, 0.5, 0.5));
+		page1.drawLine(100, 100, 200, 200);
+		page1.setLineCap(0);
+		page1.drawLine(100, 300, 200, 300);
+		page1.setDrawColor(new YiPdfColor(1, 0, 0));
+		page1.setLineCap(1);
+		page1.drawLine(100, 310, 200, 310);
+		page1.setDrawColor(new YiPdfColor(0, 0, 1));
+		page1.setLineCap(2);
+		page1.drawLine(100, 320, 200, 320);
+		page1.setFillColor(new YiPdfColor(1, 1, 0));
+		page1.fillRect(100, 400, 100, 100);
+		pdf.close();
+
+		stream.close();
+	}
 }
