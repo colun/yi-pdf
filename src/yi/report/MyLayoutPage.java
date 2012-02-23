@@ -16,13 +16,14 @@ public class MyLayoutPage extends MyLayoutBlock {
 		double height = pageStyle.height - pageStyle.pageMargin.top - pageStyle.pageMargin.bottom;
 		return new MyRectSize(width, height);
 	}
-	MyLayoutPage(MyLayoutStyle style, MyLayoutPageStyle pageStyle) {
+	MyLayoutPage(MyLayoutStyle style, MyLayoutPageStyle pageStyle, MyLayoutNest nest) {
 		super(style, makeContentRectSize(pageStyle));
 		contentPos = new MyPosition(pageStyle.pageMargin.left, pageStyle.pageMargin.top);
 		pageWidth = pageStyle.width;
 		pageHeight = pageStyle.height;
 		backgroundColor = pageStyle.backgroundColor;
 		pageRootFlag = true;
+		registerNullNestRange(nest);
 	}
 	public void drawPage(YiPdfFile pdfFile) throws IOException {
 		YiPdfPage page = pdfFile.newPage(pageWidth, pageHeight);
@@ -30,6 +31,15 @@ public class MyLayoutPage extends MyLayoutBlock {
 		MyLayoutPageContext pageContext = new MyLayoutPageContext(page);
 		draw(pageContext, 0, 0);
 		page.close();
+	}
+	private void registerNullNestRange(MyLayoutNest nest) {
+		if(nest!=null) {
+			registerNullNestRange(nest.getParent());
+			registerNestRange(nest, null, null);
+		}
+	}
+	public void finishPage(MyLayoutNest nest) {
+		registerNullNestRange(nest);
 	}
 
 }

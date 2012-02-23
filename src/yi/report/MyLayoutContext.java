@@ -123,7 +123,7 @@ public class MyLayoutContext {
 		if(nowBlock==null) {
 			diveMargin = 1000000;
 			divePass = 0;
-			nowBlock = new MyLayoutPage(nowStyle, nowPageStyle);
+			nowBlock = new MyLayoutPage(nowStyle, nowPageStyle, nowNest);
 		}
 		return nowBlock;
 	}
@@ -182,6 +182,7 @@ public class MyLayoutContext {
 		clearNowLine();
 		if(nowBlock!=null) {
 			assert(nowBlock.isPageRoot()) : "pageRootではないnowBlockをclearしてはならない。";
+			((MyLayoutPage)nowBlock).finishPage(nowNest);
 			drawBlock(nowBlock);
 			nowBlock = null;
 		}
