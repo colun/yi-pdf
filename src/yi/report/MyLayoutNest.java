@@ -109,7 +109,7 @@ class MyLayoutNest {
 	double getSkyTravelMargin(boolean verticalFlag) {
 		return getSkyTravelMargin(verticalFlag, 0);
 	}
-	void draw(MyLayoutPageContext pageContext, double x, double y, double start, double end, double travel, boolean verticalWritingMode) throws IOException {
+	void draw(MyLayoutPageContext pageContext, double x, double y, double start, double end, double travel, boolean verticalWritingMode, boolean sFlag, boolean eFlag) throws IOException {
 		if(backgroundColor!=null) {
 			double earth;
 			double sky;
@@ -136,11 +136,63 @@ class MyLayoutNest {
 			YiPdfPage page = pageContext.getPdfPage();
 			if(!verticalWritingMode) {
 				page.setFillColor(backgroundColor);
-				page.fillRect(x + earth, y + start, travel - (earth + sky), end - start);
+				double sx = x + earth;
+				double ex = x + travel - sky;
+				double sy = y + start;
+				double ey = y + end;
+				page.fillRect(sx, sy, ex-sx, ey-sy);
+				page.setLineCap(0);
+				page.setDrawColor(new YiPdfColor(0, 0, 0));
+				if(0<borderWidth.left) {
+					page.setLineWidth(borderWidth.left);
+					double xx = sx + borderWidth.left / 2;
+					page.drawLine(xx, sy, xx, ey);
+				}
+				if(0<borderWidth.right) {
+					page.setLineWidth(borderWidth.right);
+					double xx = ex - borderWidth.right / 2;
+					page.drawLine(xx, sy, xx, ey);
+				}
+				if(0<borderWidth.top && !sFlag) {
+					page.setLineWidth(borderWidth.top);
+					double yy = sy + borderWidth.top / 2;
+					page.drawLine(sx, yy, ex, yy);
+				}
+				if(0<borderWidth.bottom && !eFlag) {
+					page.setLineWidth(borderWidth.bottom);
+					double yy = ey - borderWidth.bottom / 2;
+					page.drawLine(sx, yy, ex, yy);
+				}
 			}
 			else {
 				page.setFillColor(backgroundColor);
-				page.fillRect(x - end, y + earth, end - start, travel - (earth + sky));
+				double sx = x - end;
+				double ex = x - start;
+				double sy = y + earth;
+				double ey = y + travel - sky;
+				page.fillRect(sx, sy, ex-sx, ey-sy);
+				page.setLineCap(0);
+				page.setDrawColor(new YiPdfColor(0, 0, 0));
+				if(0<borderWidth.left && !eFlag) {
+					page.setLineWidth(borderWidth.left);
+					double xx = sx + borderWidth.left / 2;
+					page.drawLine(xx, sy, xx, ey);
+				}
+				if(0<borderWidth.right && !sFlag) {
+					page.setLineWidth(borderWidth.right);
+					double xx = ex - borderWidth.right / 2;
+					page.drawLine(xx, sy, xx, ey);
+				}
+				if(0<borderWidth.top) {
+					page.setLineWidth(borderWidth.top);
+					double yy = sy + borderWidth.top / 2;
+					page.drawLine(sx, yy, ex, yy);
+				}
+				if(0<borderWidth.bottom) {
+					page.setLineWidth(borderWidth.bottom);
+					double yy = ey - borderWidth.bottom / 2;
+					page.drawLine(sx, yy, ex, yy);
+				}
 			}
 		}
 	}

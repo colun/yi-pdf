@@ -166,7 +166,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 			MyPair<Double, Double> range = nestRangeMap.get(nest);
 			double start = range.first!=null ? range.first : 0;
 			double end = range.second!=null ? range.second : getEndDive();
-			nest.draw(pageContext, x, y, start, end, getBlockTravel(), verticalWritingMode);
+			nest.draw(pageContext, x, y, start, end, getBlockTravel(), verticalWritingMode, range.first==null, range.second==null);
 		}
 		for(MyLayoutDrawable line : drawableList) {
 			line.draw(pageContext, x, y);
