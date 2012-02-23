@@ -242,4 +242,8 @@ class MyLayoutBlock implements MyLayoutDrawable {
 			nest.registerNestRange(this, 0.0, !verticalWritingMode ? contentRectSize.height : contentRectSize.width);
 		}
 	}
+	public void addPass(double pass, MyLayoutNest nest) {
+		divePos += pass;
+		nest.registerNestRange(this, divePos, divePos);
+	}
 }

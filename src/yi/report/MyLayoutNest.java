@@ -31,6 +31,38 @@ class MyLayoutNest {
 		borderWidth = nowStyle.getBorderWidth();
 		padding = nowStyle.getPadding();
 	}
+	public double getPreMargin(boolean verticalFlag) {
+		if(!verticalFlag) {
+			return margin.top;
+		}
+		else {
+			return margin.right;
+		}
+	}
+	public double getPrePadding(boolean verticalFlag) {
+		if(!verticalFlag) {
+			return padding.top + borderWidth.top;
+		}
+		else {
+			return padding.right + borderWidth.right;
+		}
+	}
+	public double getPostMargin(boolean verticalFlag) {
+		if(!verticalFlag) {
+			return margin.bottom;
+		}
+		else {
+			return margin.left;
+		}
+	}
+	public double getPostPadding(boolean verticalFlag) {
+		if(!verticalFlag) {
+			return padding.bottom + borderWidth.bottom;
+		}
+		else {
+			return padding.left + borderWidth.left;
+		}
+	}
 	private double getEarthTravelMargin(boolean verticalFlag, double childMargin) {
 		double nowMargin;
 		double nowPadding;
@@ -115,10 +147,33 @@ class MyLayoutNest {
 	MyLayoutNest getParent() {
 		return parent;
 	}
-	void registerNestRange(MyLayoutBlock block, Double start, Double end) {
+	void registerNestRange(MyLayoutBlock block, double start, double end, double sMargin, double eMargin) {
+		boolean verticalFlag = block.isVerticalWritingMode();
+		double preMargin = getPreMargin(verticalFlag);
+		double prePadding = getPrePadding(verticalFlag);
+		double postPadding = getPostPadding(verticalFlag);
+		double postMargin = getPostMargin(verticalFlag);
+
+		if(prePadding!=0) {
+			start -= sMargin + prePadding;
+			sMargin = preMargin;
+		}
+		else {
+			sMargin = Math.max(sMargin, preMargin);
+		}
+		if(postPadding!=0) {
+			end += eMargin + postPadding;
+			eMargin = postMargin;
+		}
+		else {
+			eMargin = Math.max(eMargin, postMargin);
+		}
 		if(parent!=null) {
-			parent.registerNestRange(block, start, end);
+			parent.registerNestRange(block, start, end, sMargin, eMargin);
 		}
 		block.registerNestRange(this, start, end);
+	}
+	void registerNestRange(MyLayoutBlock block, double start, double end) {
+		registerNestRange(block, start, end, 0, 0);
 	}
 }

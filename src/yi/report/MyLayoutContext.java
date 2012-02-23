@@ -60,12 +60,26 @@ public class MyLayoutContext {
 	}
 	Stack<MyLayoutNest> nestStack = new Stack<MyLayoutNest>();
 	MyLayoutNest nowNest = new MyLayoutNest();
+	double diveMargin = 0;
+	double divePass = 0;
 	MyLayoutNest getNowNest() {
 		return nowNest;
+	}
+	private void addMargin(double margin, double padding) {
+		if(diveMargin < margin) {
+			divePass += margin - diveMargin;
+			diveMargin = margin;
+		}
+		if(padding!=0) {
+			divePass += padding;
+			diveMargin = 0;
+		}
 	}
 	void pushNest(MyLayoutNest newNest) {
 		nestStack.push(nowNest);
 		nowNest = newNest;
+		boolean verticalWritingMode = nowStyle.isVerticalWritingMode();
+		addMargin(nowNest.getPreMargin(verticalWritingMode), nowNest.getPrePadding(verticalWritingMode));
 	}
 	void pushChildNest() {
 		MyLayoutNest n = new MyLayoutNest(nowNest, nowStyle);
@@ -76,6 +90,8 @@ public class MyLayoutContext {
 		pushNest(n);
 	}
 	MyLayoutNest popNest() {
+		boolean verticalWritingMode = nowStyle.isVerticalWritingMode();
+		addMargin(nowNest.getPostMargin(verticalWritingMode), nowNest.getPostPadding(verticalWritingMode));
 		MyLayoutNest result = nowNest;
 		nowNest = nestStack.pop();
 		return result;
@@ -105,16 +121,25 @@ public class MyLayoutContext {
 	}
 	MyLayoutBlock getNowBlock() {
 		if(nowBlock==null) {
+			diveMargin = 1000000;
+			divePass = 0;
 			nowBlock = new MyLayoutPage(nowStyle, nowPageStyle);
 		}
 		return nowBlock;
 	}
 	Stack<MyLayoutBlock> blockStack = new Stack<MyLayoutBlock>();
+	Stack<MyPair<Double, Double>> diveStack = new Stack<MyPair<Double,Double>>();
 	void pushBlock(MyLayoutBlock block) {
 		blockStack.push(getNowBlock());
 		nowBlock = block;
+		diveStack.push(new MyPair<Double, Double>(diveMargin, divePass));
+		diveMargin = 0;
+		divePass = 0;
 	}
 	MyLayoutBlock popBlock() {
+		MyPair<Double, Double> divePair = diveStack.pop();
+		diveMargin = divePair.first;
+		divePass = divePair.second;
 		MyLayoutBlock result = nowBlock;
 		nowBlock = blockStack.pop();
 		return result;
@@ -169,10 +194,19 @@ public class MyLayoutContext {
 		return nowLine;
 	}
 	boolean fourceBlockFlag = true;
+	void applyDivePass() {
+		MyLayoutBlock block = getNowBlock();
+		if(divePass!=0) {
+			block.addPass(divePass, nowNest);
+			divePass = 0;
+		}
+		diveMargin = 0;
+	}
 	void clearNowLine() throws IOException {
 		if(nowLine!=null) {
 			while(true) {
 				MyLayoutBlock block = getNowBlock();
+				applyDivePass();
 				boolean f = block.addLine(nowLine, fourceBlockFlag, nowNest);
 				if(!f && block.isPageRoot()) {
 					MyLayoutLine hold = nowLine;

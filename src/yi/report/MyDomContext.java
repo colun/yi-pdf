@@ -251,6 +251,7 @@ class MyDomContext {
 			MyLayoutBlock block = layoutContext.getNowBlock().makeChildFloatBlock(style, layoutContext.getNowNest());
 			layoutContext.pushBlock(block);
 			layoutContext.pushNewNest();
+			layoutContext.applyDivePass();
 		}
 		boolean nestFlag = false;
 		if(!floatFlag && !newPageFlag && style.hasBackgroundColor()) {
@@ -264,9 +265,10 @@ class MyDomContext {
 			layoutContext.popNest();
 		}
 		if(floatFlag) {
-			MyLayoutBlock block = layoutContext.popBlock();
-			block.justify(layoutContext.getNowNest());
+			layoutContext.applyDivePass();
+			layoutContext.getNowBlock().justify(layoutContext.getNowNest());
 			layoutContext.popNest();
+			MyLayoutBlock block = layoutContext.popBlock();
 			layoutContext.getNowBlock().addFloatBlock(block, style.getFloat(), layoutContext.getNowNest());
 		}
 		if(newPageFlag) {
