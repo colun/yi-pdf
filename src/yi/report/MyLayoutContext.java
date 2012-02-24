@@ -32,11 +32,13 @@ public class MyLayoutContext {
 	}
 	MyLayoutPageStyle nowPageStyle;
 	Stack<MyLayoutPageStyle> pageStyleStack = new Stack<MyLayoutPageStyle>();
-	void pushPageStyle() {
+	void pushPageStyle(Map<String, String> pageStyleDic) {
 		pageStyleStack.push(nowPageStyle);
-		nowPageStyle = new MyLayoutPageStyle(nowStyle, nowPageStyle);
+		nowPageStyle = new MyLayoutPageStyle(nowStyle.merge(pageStyleDic));
+		pushStyle(new MyLayoutStyle(nowStyle, nowPageStyle));
 	}
 	void popPageStyle() {
+		popStyle();
 		nowPageStyle = pageStyleStack.pop();
 	}
 	Stack<YiPdfTag> tagStack = new Stack<YiPdfTag>();
@@ -109,9 +111,12 @@ public class MyLayoutContext {
 	void clearLineTag() { 
 		nowLineTag = null;
 	}
-	void pushStyle(Map<String, String> diff) {
+	void pushStyle(MyLayoutStyle style) {
 		styleStack.push(nowStyle);
-		nowStyle = nowStyle.merge(diff);
+		nowStyle = style;
+	}
+	void pushStyle(Map<String, String> diff) {
+		pushStyle(nowStyle.merge(diff));
 	}
 	MyLayoutStyle getNowStyle() {
 		return nowStyle;

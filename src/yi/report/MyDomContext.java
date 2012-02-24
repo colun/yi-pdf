@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,6 +76,10 @@ class MyDomContext {
 			regStyle("h4", m);
 			regStyle("h5", m);
 			regStyle("h6", m);
+		}
+		{
+			Map<String, String> m = new HashMap<String, String>();
+			regStyle("@page", m);
 		}
 	}
 	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_]+) *: *([-#a-zA-Z0-9_\\.]+) *");
@@ -221,7 +226,7 @@ class MyDomContext {
 			}
 			String text = builder.toString();
 			if(text!=null && !text.isEmpty()) {
-				Pattern pattern = Pattern.compile("[ ]*([#\\.][-0-9A-Za-z_]+)[ ]*\\{([^}]+)\\}");
+				Pattern pattern = Pattern.compile("[ ]*(#[-0-9A-Za-z_]+|\\.[-0-9A-Za-z_]+|@page|@page [-0-9A-Za-z_]+)[ ]*\\{([^}]+)\\}");
 				Matcher m = pattern.matcher(text);
 				while(m.find()) {
 					String key = m.group(1);
@@ -236,16 +241,28 @@ class MyDomContext {
 	}
 	private void visitBlock(YiDomNode node) throws IOException {
 		MyLayoutStyle style = layoutContext.getNowStyle();
-		boolean newPageFlag = style.hasNewlyPage();
+		boolean pageStyleFlag = style.hasPage();
 		boolean floatFlag = style.hasFloat();
-		assert(!(newPageFlag && floatFlag)) : "改頁とfloat指定は、同時には行えません。";
+		assert(!(pageStyleFlag && floatFlag)) : "ページスタイル変更とfloat指定は、同時には行えません。";
 		if(style.hasWritingMode()) {
-			assert(newPageFlag || floatFlag) : "文字方向を変更する時、改頁またはfloat指定が行われている必要があります。（ただし、この制限は将来的に解除される可能性があります。）";
+			assert(pageStyleFlag || floatFlag) : "文字方向を変更する時、ページスタイル変更またはfloat指定が行われている必要があります。（ただし、この制限は将来的に解除される可能性があります。）";
 		}
 		layoutContext.writeClearLine();
-		if(newPageFlag) {
+		if(style.hasPageBreakBefore()) {
 			layoutContext.clearNowBlock();
-			layoutContext.pushPageStyle();
+		}
+		if(pageStyleFlag) {
+			Map<String, String> pageStyleDic = styleDic.get("@page " + style.getPage());
+			Map<String, String> vv;
+			if(pageStyleDic!=null) {
+				vv = new LinkedHashMap<String, String>(styleDic.get("@page"));
+				vv.putAll(pageStyleDic);
+			}
+			else {
+				vv = styleDic.get("@page");
+			}
+			layoutContext.clearNowBlock();
+			layoutContext.pushPageStyle(vv);
 		}
 		if(floatFlag) {
 			MyLayoutBlock block = layoutContext.getNowBlock().makeChildFloatBlock(style, layoutContext.getNowNest());
@@ -254,7 +271,7 @@ class MyDomContext {
 			layoutContext.applyDivePass();
 		}
 		boolean nestFlag = false;
-		if(!floatFlag && !newPageFlag && style.hasBackgroundColor()) {
+		if(!floatFlag && style.hasBackgroundColor()) {
 			nestFlag = true;
 			layoutContext.pushChildNest();
 		}
@@ -271,7 +288,21 @@ class MyDomContext {
 			MyLayoutBlock block = layoutContext.popBlock();
 			layoutContext.getNowBlock().addFloatBlock(block, style.getFloat(), layoutContext.getNowNest());
 		}
-		if(newPageFlag) {
+		if(pageStyleFlag) {
+			layoutContext.popPageStyle();
+			layoutContext.clearNowBlock();
+		}
+		if(style.hasPageBreakAfter()) {
+			layoutContext.clearNowBlock();
+		}
+	}
+	private void visitBodyTag(YiDomNode node) throws IOException {
+		Map<String, String> pageStyle = styleDic.get("@page");
+		if(pageStyle!=null) {
+			layoutContext.pushPageStyle(pageStyle);
+		}
+		visitBlock(node);
+		if(pageStyle!=null) {
 			layoutContext.popPageStyle();
 		}
 	}
@@ -410,9 +441,6 @@ class MyDomContext {
 	}
 	private void visitHtmlTag(YiDomNode node) throws IOException {
 		visitChildren(node, htmlTagSet);
-	}
-	private void visitBodyTag(YiDomNode node) throws IOException {
-		visitBlock(node);
 	}
 	private void visitText(YiDomNode node) throws IOException {
 		layoutContext.writeText(node.getText());

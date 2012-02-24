@@ -18,7 +18,13 @@ import yi.pdf.font.YiPdfJMinchoFontV;
 class MyLayoutStyle {
 	Map<String, String> style = new HashMap<String, String>();
 	Map<String, String> diff = null;
+	MyLayoutPageStyle pageStyle = null;
 	MyLayoutStyle() {
+	}
+	MyLayoutStyle(MyLayoutStyle origin, MyLayoutPageStyle pageStyle) {
+		style = origin.style;
+		diff = origin.diff;
+		this.pageStyle = pageStyle;
 	}
 	MyLayoutStyle merge(Map<String, String> diff) {
 		MyLayoutStyle result = new MyLayoutStyle();
@@ -27,6 +33,7 @@ class MyLayoutStyle {
 			result.style.putAll(diff);
 		}
 		result.diff = diff;
+		result.pageStyle = pageStyle;
 		return result;
 	}
 	static YiPdfFont gothicFont = new YiPdfJGothicFont();
@@ -81,6 +88,9 @@ class MyLayoutStyle {
 			double fontSize = fsFlag ? 10.5 : getFontSize();
 			return fontSize * val;
 		}
+		if("px".equals(unit)) {
+			return val * pageStyle.resolution;
+		}
 		assert(false) : "知らない単位が指定されました。";
 		return 0;
 	}
@@ -89,6 +99,24 @@ class MyLayoutStyle {
 	}
 	double evalUnit(String str) {
 		return evalUnit(str, false, 0);
+	}
+	static double evalDpi(String str) {
+		if(str==null) {
+			return 72.0 / 96;
+		}
+		Matcher m = unitPattern.matcher(str);
+		boolean f = m.matches();
+		assert(f) : "不正な数値[単位]が指定されました。";
+		double val = Double.valueOf(m.group(1));
+		String unit = m.group(3);
+		if(unit.isEmpty() || "dpi".equals(unit)) {
+			return 72.0 / val;
+		}
+		if("%".equals(unit)) {
+			return 72.0 / (0.96 * val);
+		}
+		assert(false) : "知らない単位が指定されました。";
+		return 0;
 	}
 	final static Map<String, YiPdfColor> colorMap = new HashMap<String, YiPdfColor>();
 	static {
@@ -149,30 +177,11 @@ class MyLayoutStyle {
 		}
 		return true;
 	}
-	boolean hasPageWidth() {
-		return diff.containsKey("page-width");
-	}
-	double getPageWidth() {
-		return evalUnit(diff.get("page-width"));
-	}
-	boolean hasPageHeight() {
-		return diff.containsKey("page-height");
-	}
-	double getPageHeight() {
-		return evalUnit(diff.get("page-height"));
-	}
 	boolean hasFloat() {
 		return diff.containsKey("float");
 	}
 	boolean hasWritingMode() {
 		return diff.containsKey("writing-mode");
-	}
-	boolean hasNewlyPage() {
-		return diff.containsKey("page-width")
-		|| diff.containsKey("page-height")
-		|| diff.containsKey("resolution")
-		|| diff.containsKey("page-break-before")
-		;
 	}
 	boolean hasWidth() {
 		return diff.containsKey("width");
@@ -198,18 +207,6 @@ class MyLayoutStyle {
 			return null;
 		}
 		return evalColor(colorStr);
-	}
-	public MyLayoutMargin getPageMargin(MyLayoutMargin beforeMargin) {
-		String str;
-		str = diff.get("margin-left");
-		double left = str==null ? beforeMargin.left : evalUnit(str);
-		str = diff.get("margin-top");
-		double top = str==null ? beforeMargin.top : evalUnit(str);
-		str = diff.get("margin-right");
-		double right = str==null ? beforeMargin.right : evalUnit(str);
-		str = diff.get("margin-bottom");
-		double bottom = str==null ? beforeMargin.bottom : evalUnit(str);
-		return new MyLayoutMargin(left, top, right, bottom);
 	}
 	public MyLayoutMargin getMargin() {
 		double left = evalUnit(diff.get("margin-left"));
@@ -238,5 +235,29 @@ class MyLayoutStyle {
 		String right = diff.get("border-right-style");
 		String bottom = diff.get("border-bottom-style");
 		return new MyEdgeValues<String>(left, top, right, bottom);
+	}
+	public double getSizeWidth() {
+		String str = diff.get("size-width");
+		return str!=null ? evalUnit(str) : 595.28;
+	}
+	public double getSizeHeight() {
+		String str = diff.get("size-height");
+		return str!=null ? evalUnit(str) : 841.89;
+	}
+	public double getResolution() {
+		String str = diff.get("resolution");
+		return evalDpi(str);
+	}
+	public boolean hasPage() {
+		return diff.containsKey("page");
+	}
+	boolean hasPageBreakBefore() {
+		return diff.containsKey("page-break-before");
+	}
+	boolean hasPageBreakAfter() {
+		return diff.containsKey("page-break-after");
+	}
+	public String getPage() {
+		return diff.get("page");
 	}
 }

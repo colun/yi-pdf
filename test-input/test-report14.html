@@ -31,23 +31,29 @@
 .horizontal {
 	writing-mode: horizontal-tb;
 }
-.vertical_page {
-	page-width: 841.89pt;
-	page-height: 595.28pt;
+@page vertical {
+	size-width: 841.89pt;
+	size-height: 595.28pt;
 	margin-left: 30mm;
 	margin-top: 25mm;
 	margin-right: 30mm;
 	margin-bottom: 25mm;
-	writing-mode: vertical-rl;
 }
-.horizontal_page {
-	page-width: 595.28pt;
-	page-height: 841.89pt;
+.vertical_page {
+	writing-mode: vertical-rl;
+	page: vertical;
+}
+@page horizontal {
+	size-width: 595.28pt;
+	size-height: 841.89pt;
 	margin-left: 40mm;
 	margin-top: 30mm;
 	margin-right: 40mm;
 	margin-bottom: 30mm;
+}
+.horizontal_page {
 	writing-mode: horizontal-tb;
+	page: horizontal;
 }
 .mincho {
 	font-family: mincho;
