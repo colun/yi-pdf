@@ -141,27 +141,31 @@ class MyLayoutNest {
 				double sy = y + start;
 				double ey = y + end;
 				page.fillRect(sx, sy, ex-sx, ey-sy);
-				page.setLineCap(0);
+				page.setLineCap(2);
 				page.setDrawColor(new YiPdfColor(0, 0, 0));
 				if(0<borderWidth.left) {
 					page.setLineWidth(borderWidth.left);
-					double xx = sx + borderWidth.left / 2;
-					page.drawLine(xx, sy, xx, ey);
+					double bw2 = borderWidth.left / 2;
+					double xx = sx + bw2;
+					page.drawLine(xx, sy + bw2, xx, ey - bw2);
 				}
 				if(0<borderWidth.right) {
 					page.setLineWidth(borderWidth.right);
-					double xx = ex - borderWidth.right / 2;
-					page.drawLine(xx, sy, xx, ey);
+					double bw2 = borderWidth.right / 2;
+					double xx = ex - bw2;
+					page.drawLine(xx, sy + bw2, xx, ey - bw2);
 				}
 				if(0<borderWidth.top && !sFlag) {
 					page.setLineWidth(borderWidth.top);
-					double yy = sy + borderWidth.top / 2;
-					page.drawLine(sx, yy, ex, yy);
+					double bw2 = borderWidth.top / 2;
+					double yy = sy + bw2;
+					page.drawLine(sx + bw2, yy, ex - bw2, yy);
 				}
 				if(0<borderWidth.bottom && !eFlag) {
 					page.setLineWidth(borderWidth.bottom);
-					double yy = ey - borderWidth.bottom / 2;
-					page.drawLine(sx, yy, ex, yy);
+					double bw2 = borderWidth.bottom / 2;
+					double yy = ey - bw2;
+					page.drawLine(sx + bw2, yy, ex - bw2, yy);
 				}
 			}
 			else {
@@ -171,27 +175,31 @@ class MyLayoutNest {
 				double sy = y + earth;
 				double ey = y + travel - sky;
 				page.fillRect(sx, sy, ex-sx, ey-sy);
-				page.setLineCap(0);
+				page.setLineCap(2);
 				page.setDrawColor(new YiPdfColor(0, 0, 0));
 				if(0<borderWidth.left && !eFlag) {
 					page.setLineWidth(borderWidth.left);
-					double xx = sx + borderWidth.left / 2;
-					page.drawLine(xx, sy, xx, ey);
+					double bw2 = borderWidth.left / 2;
+					double xx = sx + bw2;
+					page.drawLine(xx, sy + bw2, xx, ey - bw2);
 				}
 				if(0<borderWidth.right && !sFlag) {
 					page.setLineWidth(borderWidth.right);
-					double xx = ex - borderWidth.right / 2;
-					page.drawLine(xx, sy, xx, ey);
+					double bw2 = borderWidth.right / 2;
+					double xx = ex - bw2;
+					page.drawLine(xx, sy + bw2, xx, ey - bw2);
 				}
 				if(0<borderWidth.top) {
 					page.setLineWidth(borderWidth.top);
-					double yy = sy + borderWidth.top / 2;
-					page.drawLine(sx, yy, ex, yy);
+					double bw2 = borderWidth.top / 2;
+					double yy = sy + bw2;
+					page.drawLine(sx + bw2, yy, ex - bw2, yy);
 				}
 				if(0<borderWidth.bottom) {
 					page.setLineWidth(borderWidth.bottom);
-					double yy = ey - borderWidth.bottom / 2;
-					page.drawLine(sx, yy, ex, yy);
+					double bw2 = borderWidth.bottom / 2;
+					double yy = ey - bw2;
+					page.drawLine(sx + bw2, yy, ex - bw2, yy);
 				}
 			}
 		}
