@@ -232,4 +232,11 @@ class MyLayoutStyle {
 		double bottom = evalUnit(diff.get("border-bottom-width"));
 		return new MyLayoutMargin(left, top, right, bottom);
 	}
+	public MyEdgeValues<String> getBorderStyle() {
+		String left = diff.get("border-left-style");
+		String top = diff.get("border-top-style");
+		String right = diff.get("border-right-style");
+		String bottom = diff.get("border-bottom-style");
+		return new MyEdgeValues<String>(left, top, right, bottom);
+	}
 }

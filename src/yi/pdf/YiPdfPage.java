@@ -5,6 +5,7 @@ package yi.pdf;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -251,11 +252,51 @@ public final class YiPdfPage {
 			graphicsStream.write(toBytesFromAscii(String.format("%d J\n", nowLineCap)));
 		}
 	}
+	double[] nowDashPattern;
+	double nowDashPhase;
+	double[] beforeDashPattern;
+	Double beforeDashPhase;
+	boolean dashUpdateFlag = false;
+	public void setDashPattern(double[] dashPattern, double dashPhase) {
+		nowDashPattern = dashPattern!=null ? dashPattern.clone() : null;
+		nowDashPhase = dashPhase;
+		dashUpdateFlag = true;
+	}
+	double[] getDashPattern() {
+		return nowDashPattern!=null ? nowDashPattern.clone() : null;
+	}
+	double getDashPhase() {
+		return nowDashPhase;
+	}
+	private void updateDashPattern() throws IOException {
+		if(nowDashPattern!=null) {
+			if(dashUpdateFlag) {
+				dashUpdateFlag = false;
+				beforeDashPattern = nowDashPattern.clone();
+				beforeDashPhase = nowDashPhase;
+				StringBuilder builder = new StringBuilder();
+				builder.append('[');
+				for(double d : nowDashPattern) {
+					builder.append(' ');
+					builder.append(d);
+				}
+				builder.append(" ] ");
+				builder.append(nowDashPhase);
+				builder.append(" d\n");
+				graphicsStream.write(toBytesFromAscii(builder.toString()));
+			}
+		}
+		else if(beforeDashPattern!=null) {
+			beforeDashPattern = nowDashPattern;
+			graphicsStream.write(toBytesFromAscii("[] 0 d\n"));
+		}
+	}
 
 	public void drawLine(double x1, double y1, double x2, double y2) throws IOException {
 		updateDrawColor();
 		updateLineWidth();
 		updateLineCap();
+		updateDashPattern();
 		graphicsStream.write(toBytesFromAscii(String.format("%f %f m %f %f l S\n", x1, height - y1, x2, height - y2)));
 	}
 	public void fillRect(double x, double y, double width, double height) throws IOException {

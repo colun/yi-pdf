@@ -58,10 +58,18 @@
 	font-family: gothic;
 }
 .padding4pt {
-	padding-left: 3pt;
-	padding-top: 3pt;
-	padding-right: 3pt;
-	padding-bottom: 3pt;
+	padding-left: 4pt;
+	padding-top: 4pt;
+	padding-right: 4pt;
+	padding-bottom: 4pt;
+}
+.margin10pt {
+	margin-left: 10pt;
+	margin-top: 10pt;
+	margin-right: 10pt;
+	margin-bottom: 10pt;
+}
+.solidBorder {
 	border-left-width: 1pt;
 	border-top-width: 1pt;
 	border-right-width: 1pt;
@@ -71,11 +79,25 @@
 	border-right-style: solid;
 	border-bottom-style: solid;
 }
-.margin10pt {
-	margin-left: 10pt;
-	margin-top: 10pt;
-	margin-right: 10pt;
-	margin-bottom: 10pt;
+.dashBorder {
+	border-left-width: 1pt;
+	border-top-width: 1pt;
+	border-right-width: 1pt;
+	border-bottom-width: 1pt;
+	border-left-style: dashed;
+	border-top-style: dashed;
+	border-right-style: dashed;
+	border-bottom-style: dashed;
+}
+.dotBorder {
+	border-left-width: 1pt;
+	border-top-width: 1pt;
+	border-right-width: 1pt;
+	border-bottom-width: 1pt;
+	border-left-style: doted;
+	border-top-style: doted;
+	border-right-style: doted;
+	border-bottom-style: doted;
 }
 </style>
 </head>
@@ -88,10 +110,10 @@ left
 </div>
 </div>
 <div style="float: right; margin-right: 30pt; width: 80pt; background-color: #DDDDFF">right</div>
-<div class="margin10pt" style="background-color: #DDFFDD">
+<div class="margin10pt solidBorder" style="background-color: #DDFFDD">
 Hello
-<div class="margin10pt padding4pt" style="background-color: #BBFFDD">
-<div class="margin10pt padding4pt" style="background-color: #BBFFBB">
+<div class="margin10pt padding4pt dashBorder" style="background-color: #BBFFDD">
+<div class="margin10pt padding4pt dotBorder" style="background-color: #BBFFBB">
 Hello<br />
 Hello<br />
 Hello<br />

@@ -14,12 +14,14 @@ class MyLayoutNest {
 	final MyLayoutMargin margin;
 	final MyLayoutMargin borderWidth;
 	final MyLayoutMargin padding;
+	final MyEdgeValues<String> borderStyle;
 	MyLayoutNest() {
 		parent = null;
 		backgroundColor = null;
 		margin = new MyLayoutMargin(0, 0, 0, 0);
 		borderWidth = new MyLayoutMargin(0, 0, 0, 0);
 		padding = new MyLayoutMargin(0, 0, 0, 0);
+		borderStyle = new MyEdgeValues<String>(null, null, null, null);
 	}
 	MyLayoutNest(MyLayoutStyle nowStyle) {
 		this(null, nowStyle);
@@ -30,6 +32,7 @@ class MyLayoutNest {
 		margin = nowStyle.getMargin();
 		borderWidth = nowStyle.getBorderWidth();
 		padding = nowStyle.getPadding();
+		borderStyle = nowStyle.getBorderStyle();
 	}
 	public double getPreMargin(boolean verticalFlag) {
 		if(!verticalFlag) {
@@ -109,6 +112,29 @@ class MyLayoutNest {
 	double getSkyTravelMargin(boolean verticalFlag) {
 		return getSkyTravelMargin(verticalFlag, 0);
 	}
+	private void drawMyLine(YiPdfPage page, double sx, double sy, double ex, double ey, double width, double len, String style) throws IOException {
+		boolean flag = false;
+		if("solid".equals(style)) {
+			page.setDashPattern(null, 0);
+			flag = true;
+		}
+		else if("dashed".equals(style)) {
+			double cycle = (len / (width * 6)) + 0.5;
+			double phase = (Math.ceil(cycle) - cycle) * 3;
+			page.setDashPattern(new double[] { 3 }, phase);
+			flag = true;
+		}
+		else if("doted".equals(style)) {
+			double cycle = (len / (width * 2)) + 0.5;
+			double phase = (Math.ceil(cycle) - cycle);
+			page.setDashPattern(new double[] { 1 }, phase);
+			flag = true;
+		}
+		if(flag) {
+			page.setLineWidth(width);
+			page.drawLine(sx, sy, ex, ey);
+		}
+	}
 	void draw(MyLayoutPageContext pageContext, double x, double y, double start, double end, double travel, boolean verticalWritingMode, boolean sFlag, boolean eFlag) throws IOException {
 		if(backgroundColor!=null) {
 			double earth;
@@ -135,71 +161,101 @@ class MyLayoutNest {
 			}
 			YiPdfPage page = pageContext.getPdfPage();
 			if(!verticalWritingMode) {
-				page.setFillColor(backgroundColor);
 				double sx = x + earth;
 				double ex = x + travel - sky;
 				double sy = y + start;
 				double ey = y + end;
+				double leftBorder = 0<borderWidth.left ? borderWidth.left : 0;
+				double rightBorder = 0<borderWidth.right ? borderWidth.right : 0;
+				double topBorder = (0<borderWidth.top && !sFlag) ? borderWidth.top : 0;
+				double bottomBorder = (0<borderWidth.bottom && !eFlag) ? borderWidth.bottom : 0;
+				page.setFillColor(backgroundColor);
 				page.fillRect(sx, sy, ex-sx, ey-sy);
-				page.setLineCap(2);
-				page.setDrawColor(new YiPdfColor(0, 0, 0));
-				if(0<borderWidth.left) {
-					page.setLineWidth(borderWidth.left);
-					double bw2 = borderWidth.left / 2;
+				page.setLineCap(0);
+
+				YiPdfColor borderColor = new YiPdfColor(0, 0, 0);
+				page.setDrawColor(borderColor);
+				page.setFillColor(borderColor);
+				if(topBorder!=0 && leftBorder!=0) {
+					page.fillRect(sx, sy, leftBorder, topBorder);
+				}
+				if(topBorder!=0 && rightBorder!=0) {
+					page.fillRect(ex-rightBorder, sy, rightBorder, topBorder);
+				}
+				if(bottomBorder!=0 && leftBorder!=0) {
+					page.fillRect(sx, ey-bottomBorder, leftBorder, bottomBorder);
+				}
+				if(bottomBorder!=0 && rightBorder!=0) {
+					page.fillRect(ex-rightBorder, ey-bottomBorder, rightBorder, bottomBorder);
+				}
+				if(leftBorder!=0) {
+					double bw2 = leftBorder / 2;
 					double xx = sx + bw2;
-					page.drawLine(xx, sy + bw2, xx, ey - bw2);
+					drawMyLine(page, xx, sy + topBorder, xx, ey - bottomBorder, leftBorder, end - start - topBorder - bottomBorder, borderStyle.left);
 				}
-				if(0<borderWidth.right) {
-					page.setLineWidth(borderWidth.right);
-					double bw2 = borderWidth.right / 2;
+				if(rightBorder!=0) {
+					double bw2 = rightBorder / 2;
 					double xx = ex - bw2;
-					page.drawLine(xx, sy + bw2, xx, ey - bw2);
+					drawMyLine(page, xx, sy + topBorder, xx, ey - bottomBorder, rightBorder, end - start - topBorder - bottomBorder, borderStyle.right);
 				}
-				if(0<borderWidth.top && !sFlag) {
-					page.setLineWidth(borderWidth.top);
-					double bw2 = borderWidth.top / 2;
+				if(topBorder!=0) {
+					double bw2 = topBorder / 2;
 					double yy = sy + bw2;
-					page.drawLine(sx + bw2, yy, ex - bw2, yy);
+					drawMyLine(page, sx + leftBorder, yy, ex - rightBorder, yy, topBorder, travel - sky - earth - leftBorder - rightBorder, borderStyle.top);
 				}
-				if(0<borderWidth.bottom && !eFlag) {
-					page.setLineWidth(borderWidth.bottom);
-					double bw2 = borderWidth.bottom / 2;
+				if(bottomBorder!=0) {
+					double bw2 = bottomBorder / 2;
 					double yy = ey - bw2;
-					page.drawLine(sx + bw2, yy, ex - bw2, yy);
+					drawMyLine(page, sx + leftBorder, yy, ex - rightBorder, yy, bottomBorder, travel - sky - earth - leftBorder - rightBorder, borderStyle.bottom);
 				}
 			}
 			else {
-				page.setFillColor(backgroundColor);
 				double sx = x - end;
 				double ex = x - start;
 				double sy = y + earth;
 				double ey = y + travel - sky;
+				double leftBorder = (0<borderWidth.left && !eFlag) ? borderWidth.left : 0;
+				double rightBorder = (0<borderWidth.right && !sFlag) ? borderWidth.right : 0;
+				double topBorder = 0<borderWidth.top ? borderWidth.top : 0;
+				double bottomBorder = 0<borderWidth.bottom ? borderWidth.bottom : 0;
+				page.setFillColor(backgroundColor);
 				page.fillRect(sx, sy, ex-sx, ey-sy);
-				page.setLineCap(2);
-				page.setDrawColor(new YiPdfColor(0, 0, 0));
-				if(0<borderWidth.left && !eFlag) {
-					page.setLineWidth(borderWidth.left);
-					double bw2 = borderWidth.left / 2;
+				page.setLineCap(0);
+
+				YiPdfColor borderColor = new YiPdfColor(0, 0, 0);
+				page.setDrawColor(borderColor);
+				page.setFillColor(borderColor);
+				if(topBorder!=0 && leftBorder!=0) {
+					page.fillRect(sx, sy, leftBorder, topBorder);
+				}
+				if(topBorder!=0 && rightBorder!=0) {
+					page.fillRect(ex-rightBorder, sy, rightBorder, topBorder);
+				}
+				if(bottomBorder!=0 && leftBorder!=0) {
+					page.fillRect(sx, ey-bottomBorder, leftBorder, bottomBorder);
+				}
+				if(bottomBorder!=0 && rightBorder!=0) {
+					page.fillRect(ex-rightBorder, ey-bottomBorder, rightBorder, bottomBorder);
+				}
+				if(leftBorder!=0) {
+					double bw2 = leftBorder / 2;
 					double xx = sx + bw2;
-					page.drawLine(xx, sy + bw2, xx, ey - bw2);
+					drawMyLine(page, xx, sy + topBorder, xx, ey - bottomBorder, leftBorder, end - start - topBorder - bottomBorder, borderStyle.left);
 				}
-				if(0<borderWidth.right && !sFlag) {
-					page.setLineWidth(borderWidth.right);
-					double bw2 = borderWidth.right / 2;
+				if(rightBorder!=0) {
+					double bw2 = rightBorder / 2;
 					double xx = ex - bw2;
-					page.drawLine(xx, sy + bw2, xx, ey - bw2);
+					drawMyLine(page, xx, sy + topBorder, xx, ey - bottomBorder, rightBorder, end - start - topBorder - bottomBorder, borderStyle.right);
 				}
-				if(0<borderWidth.top) {
-					page.setLineWidth(borderWidth.top);
-					double bw2 = borderWidth.top / 2;
+				if(topBorder!=0) {
+					double bw2 = topBorder / 2;
 					double yy = sy + bw2;
-					page.drawLine(sx + bw2, yy, ex - bw2, yy);
+					drawMyLine(page, sx + leftBorder, yy, ex - rightBorder, yy, topBorder, travel - sky - earth - leftBorder - rightBorder, borderStyle.top);
 				}
-				if(0<borderWidth.bottom) {
-					page.setLineWidth(borderWidth.bottom);
-					double bw2 = borderWidth.bottom / 2;
+				if(bottomBorder!=0) {
+					double bw2 = bottomBorder / 2;
 					double yy = ey - bw2;
-					page.drawLine(sx + bw2, yy, ex - bw2, yy);
+					drawMyLine(page, sx + leftBorder, yy, ex - rightBorder, yy, bottomBorder, travel - sky - earth - leftBorder - rightBorder, borderStyle.bottom);
 				}
 			}
 		}
