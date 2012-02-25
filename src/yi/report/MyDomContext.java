@@ -143,8 +143,25 @@ class MyDomContext {
 			return;
 		}
 		YiPdfTag tag = null;
-		if("h1".equals(node.getTagName())) {
-			tag = layoutContext.getNowTag().makeChild("H1");
+		if(node.getTagName().startsWith("h")) {
+			if("h1".equals(node.getTagName())) {
+				tag = layoutContext.getNowTag().makeChild("H1");
+			}
+			else if("h2".equals(node.getTagName())) {
+				tag = layoutContext.getNowTag().makeChild("H2");
+			}
+			else if("h3".equals(node.getTagName())) {
+				tag = layoutContext.getNowTag().makeChild("H3");
+			}
+			else if("h4".equals(node.getTagName())) {
+				tag = layoutContext.getNowTag().makeChild("H4");
+			}
+			else if("h5".equals(node.getTagName())) {
+				tag = layoutContext.getNowTag().makeChild("H5");
+			}
+			else if("h6".equals(node.getTagName())) {
+				tag = layoutContext.getNowTag().makeChild("H6");
+			}
 		}
 		if(tag!=null) {
 			layoutContext.pushPdfTag(tag);
