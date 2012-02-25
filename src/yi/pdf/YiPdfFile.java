@@ -282,7 +282,7 @@ public final class YiPdfFile {
 		int cidId = openObj();
 		writeAscii("<<\n");
 		writeAscii("/Type /Font\n");
-		writeAscii("/Subtype /CIDFontType2\n");
+		writeAscii("/Subtype /CIDFontType0\n");
 		writeAscii(String.format("/BaseFont /%s\n", familyName));
 		writeAscii("/CIDSystemInfo\n");
 		writeAscii("<<\n");
