@@ -76,7 +76,9 @@ class MyLayoutLine implements MyLayoutDrawable {
 					lowerPerpend = upperPerpend - lineHeight;
 				}
 			}
-			lineTag.makeChild("Span");
+			if(lineTag!=null) {
+				lineTag.makeChild("Span");
+			}
 		}
 	}
 	public boolean isVerticalWritingMode() {

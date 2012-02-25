@@ -145,26 +145,23 @@ class MyDomContext {
 		YiPdfTag tag = null;
 		if(node.getTagName().startsWith("h")) {
 			if("h1".equals(node.getTagName())) {
-				tag = layoutContext.getNowTag().makeChild("H1");
+				tag = layoutContext.pushPdfTag("H1");
 			}
 			else if("h2".equals(node.getTagName())) {
-				tag = layoutContext.getNowTag().makeChild("H2");
+				tag = layoutContext.pushPdfTag("H2");
 			}
 			else if("h3".equals(node.getTagName())) {
-				tag = layoutContext.getNowTag().makeChild("H3");
+				tag = layoutContext.pushPdfTag("H3");
 			}
 			else if("h4".equals(node.getTagName())) {
-				tag = layoutContext.getNowTag().makeChild("H4");
+				tag = layoutContext.pushPdfTag("H4");
 			}
 			else if("h5".equals(node.getTagName())) {
-				tag = layoutContext.getNowTag().makeChild("H5");
+				tag = layoutContext.pushPdfTag("H5");
 			}
 			else if("h6".equals(node.getTagName())) {
-				tag = layoutContext.getNowTag().makeChild("H6");
+				tag = layoutContext.pushPdfTag("H6");
 			}
-		}
-		if(tag!=null) {
-			layoutContext.pushPdfTag(tag);
 		}
 		layoutContext.pushStyle(diff);
 		switch(tagType) {
@@ -207,6 +204,9 @@ class MyDomContext {
 					layoutContext.getPdfFile().setCreationDate(date);
 				} catch (ParseException e) {
 				}
+			}
+			else if("TaggedPDF".equalsIgnoreCase(name)) {
+				layoutContext.setTaggedMode(!"none".equalsIgnoreCase(content));
 			}
 			else if(name!=null){
 				layoutContext.getPdfFile().setInfo(name, content);

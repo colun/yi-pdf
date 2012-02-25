@@ -26,7 +26,7 @@ public final class YiPdfFile {
 	Map<Integer, Integer> pageId2ObjIdMap = new TreeMap<Integer, Integer>();
 	Map<YiPdfPage, Integer> reservedPageMap = new LinkedHashMap<YiPdfPage, Integer>();
 	Set<YiPdfFont> fontObjSet;
-	YiPdfTag documentTag;
+	YiPdfTag documentTag = null;
 	//Map<String, Integer> imageObjIdMap;
 	Map<String, String> infoMap = new HashMap<String, String>();
 	public YiPdfFile(OutputStream stream) throws IOException {
@@ -39,7 +39,6 @@ public final class YiPdfFile {
 			offsets.add(0);
 		}
 		fontObjSet = new LinkedHashSet<YiPdfFont>();
-		documentTag = new YiPdfTag(this, null, "Document");
 
 		setInfo("Producer", "yi-pdf");
 		setCreationDate(new Date());
@@ -116,7 +115,9 @@ public final class YiPdfFile {
 		writeAscii("/Parent 4 0 R\n");
 		writeAscii(String.format("/MediaBox [ 0 0 %f %f ]\n", width, height));
 		writeAscii("/Resources 2 0 R\n");
-		writeAscii("/StructParents 0\n");
+		if(documentTag!=null) {
+			writeAscii("/StructParents 0\n");
+		}
 		writeAscii(String.format("/Contents %d 0 R\n", contentsId));
 		writeAscii(">>\n");
 		closeObj();
@@ -192,6 +193,9 @@ public final class YiPdfFile {
 		return myId;
 	}
 	private int putStructTree() throws IOException {
+		if(documentTag==null) {
+			return 0;
+		}
 		int rootId = reserveObjId();
 		int docId = putTag(documentTag, rootId, 0);
 		openObj(rootId);
@@ -371,8 +375,10 @@ public final class YiPdfFile {
 		writeAscii("<<\n");
 		writeAscii("/Type /Catalog\n");
 		writeAscii("/Pages 4 0 R\n");
-		writeAscii(String.format("/StructTreeRoot %d 0 R\n", stId));
-		writeAscii("/MarkInfo << /Marked true >>\n");
+		if(stId!=0) {
+			writeAscii(String.format("/StructTreeRoot %d 0 R\n", stId));
+			writeAscii("/MarkInfo << /Marked true >>\n");
+		}
 		writeAscii(">>\n");
 		closeObj();
 	}
@@ -395,6 +401,9 @@ public final class YiPdfFile {
 		writeAscii("%%EOF\n");
 	}
 	public YiPdfTag getDocument() {
+		if(documentTag==null) {
+			documentTag = new YiPdfTag(this, null, "Document");
+		}
 		return documentTag;
 	}
 	public YiPdfPage newPage(double width, double height) {

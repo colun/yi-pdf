@@ -77,7 +77,9 @@ class MyLayoutInlineText extends MyLayoutInline {
 		y += posY;
 		boolean verticalWritingMode = font.isVertical();
 		YiPdfPage page = pageContext.getPdfPage();
-		page.beginTextTag(lineTag.makeChild("Span"));
+		if(lineTag!=null) {
+			page.beginTextTag(lineTag.makeChild("Span"));
+		}
 		page.setFont(font);
 		page.setFontSize(fontSize);
 		page.setTextColor(color);
@@ -88,7 +90,9 @@ class MyLayoutInlineText extends MyLayoutInline {
 		if(transparentFlag) {
 			page.setTextRenderingMode(0);
 		}
-		page.endTextTag();
+		if(lineTag!=null) {
+			page.endTextTag();
+		}
 		if(beforeRp!=null) {
 			if(!verticalWritingMode) {
 				beforeRp.setPos(-beforeRp.getTravel(), - fontUpperPerpend + beforeRp.getLowerPerpend());

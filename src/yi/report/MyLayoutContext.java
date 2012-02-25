@@ -22,13 +22,20 @@ public class MyLayoutContext {
 	MyLayoutLine nowLine;
 	YiPdfTag nowTag;
 	YiPdfTag nowLineTag;
+	boolean taggedMode = true;
+
+	public void setTaggedMode(boolean taggedMode) {
+		this.taggedMode = taggedMode;
+	}
+	public boolean getTaggedMode() {
+		return taggedMode;
+	}
 
 	YiPdfFile getPdfFile() {
 		return pdfFile;
 	}
 	MyLayoutContext(YiPdfFile pdfFile) {
 		this.pdfFile = pdfFile;
-		nowTag = pdfFile.getDocument();
 	}
 	MyLayoutPageStyle nowPageStyle;
 	Stack<MyLayoutPageStyle> pageStyleStack = new Stack<MyLayoutPageStyle>();
@@ -42,21 +49,32 @@ public class MyLayoutContext {
 		nowPageStyle = pageStyleStack.pop();
 	}
 	Stack<YiPdfTag> tagStack = new Stack<YiPdfTag>();
-	void pushPdfTag(YiPdfTag tag) {
-		tagStack.push(nowTag);
-		nowTag = tag;
+	YiPdfTag pushPdfTag(String tagName) {
 		clearLineTag();
+		YiPdfTag oldTag = getNowTag();
+		if(oldTag==null) {
+			return null;
+		}
+		tagStack.push(oldTag);
+		nowTag = oldTag.makeChild(tagName);
+		return nowTag;
 	}
 	void popPdfTag() {
-		nowTag = tagStack.pop();
 		clearLineTag();
+		nowTag = tagStack.pop();
 	}
 	YiPdfTag getNowTag() {
+		if(nowTag==null && taggedMode) {
+			nowTag = pdfFile.getDocument();
+		}
 		return nowTag;
 	}
 	YiPdfTag getLineTag() {
 		if(nowLineTag==null) {
-			nowLineTag = nowTag.makeChild("P");
+			YiPdfTag tag = getNowTag();
+			if(tag!=null) {
+				nowLineTag = tag.makeChild("P");
+			}
 		}
 		return nowLineTag;
 	}
