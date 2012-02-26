@@ -60,20 +60,15 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 			idRangeOffset[i] = file.readUnsignedShort();
 		}
 		char[] cmap = new char[65536];
-		int sum = 0;
-		int maxX = 0;
-		int cnt = 0;
 		long basePos = file.getFilePointer();
 		for(int i=0; i<segCount; ++i) {
 			if(idRangeOffset[i]!=0) {
 				assert(idDelta[i]==0);
 				assert((idRangeOffset[i]&1)==0);
+				assert(16 + 6 * segCount + idRangeOffset[i] + i + i + (endCount[i] - startCount[i])*2<subLength-1);
 				file.seek(basePos + idRangeOffset[i] + i + i - segCount2);
 				for(int c=startCount[i], e=endCount[i]; c<=e; ++c) {
 					cmap[c] = (char)file.readShort();
-					//if(++cnt<=10) {
-					//	System.out.printf("%04X\n", ((int)cmap[c])&0xFFFF);
-					//}
 				}
 			}
 			else {
@@ -84,7 +79,6 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 			}
 		}
 		file.seek(basePos);
-		//echoHex(file, 128);
 		return cmap;
 	}
 	public YiPdfTrueTypeFont(String path) throws IOException {
