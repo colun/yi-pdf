@@ -26,7 +26,45 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 		}
 		assert(unicodeOffset!=-1) : "UnicodeのCmapが見つからなかった";
 		file.seek(offset + unicodeOffset);
-		echoHex(file, (int)Math.min(length, 64));
+		int subFormat = file.readUnsignedShort();
+		assert(subFormat==4);
+		int subLength = file.readUnsignedShort();
+		int language = file.readUnsignedShort();
+		assert(language==0);
+		int segCount2 = file.readUnsignedShort();
+		assert((segCount2&1)==0);
+		int segCount = segCount2 / 2;
+		int searchRange = file.readUnsignedShort();
+		assert((searchRange & (searchRange-1))==0);
+		assert(searchRange<=segCount2 && segCount<searchRange);
+		int entrySelector = file.readUnsignedShort();
+		assert((1 << (entrySelector+1))==searchRange);
+		int rangeShift = file.readUnsignedShort();
+		assert(rangeShift==segCount2-searchRange);
+		int[] endCount = new int[segCount];
+		for(int i=0; i<segCount; ++i) {
+			endCount[i] = file.readUnsignedShort();
+		}
+		int reservedPad = file.readUnsignedShort();
+		assert(reservedPad==0);
+		int[] startCount = new int[segCount];
+		for(int i=0; i<segCount; ++i) {
+			startCount[i] = file.readUnsignedShort();
+		}
+		int[] idDelta = new int[segCount];
+		for(int i=0; i<segCount; ++i) {
+			idDelta[i] = file.readShort();
+		}
+		int[] idRangeOffset = new int[segCount];
+		for(int i=0; i<segCount; ++i) {
+			idRangeOffset[i] = file.readUnsignedShort();
+		}
+		int sum = -1;
+		for(int i=0; i<segCount; ++i) {
+			sum += endCount[i] - startCount[i] + 1;
+		}
+		System.out.printf("%d, %d, %d, %d, %d, %d\n", subLength, language, segCount, searchRange, sum, (subLength - 16 - segCount * 8) / 2);
+		echoHex(file, 128);
 	}
 	public YiPdfTrueTypeFont(String path) throws IOException {
 		RandomAccessFile file = new RandomAccessFile(path, "r");
