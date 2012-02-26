@@ -1,28 +1,48 @@
 package yi.pdf.font;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfFont;
 
 public class YiPdfTrueTypeFont extends YiPdfFont {
 	public YiPdfTrueTypeFont(String path) throws IOException {
-		FileInputStream stream = new FileInputStream(path);
-		echoHex(stream, 64);
-		stream.close();
+		RandomAccessFile file = new RandomAccessFile(path, "r");
+		Map<String, long[]> dic = new LinkedHashMap<String, long[]>();
+		file.skipBytes(4);
+		int numTables = file.readUnsignedShort();
+		System.out.printf("numTables = %d\n", numTables);
+		file.skipBytes(6);
+		for(int i=0; i<numTables; ++i) {
+			byte[] buf = new byte[4];
+			file.readFully(buf);
+			String tag = new String(buf);
+			long checkSum = file.readInt() & 0xFFFFFFFFL;
+			long offset = file.readInt() & 0xFFFFFFFFL;
+			long length = file.readInt() & 0xFFFFFFFFL;
+			dic.put(tag, new long[] {checkSum, offset, length});
+		}
+		for(String tag : dic.keySet()) {
+			long[] values = dic.get(tag);
+			System.out.printf("[Tag: %s, chkSum: %d, offset: %d, length: %d]\n", tag, values[0], values[1], values[2]);
+			file.seek(values[1]);
+			echoHex(file, (int)Math.min(values[2], 64));
+		}
+		file.close();
 	}
-	private void echoHex(FileInputStream stream, int n) throws IOException {
+	private void echoHex(RandomAccessFile file, int n) throws IOException {
 		String line = "";
 		for(int i=0; i<n; ++i) {
 			if(i!=0 && (i&15)==0) {
 				System.out.println(line);
 				line = "";
 			}
-			int v = stream.read();
+			int v = file.readByte() & 0x00FF;
 			System.out.printf("%02X ", v);
 			if(0x20<=v && v<=0x7E) {
 				line += (char)v;
