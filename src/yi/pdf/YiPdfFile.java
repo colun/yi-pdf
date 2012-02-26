@@ -64,20 +64,20 @@ public final class YiPdfFile {
 		}
 		return data;
 	}
-	private void write(byte[] data) throws IOException {
+	protected void write(byte[] data) throws IOException {
 		stream.write(data);
 		streamPos += data.length;
 	}
-	private void writeAscii(String str) throws IOException {
+	protected void writeAscii(String str) throws IOException {
 		write(toBytesFromAscii(str));
 	}
-	private int openObj() throws IOException {
+	protected int openObj() throws IOException {
 		offsets.add(streamPos);
 		++objCount;
 		writeAscii(String.format("%d 0 obj\n", objCount));
 		return objCount;
 	}
-	protected int reserveObjId() throws IOException {
+	protected int reserveObjId() {
 		offsets.add(0);
 		return ++objCount;
 	}
@@ -85,7 +85,7 @@ public final class YiPdfFile {
 		offsets.set(i-1, streamPos);
 		writeAscii(String.format("%d 0 obj\n", i));
 	}
-	private void closeObj() throws IOException {
+	protected void closeObj() throws IOException {
 		writeAscii("endobj\n\n");
 	}
 	protected void writePage(YiPdfPage page) throws IOException {
@@ -257,58 +257,7 @@ public final class YiPdfFile {
 		closeObj();
 	}
 	private int putFont(YiPdfFont font) throws IOException {
-		String familyName = font.getFontName();
-		String encoding = font.getEncoding();
-		int descriptorId = openObj();
-		writeAscii("<<\n");
-		writeAscii("/Type /FontDescriptor\n");
-		writeAscii(String.format("/FontName /%s\n", familyName));
-		writeAscii("/Flags 6\n");
-		writeAscii(String.format("/FontBBox [ 0 %d 1000 %d ]\n", font.getDescent(), font.getAscent()));
-		writeAscii("/ItalicAngle 0\n");
-		writeAscii(String.format("/Ascent %d\n", font.getAscent()));//TODO
-		writeAscii(String.format("/Descent %d\n", font.getDescent()));//TODO
-		writeAscii("/Leading 0\n");//TODO
-		writeAscii(String.format("/CapHeight %d\n", font.getAscent()));//TODO
-		writeAscii(String.format("/XHeight %d\n", font.getXHeight()));//TODO
-		writeAscii("/StemV 92\n");//TODO
-		writeAscii("/StemH 92\n");//TODO
-		writeAscii("/AvgWidth 507\n");//TODO
-		writeAscii("/MaxWidth 1000\n");//TODO
-		writeAscii("/MissingWidth 507\n");//TODO
-		writeAscii(String.format("/Style << /Panose <%s> >>\n", font.getPanose()));
-		writeAscii(">>\n");
-		closeObj();
-		int cidId = openObj();
-		writeAscii("<<\n");
-		writeAscii("/Type /Font\n");
-		writeAscii("/Subtype /CIDFontType0\n");
-		writeAscii(String.format("/BaseFont /%s\n", familyName));
-		writeAscii("/CIDSystemInfo\n");
-		writeAscii("<<\n");
-		writeAscii("/Registry(Adobe)\n");
-		writeAscii("/Ordering(Japan1)\n");
-		writeAscii("/Supplement 4\n");//TODO
-		writeAscii(">>\n");
-		writeAscii(String.format("/FontDescriptor %d 0 R\n", descriptorId));
-		writeAscii("/DW 1000\n");
-		writeAscii("/W\n");//TODO
-		writeAscii("[\n");
-		writeAscii("1 632 500\n");
-		writeAscii("]\n");
-		writeAscii(String.format("/DW2 [ %d %d ]\n", font.getAscent(), font.getDescent() - font.getAscent()));
-		writeAscii(">>\n");
-		closeObj();
-		int id = openObj();
-		writeAscii("<<\n");
-		writeAscii("/Type /Font\n");
-		writeAscii("/Subtype /Type0\n");
-		writeAscii(String.format("/BaseFont /%s-%s\n", familyName, encoding));
-		writeAscii(String.format("/DescendantFonts [ %d 0 R ]\n", cidId));
-		writeAscii(String.format("/Encoding /%s\n", encoding));
-		writeAscii(">>\n");
-		closeObj();
-		return id;
+		return font.putSelf(this);
 	}
 	private void putResources() throws IOException {
 		StringBuilder fontStringLine = null;
