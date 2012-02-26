@@ -11,7 +11,7 @@ import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfFont;
 
 public class YiPdfTrueTypeFont extends YiPdfFont {
-	private void readCmap(RandomAccessFile file, long checkSum, long offset, long length) throws IOException {
+	private char[] readCmap(RandomAccessFile file, long checkSum, long offset, long length) throws IOException {
 		int version = file.readUnsignedShort();
 		int numCmaps = file.readUnsignedShort();
 		long unicodeOffset = -1;
@@ -59,12 +59,33 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 		for(int i=0; i<segCount; ++i) {
 			idRangeOffset[i] = file.readUnsignedShort();
 		}
-		int sum = -1;
+		char[] cmap = new char[65536];
+		int sum = 0;
+		int maxX = 0;
+		int cnt = 0;
+		long basePos = file.getFilePointer();
 		for(int i=0; i<segCount; ++i) {
-			sum += endCount[i] - startCount[i] + 1;
+			if(idRangeOffset[i]!=0) {
+				assert(idDelta[i]==0);
+				assert((idRangeOffset[i]&1)==0);
+				file.seek(basePos + idRangeOffset[i] + i + i - segCount2);
+				for(int c=startCount[i], e=endCount[i]; c<=e; ++c) {
+					cmap[c] = (char)file.readShort();
+					//if(++cnt<=10) {
+					//	System.out.printf("%04X\n", ((int)cmap[c])&0xFFFF);
+					//}
+				}
+			}
+			else {
+				int d = idDelta[i];
+				for(int c=startCount[i], e=endCount[i]; c<=e; ++c) {
+					cmap[c] = (char)(c + d);
+				}
+			}
 		}
-		System.out.printf("%d, %d, %d, %d, %d, %d\n", subLength, language, segCount, searchRange, sum, (subLength - 16 - segCount * 8) / 2);
-		echoHex(file, 128);
+		file.seek(basePos);
+		//echoHex(file, 128);
+		return cmap;
 	}
 	public YiPdfTrueTypeFont(String path) throws IOException {
 		RandomAccessFile file = new RandomAccessFile(path, "r");
