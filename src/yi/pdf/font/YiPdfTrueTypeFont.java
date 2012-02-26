@@ -11,6 +11,23 @@ import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfFont;
 
 public class YiPdfTrueTypeFont extends YiPdfFont {
+	private void readCmap(RandomAccessFile file, long checkSum, long offset, long length) throws IOException {
+		int version = file.readUnsignedShort();
+		int numCmaps = file.readUnsignedShort();
+		long unicodeOffset = -1;
+		for(int i=0; i<numCmaps; ++i) {
+			int platformId = file.readUnsignedShort();
+			int encodingId = file.readUnsignedShort();
+			long subOffset = file.readInt() & 0xFFFFFFFFL;
+			if(platformId==0 && encodingId==3 || platformId==3 && encodingId==1) {
+				unicodeOffset = subOffset;
+				break;
+			}
+		}
+		assert(unicodeOffset!=-1) : "UnicodeのCmapが見つからなかった";
+		file.seek(offset + unicodeOffset);
+		echoHex(file, (int)Math.min(length, 64));
+	}
 	public YiPdfTrueTypeFont(String path) throws IOException {
 		RandomAccessFile file = new RandomAccessFile(path, "r");
 		Map<String, long[]> dic = new LinkedHashMap<String, long[]>();
@@ -31,7 +48,9 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 			long[] values = dic.get(tag);
 			System.out.printf("[Tag: %s, chkSum: %d, offset: %d, length: %d]\n", tag, values[0], values[1], values[2]);
 			file.seek(values[1]);
-			echoHex(file, (int)Math.min(values[2], 64));
+			if("cmap".equals(tag)) {
+				readCmap(file, values[0], values[1], values[2]);
+			}
 		}
 		file.close();
 	}
