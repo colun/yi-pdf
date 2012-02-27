@@ -81,6 +81,32 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 		file.seek(basePos);
 		return cmap;
 	}
+	protected void readHead(RandomAccessFile file, long checkSum, long offset, long length) throws IOException {
+		int version = file.readInt();
+		int fontRevision = file.readInt();
+		long checkSumAdj = file.readInt() & 0xFFFFFFFFL;
+		long magicNumber = file.readInt() & 0xFFFFFFFFL;
+		assert(magicNumber==0x5F0F3CF5);
+		int flags = file.readUnsignedShort();
+		int unitPerEm = file.readUnsignedShort();
+		assert(16<=unitPerEm && unitPerEm<=16384);
+		System.out.printf("flags: %d, unitPerEm: %d\n", flags, unitPerEm);
+		long created = file.readLong();
+		long modified = file.readLong();
+		int xMin = file.readShort();
+		int yMin = file.readShort();
+		int xMax = file.readShort();
+		int yMax = file.readShort();
+		int macStyle = file.readUnsignedShort();
+		int lowestRecPPEM = file.readUnsignedShort();
+		int fontDirectionHint = file.readShort();
+		int indexToLocFormat = file.readShort();
+		int glyphDataFormat = file.readShort();
+		echoHex(file, 128);
+	}
+	protected void readGryf(RandomAccessFile file, long checkSum, long offset, long length) throws IOException {
+		//echoHex(file, 128);
+	}
 	public YiPdfTrueTypeFont(String path) throws IOException {
 		RandomAccessFile file = new RandomAccessFile(path, "r");
 		Map<String, long[]> dic = new LinkedHashMap<String, long[]>();
@@ -99,11 +125,19 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 		}
 		for(String tag : dic.keySet()) {
 			long[] values = dic.get(tag);
-			System.out.printf("[Tag: %s, chkSum: %d, offset: %d, length: %d]\n", tag, values[0], values[1], values[2]);
+			//System.out.printf("[Tag: %s, chkSum: %d, offset: %d, length: %d]\n", tag, values[0], values[1], values[2]);
+		}
+		{
+			long[] values = dic.get("cmap");
+			assert(values!=null);
 			file.seek(values[1]);
-			if("cmap".equals(tag)) {
-				readCmap(file, values[0], values[1], values[2]);
-			}
+			readCmap(file, values[0], values[1], values[2]);
+		}
+		{
+			long[] values = dic.get("head");
+			assert(values!=null);
+			file.seek(values[1]);
+			readHead(file, values[0], values[1], values[2]);
 		}
 		file.close();
 	}
@@ -170,7 +204,7 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 		String dir = "font";
 		for(String filename : new File(dir).list(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return name.endsWith(".ttf");
+				return name.endsWith(".ttf") || name.endsWith(".otf");
 			}
 		})) {
 			String path = dir + "/" + filename;
