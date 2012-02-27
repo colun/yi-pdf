@@ -12,6 +12,7 @@ import yi.pdf.YiPdfFont;
 
 public class YiPdfTrueTypeFont extends YiPdfFont {
 	private char[] readCmap(RandomAccessFile file, long checkSum, long offset, long length) throws IOException {
+		@SuppressWarnings("unused")
 		int version = file.readUnsignedShort();
 		int numCmaps = file.readUnsignedShort();
 		long unicodeOffset = -1;
@@ -85,6 +86,7 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 		System.out.printf("cmap count: %d\n", count);
 		return cmap;
 	}
+	@SuppressWarnings("unused")
 	protected void readHead(RandomAccessFile file, long checkSum, long offset, long length) throws IOException {
 		int version = file.readInt();
 		int fontRevision = file.readInt();
