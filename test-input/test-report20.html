@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Test Title</title>
+<meta name="CreationDate" content="2012-01-01T12:00:00+0900" />
+<meta name="Author" content="My Author" />
+<meta name="Subject" content="My Subject" />
+<meta name="Keywords" content="My Keywords" />
+<meta name="Creator" content="My Creator" />
+<meta name="Producer" content="My Producer" />
+<style>
+#body {
+	line-break-hang: true;
+	font-size: 24pt;
+	line-height: 38pt;
+}
+.h1 {
+	font-size: 40pt;
+	color: blue;
+}
+.red {
+	color: red;
+}
+.blue {
+	color: blue;
+}
+.big {
+	font-size: 40pt;
+}
+.horizontal {
+	writing-mode: horizontal-tb;
+}
+@page vertical {
+	size-width: 841.89pt;
+	size-height: 595.28pt;
+	margin-left: 30mm;
+	margin-top: 25mm;
+	margin-right: 30mm;
+	margin-bottom: 25mm;
+	background-color: #DDEEFF;
+}
+.vertical_page {
+	writing-mode: vertical-rl;
+	page: vertical;
+}
+@page horizontal {
+	size-width: 595.28pt;
+	size-height: 841.89pt;
+	margin-left: 40mm;
+	margin-top: 30mm;
+	margin-right: 40mm;
+	margin-bottom: 30mm;
+	background-color: #FFEEDD;
+}
+.horizontal_page {
+	writing-mode: horizontal-tb;
+	page: horizontal;
+}
+.mincho {
+	font-family: mincho;
+}
+.gothic {
+	font-family: gothic;
+}
+.padding4pt {
+	padding-left: 4pt;
+	padding-top: 4pt;
+	padding-right: 4pt;
+	padding-bottom: 4pt;
+}
+.margin10pt {
+	margin-left: 10pt;
+	margin-top: 10pt;
+	margin-right: 10pt;
+	margin-bottom: 10pt;
+}
+.solidBorder {
+	border-left-width: 1pt;
+	border-top-width: 1pt;
+	border-right-width: 1pt;
+	border-bottom-width: 1pt;
+	border-left-style: solid;
+	border-top-style: solid;
+	border-right-style: solid;
+	border-bottom-style: solid;
+}
+.dashBorder {
+	border-left-width: 1pt;
+	border-top-width: 1pt;
+	border-right-width: 1pt;
+	border-bottom-width: 1pt;
+	border-left-style: dashed;
+	border-top-style: dashed;
+	border-right-style: dashed;
+	border-bottom-style: dashed;
+}
+.dotBorder {
+	border-left-width: 1pt;
+	border-top-width: 1pt;
+	border-right-width: 1pt;
+	border-bottom-width: 1pt;
+	border-left-style: doted;
+	border-top-style: doted;
+	border-right-style: doted;
+	border-bottom-style: doted;
+}
+.cell1 {
+	background-color: #FFDDDD;
+	border-left-width: 1pt;
+	border-top-width: 1pt;
+	border-right-width: 1pt;
+	border-bottom-width: 1pt;
+	border-left-style: dashed;
+	border-top-style: dashed;
+	border-right-style: dashed;
+	border-bottom-style: dashed;
+}
+.cell2 {
+	background-color: #FFFFDD;
+	border-left-width: 2pt;
+	border-top-width: 2pt;
+	border-right-width: 2pt;
+	border-bottom-width: 2pt;
+	border-left-style: dashed;
+	border-top-style: dashed;
+	border-right-style: dashed;
+	border-bottom-style: dashed;
+}
+.cell3 {
+	background-color: #FFDDFF;
+	border-left-width: 3pt;
+	border-top-width: 3pt;
+	border-right-width: 3pt;
+	border-bottom-width: 3pt;
+	border-left-style: dashed;
+	border-top-style: dashed;
+	border-right-style: dashed;
+	border-bottom-style: dashed;
+}
+.cell4 {
+	background-color: #DDDDDD;
+	border-left-width: 4pt;
+	border-top-width: 4pt;
+	border-right-width: 4pt;
+	border-bottom-width: 4pt;
+	border-left-style: solid;
+	border-top-style: solid;
+	border-right-style: solid;
+	border-bottom-style: solid;
+}
+.cell5 {
+	background-color: #DDFFFF;
+	border-left-width: 1pt;
+	border-top-width: 1pt;
+	border-right-width: 1pt;
+	border-bottom-width: 1pt;
+	border-left-style: solid;
+	border-top-style: solid;
+	border-right-style: solid;
+	border-bottom-style: solid;
+}
+
+</style>
+</head>
+<body id="body" class="horizontal_page">
+<table style="border-collapse: collapse; width: 100pt">
+<tr><td colspan="2" class="cell1">1</td><td rowspan="2" class="cell2">2</td></tr>
+<tr><td rowspan="2" class="cell3">3</td><td class="cell4">4</td></tr>
+<tr><td colspan="2" class="cell5">5</td></tr>
+</table>
+</body>
+</html>

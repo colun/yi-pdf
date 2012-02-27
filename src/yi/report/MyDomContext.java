@@ -19,9 +19,10 @@ import java.util.regex.Pattern;
 
 import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfTag;
+import yi.report.MyLayoutTable.ModeType;
 
 class MyDomContext {
-	enum TagType {
+	public static enum TagType {
 		TAG_HTML("_html"),
 		TAG_HEAD("_head"),
 		TAG_TITLE("_title"),
@@ -80,6 +81,22 @@ class MyDomContext {
 		{
 			Map<String, String> m = new HashMap<String, String>();
 			regStyle("@page", m);
+		}
+		{
+			Map<String, String> m = new HashMap<String, String>();
+			m.put("display", "table");
+			regStyle("table", m);
+		}
+		{
+			Map<String, String> m = new HashMap<String, String>();
+			m.put("display", "table-row");
+			regStyle("tr", m);
+		}
+		{
+			Map<String, String> m = new HashMap<String, String>();
+			m.put("display", "table-cell");
+			regStyle("td", m);
+			regStyle("th", m);
 		}
 	}
 	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_]+) *: *([-#a-zA-Z0-9_\\.]+) *");
@@ -178,6 +195,9 @@ class MyDomContext {
 		case TAG_RT: visitRtTag(node); break;
 		case TAG_RP: visitRpTag(node); break;
 		case DISPLAY_BLOCK: visitBlock(node); break;
+		case DISPLAY_TABLE: visitTable(node); break;
+		case DISPLAY_TABLE_ROW: visitTableRow(node); break;
+		case DISPLAY_TABLE_CELL: visitTableCell(node); break;
 		}
 		layoutContext.popStyle();
 		if(tag!=null) {
@@ -191,6 +211,42 @@ class MyDomContext {
 				visitNode(child, enableChildTag);
 			}
 		}
+	}
+	private void visitTable(YiDomNode node) throws IOException {
+		MyLayoutTable table = layoutContext.pushTable();
+
+		table.beginMode(MyLayoutTable.ModeType.MODE_SCAN1);
+		visitChildren(node, tableTagSet);
+		table.endMode();
+
+		table.beginMode(MyLayoutTable.ModeType.MODE_SCAN2);
+		visitChildren(node, tableTagSet);
+		table.endMode();
+
+		table.beginMode(MyLayoutTable.ModeType.MODE_VISIT);
+		visitChildren(node, tableTagSet);
+		table.endMode();
+		System.out.printf("colCount: %d, rowCount: %d\n", table.getColCount(), table.getRowCount());
+
+		layoutContext.popTable();
+	}
+	private void visitTableRow(YiDomNode node) throws IOException {
+		MyLayoutTable table = layoutContext.getNowTable();
+		visitChildren(node, trTagSet);
+		table.incRow();
+	}
+	private void visitTableCell(YiDomNode node) throws IOException {
+		MyLayoutTable table = layoutContext.getNowTable();
+		ModeType mode = table.getMode();
+		if(mode==ModeType.MODE_SCAN1 || mode==ModeType.MODE_SCAN2) {
+			table.scan(node.getAttr(), mode);
+		}
+		else if(mode==ModeType.MODE_VISIT) {
+			table.beginCell(node.getAttr());
+			visitChildren(node, normalTagSet);
+			table.endCell();
+		}
+		else assert(false) : "未知のテーブル文脈モード";
 	}
 	static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 	private void visitMetaTag(YiDomNode node) {
@@ -496,7 +552,7 @@ class MyDomContext {
 		normalTagSet.remove(TagType.TAG_RT);
 		normalTagSet.remove(TagType.TAG_RP);
 		tableTagSet.add(TagType.DISPLAY_TABLE_ROW);
-		trTagSet.add(TagType.DISPLAY_TABLE_ROW);
+		trTagSet.add(TagType.DISPLAY_TABLE_CELL);
 		rubyTagSet.add(TagType.TAG_RB);
 		rubyTagSet.add(TagType.TAG_RT);
 		rubyTagSet.add(TagType.TAG_RP);

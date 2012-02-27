@@ -31,6 +31,20 @@ public class MyLayoutContext {
 		return taggedMode;
 	}
 
+	MyLayoutTable nowTable;
+	Stack<MyLayoutTable> tableStack = new Stack<MyLayoutTable>();
+	MyLayoutTable pushTable() {
+		tableStack.push(nowTable);
+		nowTable = new MyLayoutTable(this);
+		return nowTable;
+	}
+	MyLayoutTable getNowTable() {
+		return nowTable;
+	}
+	void popTable() {
+		//nowTableを反映
+		nowTable = tableStack.pop();
+	}
 	YiPdfFile getPdfFile() {
 		return pdfFile;
 	}
