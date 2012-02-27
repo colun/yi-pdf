@@ -61,6 +61,7 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 		}
 		char[] cmap = new char[65536];
 		long basePos = file.getFilePointer();
+		int count = 0;
 		for(int i=0; i<segCount; ++i) {
 			if(idRangeOffset[i]!=0) {
 				assert(idDelta[i]==0);
@@ -69,16 +70,19 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 				file.seek(basePos + idRangeOffset[i] + i + i - segCount2);
 				for(int c=startCount[i], e=endCount[i]; c<=e; ++c) {
 					cmap[c] = (char)file.readShort();
+					++count;
 				}
 			}
 			else {
 				int d = idDelta[i];
 				for(int c=startCount[i], e=endCount[i]; c<=e; ++c) {
 					cmap[c] = (char)(c + d);
+					++count;
 				}
 			}
 		}
 		file.seek(basePos);
+		System.out.printf("cmap count: %d\n", count);
 		return cmap;
 	}
 	protected void readHead(RandomAccessFile file, long checkSum, long offset, long length) throws IOException {
@@ -102,10 +106,11 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 		int fontDirectionHint = file.readShort();
 		int indexToLocFormat = file.readShort();
 		int glyphDataFormat = file.readShort();
+	}
+	protected void readLoca(RandomAccessFile file, long checkSum, long offset, long length) throws IOException {
 		echoHex(file, 128);
 	}
 	protected void readGryf(RandomAccessFile file, long checkSum, long offset, long length) throws IOException {
-		//echoHex(file, 128);
 	}
 	public YiPdfTrueTypeFont(String path) throws IOException {
 		RandomAccessFile file = new RandomAccessFile(path, "r");
@@ -125,7 +130,7 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 		}
 		for(String tag : dic.keySet()) {
 			long[] values = dic.get(tag);
-			//System.out.printf("[Tag: %s, chkSum: %d, offset: %d, length: %d]\n", tag, values[0], values[1], values[2]);
+			System.out.printf("[Tag: %s, chkSum: %d, offset: %d, length: %d]\n", tag, values[0], values[1], values[2]);
 		}
 		{
 			long[] values = dic.get("cmap");
@@ -138,6 +143,12 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 			assert(values!=null);
 			file.seek(values[1]);
 			readHead(file, values[0], values[1], values[2]);
+		}
+		{
+			long[] values = dic.get("loca");
+			assert(values!=null) : "locaがありません。TTFフォントには対応していますが、OTFフォントにも対応しているわけではありません。";
+			file.seek(values[1]);
+			readLoca(file, values[0], values[1], values[2]);
 		}
 		file.close();
 	}
@@ -162,36 +173,42 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 
 	@Override
 	public byte[] encode(String text) {
+		assert(false) : "TrueTypeFontは未実装です";
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int getTravel(char c) {
+		assert(false) : "TrueTypeFontは未実装です";
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public int getLowerPerpend(char c) {
+		assert(false) : "TrueTypeFontは未実装です";
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public int getUpperPerpend(char c) {
+		assert(false) : "TrueTypeFontは未実装です";
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public boolean isVertical() {
+		assert(false) : "TrueTypeFontは未実装です";
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	protected int putSelf(YiPdfFile pdfFile) throws IOException {
+		assert(false) : "TrueTypeFontは未実装です";
 		// TODO Auto-generated method stub
 		return 0;
 	}
@@ -204,7 +221,7 @@ public class YiPdfTrueTypeFont extends YiPdfFont {
 		String dir = "font";
 		for(String filename : new File(dir).list(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return name.endsWith(".ttf") || name.endsWith(".otf");
+				return name.endsWith(".ttf");
 			}
 		})) {
 			String path = dir + "/" + filename;
