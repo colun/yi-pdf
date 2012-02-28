@@ -372,14 +372,18 @@ class MyLayoutTable {
 				postWidth = Math.max(postWidth, border2.width);
 			}
 		}
-		double width = !verticalWritingMode ? travel : nowStyle.hasWidth() ? padding.left+nowStyle.getWidth()+padding.right+(prevWidth+postWidth)/2 : parentRectSize.width;
-		double height = verticalWritingMode ? travel : nowStyle.hasHeight() ? padding.top+nowStyle.getHeight()+padding.bottom+(prevWidth+postWidth)/2 : parentRectSize.height;
+		double leftPadding = padding.left + (!verticalWritingMode ? earthWidth : postWidth) / 2;
+		double topPadding = padding.top + (!verticalWritingMode ? prevWidth : earthWidth) / 2;
+		double rightPadding = padding.right + (!verticalWritingMode ? skyWidth : prevWidth) / 2;
+		double bottomPadding = padding.bottom + (!verticalWritingMode ? postWidth : skyWidth) / 2;
+		double width = !verticalWritingMode ? travel : nowStyle.hasWidth() ? nowStyle.getWidth()+leftPadding+rightPadding : parentRectSize.width;
+		double height = verticalWritingMode ? travel : nowStyle.hasHeight() ? nowStyle.getHeight()+topPadding+bottomPadding : parentRectSize.height;
 
 		Map<String, String> diff = new HashMap<String, String>();
-		diff.put("padding-left", (padding.left + (!verticalWritingMode ? earthWidth : postWidth)) + "pt");
-		diff.put("padding-top", (padding.top + (!verticalWritingMode ? prevWidth : earthWidth)) + "pt");
-		diff.put("padding-right", (padding.right + (!verticalWritingMode ? skyWidth : prevWidth)) + "pt");
-		diff.put("padding-bottom", (padding.bottom + (!verticalWritingMode ? postWidth : skyWidth)) + "pt");
+		diff.put("padding-left", String.format("%fpt", leftPadding));
+		diff.put("padding-top", String.format("%fpt", topPadding));
+		diff.put("padding-right", String.format("%fpt", rightPadding));
+		diff.put("padding-bottom", String.format("%fpt", bottomPadding));
 		if(nowStyle.hasBackgroundColor()) {
 			diff.put("background-color", nowStyle.diff.get("background-color"));
 		}
