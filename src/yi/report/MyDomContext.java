@@ -355,7 +355,7 @@ class MyDomContext {
 			layoutContext.popNest();
 		}
 		if(floatFlag) {
-			layoutContext.applyDivePass();
+			//layoutContext.applyDivePass();
 			layoutContext.getNowBlock().justify(layoutContext.getNowNest());
 			layoutContext.popNest();
 			MyLayoutBlock block = layoutContext.popBlock();

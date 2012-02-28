@@ -66,6 +66,29 @@ class MyLayoutNest {
 			return padding.left + borderWidth.left;
 		}
 	}
+	public double getPostRecursionPadding(boolean verticalFlag, double childMargin) {
+		double nowMargin = getPostMargin(verticalFlag);
+		double nowPadding = getPostPadding(verticalFlag);
+		double mixPadding;
+		double mixMargin;
+		if(nowPadding!=0 || parent!=null) {
+			mixPadding = childMargin + nowPadding;
+			mixMargin = nowMargin;
+		}
+		else {
+			mixPadding = 0;
+			mixMargin = Math.max(nowMargin, childMargin);
+		}
+		if(parent!=null) {
+			return mixPadding + parent.getPostRecursionPadding(verticalFlag, mixMargin);
+		}
+		else {
+			return mixPadding + mixMargin;
+		}
+	}
+	public double getPostRecursionPadding(boolean verticalFlag) {
+		return getPostRecursionPadding(verticalFlag, 0);
+	}
 	private double getEarthTravelMargin(boolean verticalFlag, double childMargin) {
 		double nowMargin;
 		double nowPadding;
@@ -270,14 +293,14 @@ class MyLayoutNest {
 		double postPadding = getPostPadding(verticalFlag);
 		double postMargin = getPostMargin(verticalFlag);
 
-		if(prePadding!=0) {
+		if(prePadding!=0 || parent==null) {
 			start -= sMargin + prePadding;
 			sMargin = preMargin;
 		}
 		else {
 			sMargin = Math.max(sMargin, preMargin);
 		}
-		if(postPadding!=0) {
+		if(postPadding!=0 || parent==null) {
 			end += eMargin + postPadding;
 			eMargin = postMargin;
 		}

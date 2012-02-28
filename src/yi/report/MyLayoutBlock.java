@@ -126,7 +126,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 			return false;
 		}
 		double perpend = line.getPerpend();
-		if(!fourceBlockFlag && getRemainDive() < perpend) {
+		if(!fourceBlockFlag && getRemainDive(nest) < perpend) {
 			fullFlag = true;
 			return false;
 		}
@@ -147,8 +147,8 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		}
 		return true;
 	}
-	private double getRemainDive() {
-		return getEndDive() - divePos;
+	private double getRemainDive(MyLayoutNest nest) {
+		return getEndDive() - divePos - (pageRootFlag ? 0 : nest.getPostRecursionPadding(verticalWritingMode));
 	}
 	private double getEndDive() {
 		if(!verticalWritingMode) {
@@ -206,7 +206,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 					? margin.top + border.top + padding.top
 					+ style.getHeight()
 					+ padding.bottom + border.bottom + margin.bottom
-					: getRemainDive();
+					: getRemainDive(nest);
 			MyRectSize rectSize = new MyRectSize(width, height);
 			return new MyLayoutBlock(style, rectSize);
 		}
@@ -216,7 +216,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 					? margin.left + border.left + padding.left
 					+ style.getWidth()
 					+ padding.right + border.right + margin.right
-					: getRemainDive();
+					: getRemainDive(nest);
 			double height = style.hasHeight()
 					? margin.top + border.top + padding.top
 					+ style.getHeight()
@@ -227,12 +227,14 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		}
 	}
 	public void justify(MyLayoutNest nest) {
+		boolean flag = false;
 		if(!fullFlag) {
 			if(!verticalWritingMode) {
 				if(!nowStyle.hasHeight()) {
 					double dp = divePos + nest.getPostPadding(verticalWritingMode);
 					if(divePos < contentRectSize.height) {
 						contentRectSize = new MyRectSize(contentRectSize.width, dp);
+						flag = true;
 					}
 				}
 			}
@@ -241,11 +243,14 @@ class MyLayoutBlock implements MyLayoutDrawable {
 					double dp = divePos + nest.getPostPadding(verticalWritingMode);
 					if(divePos < contentRectSize.width) {
 						contentRectSize = new MyRectSize(dp, contentRectSize.height);
+						flag = true;
 					}
 				}
 			}
 		}
-		registerNestRange(nest, 0.0, !verticalWritingMode ? contentRectSize.height : contentRectSize.width);
+		if(flag) {
+			nest.registerNestRange(this, 0.0, !verticalWritingMode ? contentRectSize.height : contentRectSize.width);
+		}
 	}
 	public void addPass(double pass, MyLayoutNest nest) {
 		divePos += pass;
