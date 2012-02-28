@@ -166,14 +166,16 @@ public class MyLayoutContext {
 	}
 	Stack<MyLayoutBlock> blockStack = new Stack<MyLayoutBlock>();
 	Stack<MyPair<Double, Double>> diveStack = new Stack<MyPair<Double,Double>>();
-	void pushBlock(MyLayoutBlock block) {
+	void pushBlock(MyLayoutBlock block) throws IOException {
+		clearNowLine();
 		blockStack.push(getNowBlock());
 		nowBlock = block;
 		diveStack.push(new MyPair<Double, Double>(diveMargin, divePass));
 		diveMargin = 0;
 		divePass = 0;
 	}
-	MyLayoutBlock popBlock() {
+	MyLayoutBlock popBlock() throws IOException {
+		clearNowLine();
 		MyPair<Double, Double> divePair = diveStack.pop();
 		diveMargin = divePair.first;
 		divePass = divePair.second;

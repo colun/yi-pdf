@@ -28,6 +28,9 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		pageRootFlag = false;
 		fullFlag = false;
 	}
+	MyRectSize getContentRectSize() {
+		return contentRectSize;
+	}
 	private double getEarthStackTravel(MyLayoutNest nest) {
 		double eWidth = 0;
 		if(!earthStack.isEmpty()) {
@@ -56,6 +59,11 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	}
 	public boolean isPageRoot() {
 		return pageRootFlag;
+	}
+	public void addCellBlock(MyLayoutBlock block, MyLayoutNest nest) {
+		block.contentPos = new MyPosition(divePos/2, divePos - nest.getPrePadding(block.isVerticalWritingMode()));
+		divePos += block.contentRectSize.height + nest.getPrePadding(block.isVerticalWritingMode()) + nest.getPostPadding(block.isVerticalWritingMode());
+		drawableList.add(block);
 	}
 	public void addFloatBlock(MyLayoutBlock childBlock, String fl, MyLayoutNest nest) {
 		double childWidth = childBlock.contentRectSize.width;
@@ -219,28 +227,25 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		}
 	}
 	public void justify(MyLayoutNest nest) {
-		boolean jFlag = false;
 		if(!fullFlag) {
 			if(!verticalWritingMode) {
 				if(!nowStyle.hasHeight()) {
+					double dp = divePos + nest.getPostPadding(verticalWritingMode);
 					if(divePos < contentRectSize.height) {
-						contentRectSize = new MyRectSize(contentRectSize.width, divePos);
-						jFlag = true;
+						contentRectSize = new MyRectSize(contentRectSize.width, dp);
 					}
 				}
 			}
 			else {
 				if(!nowStyle.hasWidth()) {
+					double dp = divePos + nest.getPostPadding(verticalWritingMode);
 					if(divePos < contentRectSize.width) {
-						contentRectSize = new MyRectSize(divePos, contentRectSize.height);
-						jFlag = true;
+						contentRectSize = new MyRectSize(dp, contentRectSize.height);
 					}
 				}
 			}
 		}
-		if(!jFlag) {
-			nest.registerNestRange(this, 0.0, !verticalWritingMode ? contentRectSize.height : contentRectSize.width);
-		}
+		registerNestRange(nest, 0.0, !verticalWritingMode ? contentRectSize.height : contentRectSize.width);
 	}
 	public void addPass(double pass, MyLayoutNest nest) {
 		divePos += pass;

@@ -3,6 +3,7 @@
  */
 package yi.report;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -152,7 +153,7 @@ class MyLayoutTable {
 				for(int x=0; x<colCount; ++x) {
 					int pos = calcPos(y+y, x+x+1);
 					MyTableBorder border = borderMap.get(pos);
-					if(border.isVisible()) {
+					if(border!=null && border.isVisible()) {
 						maxWidth = Math.max(maxWidth, border.width);
 					}
 				}
@@ -164,7 +165,7 @@ class MyLayoutTable {
 				for(int y=0; y<rowCount; ++y) {
 					int pos = calcPos(y+y+1, x+x);
 					MyTableBorder border = borderMap.get(pos);
-					if(border.isVisible()) {
+					if(border!=null && border.isVisible()) {
 						maxWidth = Math.max(maxWidth, border.width);
 					}
 				}
@@ -238,25 +239,6 @@ class MyLayoutTable {
 		}
 		int colspan = getSpan(attr, "colspan");
 		int rowspan = getSpan(attr, "rowspan");
-		MyEdgeValues<String> borderStyle = nowStyle.getBorderStyle();
-		MyLayoutMargin borderWidth = nowStyle.getBorderWidth();
-		MyLayoutMargin padding = nowStyle.getPadding();
-		MyTableBorder earthBorder;
-		MyTableBorder prevBorder;
-		MyTableBorder skyBorder;
-		MyTableBorder postBorder;
-		if(!verticalWritingMode) {
-			earthBorder = new MyTableBorder(borderStyle.left, borderWidth.left);
-			prevBorder = new MyTableBorder(borderStyle.top, borderWidth.top);
-			skyBorder = new MyTableBorder(borderStyle.right, borderWidth.right);
-			postBorder = new MyTableBorder(borderStyle.bottom, borderWidth.bottom);
-		}
-		else {
-			earthBorder = new MyTableBorder(borderStyle.top, borderWidth.top);
-			prevBorder = new MyTableBorder(borderStyle.right, borderWidth.right);
-			skyBorder = new MyTableBorder(borderStyle.bottom, borderWidth.bottom);
-			postBorder = new MyTableBorder(borderStyle.left, borderWidth.left);
-		}
 		for(int y=0; y<rowspan; ++y) {
 			for(int x=0; x<colspan; ++x) {
 				int pos = calcPos(nowRow + y, nowCol + x);
@@ -270,6 +252,24 @@ class MyLayoutTable {
 			}
 		}
 		if(mode==ModeType.MODE_SCAN1) {
+			MyEdgeValues<String> borderStyle = nowStyle.getBorderStyle();
+			MyLayoutMargin borderWidth = nowStyle.getBorderWidth();
+			MyTableBorder earthBorder;
+			MyTableBorder prevBorder;
+			MyTableBorder skyBorder;
+			MyTableBorder postBorder;
+			if(!verticalWritingMode) {
+				earthBorder = new MyTableBorder(borderStyle.left, borderWidth.left);
+				prevBorder = new MyTableBorder(borderStyle.top, borderWidth.top);
+				skyBorder = new MyTableBorder(borderStyle.right, borderWidth.right);
+				postBorder = new MyTableBorder(borderStyle.bottom, borderWidth.bottom);
+			}
+			else {
+				earthBorder = new MyTableBorder(borderStyle.top, borderWidth.top);
+				prevBorder = new MyTableBorder(borderStyle.right, borderWidth.right);
+				skyBorder = new MyTableBorder(borderStyle.bottom, borderWidth.bottom);
+				postBorder = new MyTableBorder(borderStyle.left, borderWidth.left);
+			}
 			for(int y=0; y<rowspan; ++y) {
 				int sCol = nowCol;
 				int eCol = nowCol + colspan;
@@ -286,12 +286,11 @@ class MyLayoutTable {
 			}
 		}
 		else if(mode==ModeType.MODE_SCAN2) {
+			MyLayoutMargin padding = nowStyle.getPadding();
 			if(!verticalWritingMode ? nowStyle.hasWidth() : nowStyle.hasHeight()) {
 				double travel = !verticalWritingMode ? nowStyle.getWidth() : nowStyle.getHeight();
 				double earthWidth = 0;
 				double skyWidth = 0;
-				double earthPadding = !verticalWritingMode ? padding.left : padding.top;
-				double skyPadding = !verticalWritingMode ? padding.right : padding.bottom;
 				for(int y=0; y<rowspan; ++y) {
 					int sCol = nowCol;
 					int eCol = nowCol + colspan;
@@ -305,11 +304,13 @@ class MyLayoutTable {
 						skyWidth = Math.max(skyWidth, border2.width);
 					}
 				}
-				putTravel(calcPos(colspan, nowCol), travel + earthWidth + skyWidth + earthPadding + skyPadding);
+				double earthPadding = !verticalWritingMode ? padding.left : padding.top;
+				double skyPadding = !verticalWritingMode ? padding.right : padding.bottom;
+				putTravel(calcPos(colspan, nowCol), travel + (earthWidth + skyWidth)/2 + earthPadding + skyPadding);
 			}
 		}
 	}
-	public void beginCell(Map<String, String> attr) {
+	public void beginCell(Map<String, String> attr) throws IOException {
 		while(true) {
 			int pos = calcPos(nowRow, nowCol);
 			if(!existSet.contains(pos)) {
@@ -317,9 +318,83 @@ class MyLayoutTable {
 			}
 			++nowCol;
 		}
-		//int colspan = getSpan(attr, "colspan");
-		//int rowspan = getSpan(attr, "rowspan");
+		int colspan = getSpan(attr, "colspan");
+		int rowspan = getSpan(attr, "rowspan");
+		for(int y=0; y<rowspan; ++y) {
+			for(int x=0; x<colspan; ++x) {
+				int pos = calcPos(nowRow + y, nowCol + x);
+				existSet.add(pos);
+				if(colCount<=nowCol+x) {
+					colCount = nowCol + x + 1;
+				}
+				if(rowCount<=nowRow+y) {
+					rowCount = nowRow + y + 1;
+				}
+			}
+		}
+
+		double travel = 0;
+		for(int x=0; x<colspan; ++x) {
+			travel += columnWidthList[nowCol+x];
+		}
+
+		MyRectSize parentRectSize = layoutContext.getNowBlock().getContentRectSize();
+		MyLayoutStyle nowStyle = layoutContext.getNowStyle();
+		MyLayoutMargin padding = nowStyle.getPadding();
+
+		double earthWidth = 0;
+		double skyWidth = 0;
+		for(int y=0; y<rowspan; ++y) {
+			int sCol = nowCol;
+			int eCol = nowCol + colspan;
+			int row = nowRow+y;
+			MyTableBorder border1 = borderMap.get(calcPos(row+row+1, sCol+sCol));
+			if(border1!=null && border1.isVisible()) {
+				earthWidth = Math.max(earthWidth, border1.width);
+			}
+			MyTableBorder border2 = borderMap.get(calcPos(row+row+1, eCol+eCol));
+			if(border2!=null && border2.isVisible()) {
+				skyWidth = Math.max(skyWidth, border2.width);
+			}
+		}
+		double prevWidth = 0;
+		double postWidth = 0;
+		for(int x=0; x<colspan; ++x) {
+			int sRow = nowRow;
+			int eRow = nowRow + rowspan;
+			int col = nowCol+x;
+			MyTableBorder border1 = borderMap.get(calcPos(sRow+sRow, col+col+1));
+			if(border1!=null && border1.isVisible()) {
+				prevWidth = Math.max(prevWidth, border1.width);
+			}
+			MyTableBorder border2 = borderMap.get(calcPos(eRow+eRow, col+col+1));
+			if(border2!=null && border2.isVisible()) {
+				postWidth = Math.max(postWidth, border2.width);
+			}
+		}
+		double width = !verticalWritingMode ? travel : nowStyle.hasWidth() ? padding.left+nowStyle.getWidth()+padding.right+(prevWidth+postWidth)/2 : parentRectSize.width;
+		double height = verticalWritingMode ? travel : nowStyle.hasHeight() ? padding.top+nowStyle.getHeight()+padding.bottom+(prevWidth+postWidth)/2 : parentRectSize.height;
+
+		Map<String, String> diff = new HashMap<String, String>();
+		diff.put("padding-left", (padding.left + (!verticalWritingMode ? earthWidth : postWidth)) + "pt");
+		diff.put("padding-top", (padding.top + (!verticalWritingMode ? prevWidth : earthWidth)) + "pt");
+		diff.put("padding-right", (padding.right + (!verticalWritingMode ? skyWidth : prevWidth)) + "pt");
+		diff.put("padding-bottom", (padding.bottom + (!verticalWritingMode ? postWidth : skyWidth)) + "pt");
+		if(nowStyle.hasBackgroundColor()) {
+			diff.put("background-color", nowStyle.diff.get("background-color"));
+		}
+		MyLayoutStyle blockStyle = nowStyle.merge(diff);
+		layoutContext.pushNest(new MyLayoutNest(blockStyle));
+		MyLayoutBlock block = new MyLayoutBlock(blockStyle, new MyRectSize(width, height));
+		layoutContext.pushBlock(block);
 	}
-	public void endCell() {
+	public void endCell() throws IOException {
+		layoutContext.clearNowLine();
+		MyLayoutBlock block = layoutContext.getNowBlock();
+		MyLayoutNest nest = layoutContext.getNowNest();
+		block.justify(nest);
+		layoutContext.popBlock();
+		layoutContext.popNest();
+		layoutContext.getNowBlock().addCellBlock(block, nest);
 	}
 }
