@@ -112,8 +112,10 @@ public class MyLayoutContext {
 	void pushNest(MyLayoutNest newNest) {
 		nestStack.push(nowNest);
 		nowNest = newNest;
-		boolean verticalWritingMode = nowStyle.isVerticalWritingMode();
-		addMargin(nowNest.getPreMargin(verticalWritingMode), nowNest.getPrePadding(verticalWritingMode));
+		if(nowNest!=null) {
+			boolean verticalWritingMode = nowStyle.isVerticalWritingMode();
+			addMargin(nowNest.getPreMargin(verticalWritingMode), nowNest.getPrePadding(verticalWritingMode));
+		}
 	}
 	void pushChildNest() {
 		MyLayoutNest n = new MyLayoutNest(nowNest, nowStyle);
@@ -123,9 +125,12 @@ public class MyLayoutContext {
 		MyLayoutNest n = new MyLayoutNest(nowStyle);
 		pushNest(n);
 	}
-	MyLayoutNest popNest() {
-		boolean verticalWritingMode = nowStyle.isVerticalWritingMode();
-		addMargin(nowNest.getPostMargin(verticalWritingMode), nowNest.getPostPadding(verticalWritingMode));
+	MyLayoutNest popNest() throws IOException {
+		clearNowLine();
+		if(nowNest!=null) {
+			boolean verticalWritingMode = nowStyle.isVerticalWritingMode();
+			addMargin(nowNest.getPostMargin(verticalWritingMode), nowNest.getPostPadding(verticalWritingMode));
+		}
 		MyLayoutNest result = nowNest;
 		nowNest = nestStack.pop();
 		return result;
@@ -168,19 +173,26 @@ public class MyLayoutContext {
 	Stack<MyPair<Double, Double>> diveStack = new Stack<MyPair<Double,Double>>();
 	void pushBlock(MyLayoutBlock block) throws IOException {
 		clearNowLine();
+		pushNest(null);
 		blockStack.push(getNowBlock());
 		nowBlock = block;
 		diveStack.push(new MyPair<Double, Double>(diveMargin, divePass));
 		diveMargin = 0;
 		divePass = 0;
+		pushNewNest();
+		applyDivePass();
 	}
 	MyLayoutBlock popBlock() throws IOException {
 		clearNowLine();
+		nowBlock.justify(nowNest);
+		popNest();
+		applyDivePass();
 		MyPair<Double, Double> divePair = diveStack.pop();
 		diveMargin = divePair.first;
 		divePass = divePair.second;
 		MyLayoutBlock result = nowBlock;
 		nowBlock = blockStack.pop();
+		popNest();
 		return result;
 	}
 	private int lazyDrawLockCount = 0;

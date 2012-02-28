@@ -383,18 +383,14 @@ class MyLayoutTable {
 		if(nowStyle.hasBackgroundColor()) {
 			diff.put("background-color", nowStyle.diff.get("background-color"));
 		}
-		MyLayoutStyle blockStyle = nowStyle.merge(diff);
-		layoutContext.pushNest(new MyLayoutNest(blockStyle));
-		MyLayoutBlock block = new MyLayoutBlock(blockStyle, new MyRectSize(width, height));
+		layoutContext.pushStyle(diff);
+		MyLayoutBlock block = new MyLayoutBlock(layoutContext.getNowStyle(), new MyRectSize(width, height));
 		layoutContext.pushBlock(block);
+		layoutContext.popStyle();
 	}
 	public void endCell() throws IOException {
 		layoutContext.clearNowLine();
-		MyLayoutBlock block = layoutContext.getNowBlock();
-		MyLayoutNest nest = layoutContext.getNowNest();
-		block.justify(nest);
-		layoutContext.popBlock();
-		layoutContext.popNest();
-		layoutContext.getNowBlock().addCellBlock(block, nest);
+		MyLayoutBlock block = layoutContext.popBlock();
+		layoutContext.getNowBlock().addCellBlock(block);
 	}
 }

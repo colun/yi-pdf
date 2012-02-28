@@ -60,9 +60,9 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	public boolean isPageRoot() {
 		return pageRootFlag;
 	}
-	public void addCellBlock(MyLayoutBlock block, MyLayoutNest nest) {
-		block.contentPos = new MyPosition(divePos/2, divePos - nest.getPrePadding(block.isVerticalWritingMode()));
-		divePos += block.contentRectSize.height + nest.getPrePadding(block.isVerticalWritingMode()) + nest.getPostPadding(block.isVerticalWritingMode());
+	public void addCellBlock(MyLayoutBlock block) {
+		block.contentPos = new MyPosition(divePos/2, divePos);
+		divePos += block.contentRectSize.height;
 		drawableList.add(block);
 	}
 	public void addFloatBlock(MyLayoutBlock childBlock, String fl, MyLayoutNest nest) {
@@ -254,6 +254,8 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	}
 	public void addPass(double pass, MyLayoutNest nest) {
 		divePos += pass;
-		nest.registerNestRange(this, divePos, divePos);
+		if(nest!=null) {
+			nest.registerNestRange(this, divePos, divePos);
+		}
 	}
 }
