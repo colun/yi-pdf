@@ -389,7 +389,6 @@ class MyLayoutTable {
 		layoutContext.popStyle();
 	}
 	public void endCell() throws IOException {
-		layoutContext.clearNowLine();
 		MyLayoutBlock block = layoutContext.popBlock();
 		layoutContext.getNowBlock().addCellBlock(block);
 	}

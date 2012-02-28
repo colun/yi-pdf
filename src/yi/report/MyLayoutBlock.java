@@ -249,7 +249,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 			}
 		}
 		if(flag) {
-			nest.registerNestRange(this, 0.0, !verticalWritingMode ? contentRectSize.height : contentRectSize.width);
+			registerNestRange(nest, 0.0, !verticalWritingMode ? contentRectSize.height - nest.margin.bottom : contentRectSize.width - nest.margin.left);
 		}
 	}
 	public void addPass(double pass, MyLayoutNest nest) {
