@@ -3,17 +3,10 @@
  */
 package yi.report;
 
-class MyQuintet<T1, T2, T3, T4, T5> {
+class MyQuintet<T1, T2, T3, T4, T5> extends MyQuartet<T1, T2, T3, T4> {
 	MyQuintet(T1 v1, T2 v2, T3 v3, T4 v4, T5 v5) {
-		first = v1;
-		second = v2;
-		third = v3;
-		fourth = v4;
+		super(v1, v2, v3, v4);
 		fifth = v5;
 	}
-	final T1 first;
-	final T2 second;
-	final T3 third;
-	final T4 fourth;
 	final T5 fifth;
 }

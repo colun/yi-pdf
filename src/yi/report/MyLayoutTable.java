@@ -13,6 +13,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import yi.pdf.YiPdfColor;
+import yi.report.MyLayoutTable.MyTableBorder.BorderStyle;
+
 class MyLayoutTable {
 	public static enum ModeType {
 		MODE_SCAN1,
@@ -121,7 +124,7 @@ class MyLayoutTable {
 		nowCol = 0;
 	}
 	Set<Integer> existSet = new HashSet<Integer>();
-	Map<Integer, MyTableBorder> borderMap = new HashMap<Integer, MyLayoutTable.MyTableBorder>();
+	Map<Integer, MyTableBorder> borderMap = new HashMap<Integer, MyTableBorder>();
 	protected int calcPos(int row, int col) {
 		return row * 65536 + col;
 	}
@@ -149,8 +152,31 @@ class MyLayoutTable {
 		initVisit();
 	}
 	double[] columnPosList;
+	MyTableBorder getMapBorderWithoutHidden(int pos) {
+		MyTableBorder result = borderMap.get(pos);
+		return (result==null || result.style==BorderStyle.HIDDEN || result.style==BorderStyle.NONE) ? null : result;
+	}
+	Map<Integer, MyQuartet<String, Double, Double, YiPdfColor>> crossMap = new HashMap<Integer, MyQuartet<String, Double, Double, YiPdfColor>>();
 	public void endMode() {
 		if(mode==ModeType.MODE_SCAN1) {
+			for(int y=0; y<=rowCount; ++y) {
+				int y2=y+y;
+				for(int x=0; x<=colCount; ++x) {
+					int x2=x+x;
+					MyTableBorder bx1 = getMapBorderWithoutHidden(calcPos(y2, x2-1));
+					MyTableBorder bx2 = getMapBorderWithoutHidden(calcPos(y2, x2+1));
+					MyTableBorder bx = bx1==null ? bx2 : bx2==null ? bx1 : 0<bx1.compareTo(bx2) ? bx1 : bx2;
+					MyTableBorder by1 = getMapBorderWithoutHidden(calcPos(y2-1, x2));
+					MyTableBorder by2 = getMapBorderWithoutHidden(calcPos(y2+1, x2));
+					MyTableBorder by = by1==null ? by2 : by2==null ? by1 : 0<by1.compareTo(by2) ? by1 : by2;
+					double xWidth = bx==null ? 0 : bx.width;
+					double yWidth = by==null ? 0 : by.width;
+					if(0<xWidth && 0<yWidth) {
+						MyTableBorder bb = bx==null ? by : by==null ? bx : 0<bx.compareTo(by) ? bx : by;
+						crossMap.put(calcPos(y2, x2), new MyQuartet<String, Double, Double, YiPdfColor>(bb.style.name, xWidth, yWidth, new YiPdfColor(0, 0, 0)));
+					}
+				}
+			}
 		}
 		else if(mode==ModeType.MODE_SCAN2) {
 			int size = travelMap.size() + (hasTotalTravel ? 1 : 0);
@@ -268,7 +294,7 @@ class MyLayoutTable {
 			}
 			for(int x=0; x<colspan; ++x) {
 				int sRow = nowRow;
-				int eRow = nowRow + colspan;
+				int eRow = nowRow + rowspan;
 				int col = nowCol+x;
 				putBorder(calcPos(sRow+sRow, col+col+1), prevBorder);
 				putBorder(calcPos(eRow+eRow, col+col+1), postBorder);
@@ -391,45 +417,73 @@ class MyLayoutTable {
 	public void beginRow() {
 	}
 	public void endRow() {
-		if(maxRow==nowRow) {
-			Map<Integer, Double> diveMap = new TreeMap<Integer, Double>();
-			for(MyQuintet<MyLayoutBlock, Integer, Integer, MyLayoutNest, MyLayoutStyle> q : blockList) {
-				MyLayoutBlock block = q.first;
-				int row = q.second;
-				int rowspan = q.third;
-				int pos = calcPos(rowspan, row-baseRow);
-				double value = !verticalWritingMode ? block.contentRectSize.height : block.contentRectSize.width;
-				Double oldValue = diveMap.get(pos);
-				if(oldValue==null || oldValue<value) {
-					diveMap.put(pos, value);
+		if(mode==ModeType.MODE_VISIT) {
+			if(maxRow==nowRow) {
+				Map<Integer, Double> diveMap = new TreeMap<Integer, Double>();
+				for(MyQuintet<MyLayoutBlock, Integer, Integer, MyLayoutNest, MyLayoutStyle> q : blockList) {
+					MyLayoutBlock block = q.first;
+					int row = q.second;
+					int rowspan = q.third;
+					int pos = calcPos(rowspan, row-baseRow);
+					double value = !verticalWritingMode ? block.contentRectSize.height : block.contentRectSize.width;
+					Double oldValue = diveMap.get(pos);
+					if(oldValue==null || oldValue<value) {
+						diveMap.put(pos, value);
+					}
 				}
+				int size = diveMap.size();
+				int[] start = new int[size];
+				int[] span = new int[size];
+				double[] width = new double[size];
+				int i = 0;
+				for(Entry<Integer, Double> entry : diveMap.entrySet()) {
+					int pair = entry.getKey();
+					span[i] = (pair >> 16) & 65535;
+					start[i] = pair & 65535;
+					width[i] = entry.getValue();
+					++i;
+				}
+				double[] rowPosList = calcColumnPosList(1+maxRow-baseRow, start, span, width);
+				for(MyQuintet<MyLayoutBlock, Integer, Integer, MyLayoutNest, MyLayoutStyle> q : blockList) {
+					MyLayoutBlock block = q.first;
+					int row = q.second;
+					int rowspan = q.third;
+					MyLayoutNest nest = q.fourth;
+					MyLayoutStyle style = q.fifth;
+					double t = rowPosList[row-baseRow];
+					double dive = rowPosList[rowspan+row-baseRow] - t;
+					layoutContext.getNowBlock().addCellBlock(block, t, !verticalWritingMode ? block.contentRectSize.width : dive, !verticalWritingMode ? dive : block.contentRectSize.height, nest, style);
+				}
+				for(int y=baseRow; y<=maxRow; ++y) {
+					int rowPos = y+y+1;
+					for(int x=0; x<=colCount; ++x) {
+						MyTableBorder border = getMapBorderWithoutHidden(calcPos(rowPos, x+x));
+						if(border!=null) {
+							layoutContext.getNowBlock().putBorder(border.style.name, border.width, columnPosList[x], rowPosList[y-baseRow], columnPosList[x], rowPosList[1+y-baseRow]);
+						}
+					}
+				}
+				for(int x=0; x<colCount; ++x) {
+					int colPos = x+x+1;
+					for(int y=baseRow+(baseRow==0 ? 0 : 1); y<=maxRow+1; ++y) {
+						MyTableBorder border = getMapBorderWithoutHidden(calcPos(y+y, colPos));
+						if(border!=null) {
+							layoutContext.getNowBlock().putBorder(border.style.name, border.width, columnPosList[x], rowPosList[y-baseRow], columnPosList[1+x], rowPosList[y-baseRow]);
+						}
+					}
+				}
+				for(int y=baseRow+(baseRow==0 ? 0 : 1); y<=maxRow+1; ++y) {
+					for(int x=0; x<=colCount; ++x) {
+						MyQuartet<String, Double, Double, YiPdfColor> cross = crossMap.get(calcPos(y+y, x+x));
+						if(cross!=null) {
+							layoutContext.getNowBlock().putCross(cross, columnPosList[x], rowPosList[y-baseRow]);
+						}
+					}
+				}
+				layoutContext.getNowBlock().addPass(rowPosList[1+maxRow-baseRow], layoutContext.getNowNest());
+				baseRow = maxRow;
+				blockList.clear();
 			}
-			int size = diveMap.size();
-			int[] start = new int[size];
-			int[] span = new int[size];
-			double[] width = new double[size];
-			int i = 0;
-			for(Entry<Integer, Double> entry : diveMap.entrySet()) {
-				int pair = entry.getKey();
-				span[i] = (pair >> 16) & 65535;
-				start[i] = pair & 65535;
-				width[i] = entry.getValue();
-				++i;
-			}
-			double[] rowPosList = calcColumnPosList(1+maxRow-baseRow, start, span, width);
-			for(MyQuintet<MyLayoutBlock, Integer, Integer, MyLayoutNest, MyLayoutStyle> q : blockList) {
-				MyLayoutBlock block = q.first;
-				int row = q.second;
-				int rowspan = q.third;
-				MyLayoutNest nest = q.fourth;
-				MyLayoutStyle style = q.fifth;
-				double t = rowPosList[row-baseRow];
-				double dive = rowPosList[rowspan+row-baseRow] - t;
-				layoutContext.getNowBlock().addCellBlock(block, t, !verticalWritingMode ? block.contentRectSize.width : dive, !verticalWritingMode ? dive : block.contentRectSize.height, nest, style);
-			}
-			layoutContext.getNowBlock().addPass(rowPosList[1+maxRow-baseRow], layoutContext.getNowNest());
-			baseRow = maxRow;
-			blockList.clear();
 		}
 		incRow();
 	}

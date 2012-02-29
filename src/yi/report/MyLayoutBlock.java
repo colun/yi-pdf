@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import yi.pdf.YiPdfColor;
+import yi.pdf.YiPdfPage;
+
 class MyLayoutBlock implements MyLayoutDrawable {
 	boolean verticalWritingMode;
 	MyRectSize contentRectSize;
@@ -206,6 +209,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		if(verticalWritingMode) {
 			x += contentRectSize.width;
 		}
+		YiPdfPage page = pageContext.getPdfPage();
 		for(MyLayoutNest nest : nestRangeMap.keySet()) {
 			MyPair<Double, Double> range = nestRangeMap.get(nest);
 			double start = range.first!=null ? range.first : 0;
@@ -214,6 +218,33 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		}
 		for(MyLayoutDrawable line : drawableList) {
 			line.draw(pageContext, x, y);
+		}
+		for(MySextet<String, Double, Double, Double, Double, Double> border : borderList) {
+			page.setDrawColor(new YiPdfColor(0, 0, 0));
+			page.setLineCap(0);
+			page.setLineWidth(border.second);
+			if("dashed".equalsIgnoreCase(border.first)) {
+				page.setDashPattern(new double[] { 3 }, 0);
+			}
+			else if("doted".equalsIgnoreCase(border.first)) {
+				page.setDashPattern(new double[] { 1 }, 0);
+			}
+			else {
+				page.setDashPattern(null, 0);
+			}
+			double xx1 = !verticalWritingMode ? border.third : border.fourth;
+			double yy1 = !verticalWritingMode ? border.fourth : border.third;
+			double xx2 = !verticalWritingMode ? border.fifth : border.sixth;
+			double yy2 = !verticalWritingMode ? border.sixth : border.fifth;
+			page.drawLine(x+xx1, y+yy1, x+xx2, y+yy2);
+		}
+		for(MyQuartet<MyQuartet<String, Double, Double, YiPdfColor>, Double, Double, Object> cross : crossList) {
+			double xx = !verticalWritingMode ? cross.second : cross.third;
+			double yy = !verticalWritingMode ? cross.third : cross.second;
+			double width = !verticalWritingMode ? cross.first.second : cross.first.third;
+			double height = !verticalWritingMode ? cross.first.third : cross.first.second;
+			page.setFillColor(cross.first.fourth);
+			page.fillRect(x+xx-width/2, y+yy-height/2, width, height);
 		}
 		pageContext.invokeRuby();
 	}
@@ -293,5 +324,13 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		if(nest!=null) {
 			nest.registerNestRange(this, divePos, divePos);
 		}
+	}
+	List<MyQuartet<MyQuartet<String, Double, Double, YiPdfColor>, Double, Double, Object>> crossList = new ArrayList<MyQuartet<MyQuartet<String,Double,Double,YiPdfColor>,Double,Double,Object>>();
+	public void putCross(MyQuartet<String, Double, Double, YiPdfColor> cross, double travel, double dive) {
+		crossList.add(new MyQuartet<MyQuartet<String,Double,Double,YiPdfColor>, Double, Double, Object>(cross, travel, divePos+dive, null));
+	}
+	List<MySextet<String, Double, Double, Double, Double, Double>> borderList = new ArrayList<MySextet<String,Double,Double,Double,Double,Double>>();
+	public void putBorder(String name, double width, double sTravel, double sDive, double eTravel, double eDive) {
+		borderList.add(new MySextet<String, Double, Double, Double, Double, Double>(name, width, sTravel, sDive+divePos, eTravel, eDive+divePos));
 	}
 }
