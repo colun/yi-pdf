@@ -144,7 +144,7 @@ class MyLayoutTable {
 	}
 	double[] rowBorderWidthList;
 	double[] colBorderWidthList;
-	double[] columnWidthList;
+	double[] columnPosList;
 	public void endMode() {
 		if(mode==ModeType.MODE_SCAN1) {
 			rowBorderWidthList = new double[rowCount+1];
@@ -190,8 +190,17 @@ class MyLayoutTable {
 				startCol[i] = 0;
 				width[i] = totalTravel;
 			}
-			columnWidthList = calcColumnWidths(colCount, startCol, colspan, width);
+			columnPosList = calcColumnPosList(colCount, startCol, colspan, width);
 		}
+	}
+	public static double[] calcColumnPosList(int colCount, int[] startCol, int[] colspan, double[] width) {
+		double[] widthList = calcColumnWidths(colCount, startCol, colspan, width);
+		double[] result = new double[colCount+1];
+		result[0] = 0;
+		for(int i=0; i<colCount; ++i) {
+			result[i+1] = result[i] + widthList[i];
+		}
+		return result;
 	}
 	public static double[] calcColumnWidths(int colCount, int[] startCol, int[] colspan, double[] width) {
 		double[] result = new double[colCount];
@@ -333,10 +342,7 @@ class MyLayoutTable {
 			}
 		}
 
-		double travel = 0;
-		for(int x=0; x<colspan; ++x) {
-			travel += columnWidthList[nowCol+x];
-		}
+		double travel = columnPosList[nowCol+colspan] - columnPosList[nowCol];
 
 		MyRectSize parentRectSize = layoutContext.getNowBlock().getContentRectSize();
 		MyLayoutStyle nowStyle = layoutContext.getNowStyle();
@@ -389,6 +395,7 @@ class MyLayoutTable {
 		}
 		layoutContext.pushStyle(diff);
 		MyLayoutBlock block = new MyLayoutBlock(layoutContext.getNowStyle(), new MyRectSize(width, height));
+		block.contentPos = new MyPosition(!verticalWritingMode ? columnPosList[nowCol] : 0, !verticalWritingMode ? 0 : columnPosList[nowCol]);
 		layoutContext.pushBlock(block);
 		layoutContext.popStyle();
 	}

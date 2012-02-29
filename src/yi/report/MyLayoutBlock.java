@@ -61,7 +61,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		return pageRootFlag;
 	}
 	public void addCellBlock(MyLayoutBlock block) {
-		block.contentPos = new MyPosition(divePos/2, divePos);
+		block.contentPos = new MyPosition(!verticalWritingMode ? block.contentPos.x : divePos, !verticalWritingMode ? divePos : block.contentPos.y);
 		divePos += block.contentRectSize.height;
 		drawableList.add(block);
 	}
