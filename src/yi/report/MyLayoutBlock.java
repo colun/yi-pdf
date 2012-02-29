@@ -60,10 +60,46 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	public boolean isPageRoot() {
 		return pageRootFlag;
 	}
-	public void addCellBlock(MyLayoutBlock block) {
-		block.contentPos = new MyPosition(!verticalWritingMode ? block.contentPos.x : divePos, !verticalWritingMode ? divePos : block.contentPos.y);
-		divePos += block.contentRectSize.height;
+	public void addCellBlock(MyLayoutBlock block, double pos, double width, double height, MyLayoutNest nest, MyLayoutStyle style) {
+		block.contentPos = new MyPosition(!verticalWritingMode ? block.contentPos.x : -(divePos+pos), !verticalWritingMode ? divePos+pos : block.contentPos.y);
+		block.expand(width, height, nest, style);
 		drawableList.add(block);
+	}
+	/*
+	public void expandBottom(MyLayoutNest nest, Double exp) {
+		MyPair<Double, Double> range = nestRangeMap.get(nest);
+		if(range==null) {
+			nestRangeMap.put(nest, new MyPair<Double, Double>(start, end));
+		}
+		else {
+			nestRangeMap.put(nest, new MyPair<Double, Double>(range.first, end));
+		}
+	}
+	*/
+	private void expand(double width, double height, MyLayoutNest nest, MyLayoutStyle style) {
+		double dw = width - contentRectSize.width;
+		double dh = height - contentRectSize.height;
+		contentRectSize = new MyRectSize(width, height);
+		if(0<dw) {
+			if(verticalWritingMode) {
+				double dw2 = dw / 2;
+				MyPair<Double, Double> range = nestRangeMap.get(nest);
+				if(range!=null) {
+					nestRangeMap.put(nest, new MyPair<Double, Double>(range.first - dw2, range.second + dw2));
+				}
+				contentPos = new MyPosition(contentPos.x - dw2, contentPos.y);
+			}
+		}
+		if(0<dh) {
+			if(!verticalWritingMode) {
+				double dh2 = dh / 2;
+				MyPair<Double, Double> range = nestRangeMap.get(nest);
+				if(range!=null) {
+					nestRangeMap.put(nest, new MyPair<Double, Double>(range.first - dh2, range.second + dh2));
+				}
+				contentPos = new MyPosition(contentPos.x, contentPos.y + dh2);
+			}
+		}
 	}
 	public void addFloatBlock(MyLayoutBlock childBlock, String fl, MyLayoutNest nest) {
 		double childWidth = childBlock.contentRectSize.width;

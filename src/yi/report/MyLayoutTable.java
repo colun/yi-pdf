@@ -4,8 +4,10 @@
 package yi.report;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -99,6 +101,8 @@ class MyLayoutTable {
 	int nowRow;
 	int colCount = 0;
 	int rowCount = 0;
+	int maxRow = 0;
+	int baseRow = 0;
 	int getColCount() {
 		return colCount;
 	}
@@ -106,8 +110,10 @@ class MyLayoutTable {
 		return rowCount;
 	}
 	public void initVisit() {
+		maxRow = 0;
 		nowCol = 0;
 		nowRow = 0;
+		baseRow = 0;
 		existSet.clear();
 	}
 	public void incRow() {
@@ -132,10 +138,10 @@ class MyLayoutTable {
 		}
 	}
 	Map<Integer, Double> travelMap = new TreeMap<Integer, Double>();
-	void putTravel(int mask, double travel) {
-		Double oldValue = travelMap.get(mask);
+	void putTravel(int pos, double travel) {
+		Double oldValue = travelMap.get(pos);
 		if(oldValue==null || oldValue<travel) {
-			travelMap.put(mask, travel);
+			travelMap.put(pos, travel);
 		}
 	}
 	public void beginMode(ModeType mode) {
@@ -252,13 +258,13 @@ class MyLayoutTable {
 			for(int x=0; x<colspan; ++x) {
 				int pos = calcPos(nowRow + y, nowCol + x);
 				existSet.add(pos);
-				if(colCount<=nowCol+x) {
-					colCount = nowCol + x + 1;
-				}
-				if(rowCount<=nowRow+y) {
-					rowCount = nowRow + y + 1;
-				}
 			}
+		}
+		if(colCount<nowCol+colspan) {
+			colCount = nowCol + colspan;
+		}
+		if(rowCount<nowRow+rowspan) {
+			rowCount = nowRow + rowspan;
 		}
 		if(mode==ModeType.MODE_SCAN1) {
 			MyEdgeValues<String> borderStyle = nowStyle.getBorderStyle();
@@ -333,13 +339,10 @@ class MyLayoutTable {
 			for(int x=0; x<colspan; ++x) {
 				int pos = calcPos(nowRow + y, nowCol + x);
 				existSet.add(pos);
-				if(colCount<=nowCol+x) {
-					colCount = nowCol + x + 1;
-				}
-				if(rowCount<=nowRow+y) {
-					rowCount = nowRow + y + 1;
-				}
 			}
+		}
+		if(maxRow<nowRow+rowspan-1) {
+			maxRow = nowRow + rowspan-1;
 		}
 
 		double travel = columnPosList[nowCol+colspan] - columnPosList[nowCol];
@@ -385,22 +388,75 @@ class MyLayoutTable {
 		double width = !verticalWritingMode ? travel : nowStyle.hasWidth() ? nowStyle.getWidth()+leftPadding+rightPadding : parentRectSize.width;
 		double height = verticalWritingMode ? travel : nowStyle.hasHeight() ? nowStyle.getHeight()+topPadding+bottomPadding : parentRectSize.height;
 
-		Map<String, String> diff = new HashMap<String, String>();
+		Map<String, String> diff = new HashMap<String, String>(nowStyle.diff);
 		diff.put("padding-left", String.format("%fpt", leftPadding));
 		diff.put("padding-top", String.format("%fpt", topPadding));
 		diff.put("padding-right", String.format("%fpt", rightPadding));
 		diff.put("padding-bottom", String.format("%fpt", bottomPadding));
-		if(nowStyle.hasBackgroundColor()) {
-			diff.put("background-color", nowStyle.diff.get("background-color"));
-		}
+		diff.remove("margin-left");
+		diff.remove("margin-top");
+		diff.remove("margin-right");
+		diff.remove("margin-bottom");
+		diff.remove("border-left-width");
+		diff.remove("border-top-width");
+		diff.remove("border-right-width");
+		diff.remove("border-bottom-width");
 		layoutContext.pushStyle(diff);
 		MyLayoutBlock block = new MyLayoutBlock(layoutContext.getNowStyle(), new MyRectSize(width, height));
+
 		block.contentPos = new MyPosition(!verticalWritingMode ? columnPosList[nowCol] : 0, !verticalWritingMode ? 0 : columnPosList[nowCol]);
 		layoutContext.pushBlock(block);
 		layoutContext.popStyle();
+		blockList.add(new MyQuintet<MyLayoutBlock, Integer, Integer, MyLayoutNest, MyLayoutStyle>(block, nowRow, rowspan, layoutContext.getNowNest(), layoutContext.getNowStyle()));
 	}
-	public void endCell() throws IOException {
-		MyLayoutBlock block = layoutContext.popBlock();
-		layoutContext.getNowBlock().addCellBlock(block);
+	List<MyQuintet<MyLayoutBlock, Integer, Integer, MyLayoutNest, MyLayoutStyle>> blockList = new ArrayList<MyQuintet<MyLayoutBlock,Integer,Integer,MyLayoutNest, MyLayoutStyle>>();
+	public void endCell(Map<String, String> attr) throws IOException {
+		layoutContext.popBlock();
+		//layoutContext.getNowBlock().addCellBlock(block);
+	}
+	public void beginRow() {
+	}
+	public void endRow() {
+		if(maxRow==nowRow) {
+			Map<Integer, Double> diveMap = new TreeMap<Integer, Double>();
+			for(MyQuintet<MyLayoutBlock, Integer, Integer, MyLayoutNest, MyLayoutStyle> q : blockList) {
+				MyLayoutBlock block = q.first;
+				int row = q.second;
+				int rowspan = q.third;
+				int pos = calcPos(rowspan, row-baseRow);
+				double value = !verticalWritingMode ? block.contentRectSize.height : block.contentRectSize.width;
+				Double oldValue = diveMap.get(pos);
+				if(oldValue==null || oldValue<value) {
+					diveMap.put(pos, value);
+				}
+			}
+			int size = diveMap.size();
+			int[] start = new int[size];
+			int[] span = new int[size];
+			double[] width = new double[size];
+			int i = 0;
+			for(Entry<Integer, Double> entry : diveMap.entrySet()) {
+				int pair = entry.getKey();
+				span[i] = (pair >> 16) & 65535;
+				start[i] = pair & 65535;
+				width[i] = entry.getValue();
+				++i;
+			}
+			double[] rowPosList = calcColumnPosList(1+maxRow-baseRow, start, span, width);
+			for(MyQuintet<MyLayoutBlock, Integer, Integer, MyLayoutNest, MyLayoutStyle> q : blockList) {
+				MyLayoutBlock block = q.first;
+				int row = q.second;
+				int rowspan = q.third;
+				MyLayoutNest nest = q.fourth;
+				MyLayoutStyle style = q.fifth;
+				double t = rowPosList[row-baseRow];
+				double dive = rowPosList[rowspan+row-baseRow] - t;
+				layoutContext.getNowBlock().addCellBlock(block, t, !verticalWritingMode ? block.contentRectSize.width : dive, !verticalWritingMode ? dive : block.contentRectSize.height, nest, style);
+			}
+			layoutContext.getNowBlock().addPass(rowPosList[1+maxRow-baseRow], layoutContext.getNowNest());
+			baseRow = maxRow;
+			blockList.clear();
+		}
+		incRow();
 	}
 }

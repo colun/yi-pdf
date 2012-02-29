@@ -232,8 +232,9 @@ class MyDomContext {
 	}
 	private void visitTableRow(YiDomNode node) throws IOException {
 		MyLayoutTable table = layoutContext.getNowTable();
+		table.beginRow();
 		visitChildren(node, trTagSet);
-		table.incRow();
+		table.endRow();
 	}
 	private void visitTableCell(YiDomNode node) throws IOException {
 		MyLayoutTable table = layoutContext.getNowTable();
@@ -244,7 +245,7 @@ class MyDomContext {
 		else if(mode==ModeType.MODE_VISIT) {
 			table.beginCell(node.getAttr());
 			visitChildren(node, normalTagSet);
-			table.endCell();
+			table.endCell(node.getAttr());
 		}
 		else assert(false) : "未知のテーブル文脈モード";
 	}
