@@ -213,6 +213,8 @@ class MyDomContext {
 		}
 	}
 	private void visitTable(YiDomNode node) throws IOException {
+		layoutContext.clearNowLine();
+		layoutContext.pushPdfTag("Table");
 		MyLayoutTable table = layoutContext.pushTable();
 
 		table.beginMode(MyLayoutTable.ModeType.MODE_SCAN1);
@@ -229,12 +231,20 @@ class MyDomContext {
 		System.out.printf("colCount: %d, rowCount: %d\n", table.getColCount(), table.getRowCount());
 
 		layoutContext.popTable();
+		layoutContext.popPdfTag();
 	}
 	private void visitTableRow(YiDomNode node) throws IOException {
 		MyLayoutTable table = layoutContext.getNowTable();
+		ModeType mode = table.getMode();
+		if(mode==ModeType.MODE_VISIT) {
+			layoutContext.pushPdfTag("TR");
+		}
 		table.beginRow();
 		visitChildren(node, trTagSet);
 		table.endRow();
+		if(mode==ModeType.MODE_VISIT) {
+			layoutContext.popPdfTag();
+		}
 	}
 	private void visitTableCell(YiDomNode node) throws IOException {
 		MyLayoutTable table = layoutContext.getNowTable();
@@ -243,9 +253,11 @@ class MyDomContext {
 			table.scan(node.getAttr(), mode);
 		}
 		else if(mode==ModeType.MODE_VISIT) {
+			layoutContext.pushPdfTag("TD");
 			table.beginCell(node.getAttr());
 			visitChildren(node, normalTagSet);
 			table.endCell(node.getAttr());
+			layoutContext.popPdfTag();
 		}
 		else assert(false) : "未知のテーブル文脈モード";
 	}
