@@ -148,35 +148,9 @@ class MyLayoutTable {
 		setMode(mode);
 		initVisit();
 	}
-	double[] rowBorderWidthList;
-	double[] colBorderWidthList;
 	double[] columnPosList;
 	public void endMode() {
 		if(mode==ModeType.MODE_SCAN1) {
-			rowBorderWidthList = new double[rowCount+1];
-			for(int y=0; y<=rowCount; ++y) {
-				double maxWidth = 0;
-				for(int x=0; x<colCount; ++x) {
-					int pos = calcPos(y+y, x+x+1);
-					MyTableBorder border = borderMap.get(pos);
-					if(border!=null && border.isVisible()) {
-						maxWidth = Math.max(maxWidth, border.width);
-					}
-				}
-				rowBorderWidthList[y] = maxWidth;
-			}
-			colBorderWidthList = new double[colCount+1];
-			for(int x=0; x<=colCount; ++x) {
-				double maxWidth = 0;
-				for(int y=0; y<rowCount; ++y) {
-					int pos = calcPos(y+y+1, x+x);
-					MyTableBorder border = borderMap.get(pos);
-					if(border!=null && border.isVisible()) {
-						maxWidth = Math.max(maxWidth, border.width);
-					}
-				}
-				colBorderWidthList[x] = maxWidth;
-			}
 		}
 		else if(mode==ModeType.MODE_SCAN2) {
 			int size = travelMap.size() + (hasTotalTravel ? 1 : 0);
