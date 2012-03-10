@@ -96,6 +96,11 @@ class MyDomContext {
 			Map<String, String> m = new HashMap<String, String>();
 			m.put("display", "table-cell");
 			regStyle("td", m);
+		}
+		{
+			Map<String, String> m = new HashMap<String, String>();
+			m.put("display", "table-cell");
+			m.put("text-align", "center");
 			regStyle("th", m);
 		}
 		{

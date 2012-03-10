@@ -213,7 +213,7 @@ class MyLayoutStyle {
 		if(str==null) {
 			return null;
 		}
-		return evalUnit(str);
+		return evalUnit(str, false, getFontSize());
 	}
 	YiPdfColor getFontColor() {
 		String str = style.get("color");

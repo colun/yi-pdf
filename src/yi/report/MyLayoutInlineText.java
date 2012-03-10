@@ -95,6 +95,7 @@ class MyLayoutInlineText extends MyLayoutInline {
 		}
 		if(decoration!=null) {
 			page.setLineWidth(1);
+			page.setDashPattern(null, 0);
 			page.setLineCap(0);
 			page.setDrawColor(color);
 			page.drawLine(x, y, x + (!verticalWritingMode ? travel : 0), y + (!verticalWritingMode ? 0 : travel));

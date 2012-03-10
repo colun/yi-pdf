@@ -458,7 +458,7 @@ class MyLayoutTable {
 					int rowPos = y+y+1;
 					for(int x=0; x<=colCount; ++x) {
 						MyTableBorder border = getMapBorderWithoutHidden(calcPos(rowPos, x+x));
-						if(border!=null) {
+						if(border!=null && border.style!=null) {
 							layoutContext.getNowBlock().putBorder(border.style.name, border.width, columnPosList[x], rowPosList[y-baseRow], columnPosList[x], rowPosList[1+y-baseRow]);
 						}
 					}
@@ -467,7 +467,7 @@ class MyLayoutTable {
 					int colPos = x+x+1;
 					for(int y=baseRow+(baseRow==0 ? 0 : 1); y<=maxRow+1; ++y) {
 						MyTableBorder border = getMapBorderWithoutHidden(calcPos(y+y, colPos));
-						if(border!=null) {
+						if(border!=null && border.style!=null) {
 							layoutContext.getNowBlock().putBorder(border.style.name, border.width, columnPosList[x], rowPosList[y-baseRow], columnPosList[1+x], rowPosList[y-baseRow]);
 						}
 					}
