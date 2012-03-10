@@ -103,6 +103,12 @@ class MyDomContext {
 			m.put("text-decoration", "underline");
 			regStyle("u", m);
 		}
+		{
+			Map<String, String> m = new HashMap<String, String>();
+			m.put("display", "block");
+			m.put("text-align", "center");
+			regStyle("center", m);
+		}
 	}
 	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_]+) *: *([-#a-zA-Z0-9_\\.]+) *");
 	Map<String, String> fromStyle(String style) {
@@ -317,11 +323,17 @@ class MyDomContext {
 			}
 			String text = builder.toString();
 			if(text!=null && !text.isEmpty()) {
-				Pattern pattern = Pattern.compile("[ ]*(#[-0-9A-Za-z_]+|\\.[-0-9A-Za-z_]+|@page|@page [-0-9A-Za-z_]+)[ ]*\\{([^}]+)\\}");
+				Pattern pattern = Pattern.compile("[ ]*([-0-9A-Za-z_]+|#[-0-9A-Za-z_]+|\\.[-0-9A-Za-z_]+|@page|@page [-0-9A-Za-z_]+)[ ]*\\{([^}]+)\\}");
 				Matcher m = pattern.matcher(text);
 				while(m.find()) {
 					String key = m.group(1);
+					Map<String, String> oldStyle = styleDic.get(key);
 					Map<String, String> style = fromStyle(m.group(2));
+					if(oldStyle!=null) {
+						Map<String, String> st = new HashMap<String, String>(oldStyle);
+						st.putAll(style);
+						style = st;
+					}
 					regStyle(key, style);
 				}
 			}
