@@ -360,7 +360,7 @@ class MyDomContext {
 			layoutContext.pushBlock(block);
 		}
 		boolean nestFlag = false;
-		if(!floatFlag && style.hasBackgroundColor()) {
+		if(!floatFlag) {
 			nestFlag = true;
 			layoutContext.pushChildNest();
 		}

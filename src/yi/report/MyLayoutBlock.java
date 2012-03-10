@@ -12,6 +12,7 @@ import java.util.Stack;
 
 import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfPage;
+import yi.report.MyLayoutStyle.AlignType;
 
 class MyLayoutBlock implements MyLayoutDrawable {
 	boolean verticalWritingMode;
@@ -169,11 +170,26 @@ class MyLayoutBlock implements MyLayoutDrawable {
 			fullFlag = true;
 			return false;
 		}
-		if(!verticalWritingMode) {
-			line.setPos(getEarthStackTravel(nest), divePos + line.getUpperPerpend());
+		AlignType textAlign = nest.textAlign;
+		double tt;
+		if(textAlign==null) {
+			tt = 0;
+		}
+		else if(textAlign==AlignType.ALIGN_CENTER) {
+			double travel = line.getTravel();
+			double canTravel = getLineWidth(nest);
+			tt = (canTravel - travel) / 2;
 		}
 		else {
-			line.setPos(-(divePos + line.getUpperPerpend()), getEarthStackTravel(nest));
+			double travel = line.getTravel();
+			double canTravel = getLineWidth(nest);
+			tt = canTravel - travel;
+		}
+		if(!verticalWritingMode) {
+			line.setPos(getEarthStackTravel(nest) + tt, divePos + line.getUpperPerpend());
+		}
+		else {
+			line.setPos(-(divePos + line.getUpperPerpend()), getEarthStackTravel(nest) + tt);
 		}
 		drawableList.add(line);
 		nest.registerNestRange(this, divePos, divePos + perpend);

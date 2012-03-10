@@ -14,7 +14,6 @@ import yi.pdf.font.YiPdfJGothicFont;
 import yi.pdf.font.YiPdfJGothicFontV;
 import yi.pdf.font.YiPdfJMinchoFont;
 import yi.pdf.font.YiPdfJMinchoFontV;
-import yi.report.MyDomContext.TagType;
 
 class MyLayoutStyle {
 	public static enum DecorationType {
@@ -39,6 +38,33 @@ class MyLayoutStyle {
 		}
 		public static DecorationType fromString(String name) {
 			DecorationType result = getDic().get(name);
+			return result;
+		}
+	}
+	public static enum AlignType {
+		ALIGN_CENTER("center", "middle"),
+		ALIGN_RIGHT("right", "bottom");
+		private final String name;
+		private final String name2;
+		private AlignType(String name, String name2) {
+			this.name = name;
+			this.name2 = name2;
+		}
+		static HashMap<String, AlignType> enumDic = null;
+		public static HashMap<String, AlignType> getDic() {
+			HashMap<String, AlignType> eDic = enumDic;
+			if(eDic==null) {
+				eDic = new HashMap<String, AlignType>();
+				for(AlignType tag : values()) {
+					eDic.put(tag.name, tag);
+					eDic.put(tag.name2, tag);
+				}
+				enumDic = eDic;
+			}
+			return eDic;
+		}
+		public static AlignType fromString(String name) {
+			AlignType result = getDic().get(name);
 			return result;
 		}
 	}
@@ -288,5 +314,8 @@ class MyLayoutStyle {
 	}
 	public DecorationType getTextDecoration() {
 		return DecorationType.fromString(style.get("text-decoration"));
+	}
+	public AlignType getTextAlign() {
+		return AlignType.fromString(style.get("text-align"));
 	}
 }

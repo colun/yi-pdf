@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfPage;
+import yi.report.MyLayoutStyle.AlignType;
 
 class MyLayoutNest {
 	final MyLayoutNest parent;
@@ -15,6 +16,7 @@ class MyLayoutNest {
 	final MyLayoutMargin borderWidth;
 	final MyLayoutMargin padding;
 	final MyEdgeValues<String> borderStyle;
+	final AlignType textAlign;
 	MyLayoutNest() {
 		parent = null;
 		backgroundColor = null;
@@ -22,6 +24,7 @@ class MyLayoutNest {
 		borderWidth = new MyLayoutMargin(0, 0, 0, 0);
 		padding = new MyLayoutMargin(0, 0, 0, 0);
 		borderStyle = new MyEdgeValues<String>(null, null, null, null);
+		textAlign = null;
 	}
 	MyLayoutNest(MyLayoutStyle nowStyle) {
 		this(null, nowStyle);
@@ -33,6 +36,7 @@ class MyLayoutNest {
 		borderWidth = nowStyle.getBorderWidth();
 		padding = nowStyle.getPadding();
 		borderStyle = nowStyle.getBorderStyle();
+		textAlign = nowStyle.getTextAlign();
 	}
 	public double getPreMargin(boolean verticalFlag) {
 		if(!verticalFlag) {
