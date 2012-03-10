@@ -11,6 +11,7 @@ import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfFont;
 import yi.pdf.YiPdfPage;
 import yi.pdf.YiPdfTag;
+import yi.report.MyLayoutStyle.DecorationType;
 
 class MyLayoutInlineText extends MyLayoutInline {
 	YiPdfFont font;
@@ -25,7 +26,8 @@ class MyLayoutInlineText extends MyLayoutInline {
 	double fontLowerPerpend;
 	double fontUpperPerpend;
 	Double lineHeight;
-	public MyLayoutInlineText(YiPdfFont font, double fontSize, YiPdfColor color, String text, double travel, YiPdfTag lineTag, Double lineHeight) {
+	DecorationType decoration;
+	public MyLayoutInlineText(YiPdfFont font, double fontSize, YiPdfColor color, String text, double travel, YiPdfTag lineTag, Double lineHeight, DecorationType decoration) {
 		this.font = font;
 		this.fontSize = fontSize;
 		this.color = color;
@@ -33,6 +35,7 @@ class MyLayoutInlineText extends MyLayoutInline {
 		this.travel = travel;
 		this.lineTag = lineTag;
 		this.lineHeight = lineHeight;
+		this.decoration = decoration;
 		lowerPerpend = fontSize * font.getLowerPerpend('A') / 1000;
 		upperPerpend = fontSize * font.getUpperPerpend('A') / 1000;
 		fontLowerPerpend = lowerPerpend;
@@ -90,6 +93,12 @@ class MyLayoutInlineText extends MyLayoutInline {
 		if(transparentFlag) {
 			page.setTextRenderingMode(0);
 		}
+		if(decoration!=null) {
+			page.setLineWidth(1);
+			page.setLineCap(0);
+			page.setDrawColor(color);
+			page.drawLine(x, y, x + (!verticalWritingMode ? travel : 0), y + (!verticalWritingMode ? 0 : travel));
+		}
 		if(lineTag!=null) {
 			page.endTextTag();
 		}
@@ -129,7 +138,7 @@ class MyLayoutInlineText extends MyLayoutInline {
 	public List<MyLayoutInlineText> explode() {
 		List<MyLayoutInlineText> result = new ArrayList<MyLayoutInlineText>();
 		for(int i=0; i<text.length(); ++i) {
-			result.add(new MyLayoutInlineText(font, fontSize, color, text.substring(i, i+1), fontSize * font.getTravel(text.charAt(i)) / 1000, lineTag, lineHeight));
+			result.add(new MyLayoutInlineText(font, fontSize, color, text.substring(i, i+1), fontSize * font.getTravel(text.charAt(i)) / 1000, lineTag, lineHeight, decoration));
 		}
 		return result;
 	}

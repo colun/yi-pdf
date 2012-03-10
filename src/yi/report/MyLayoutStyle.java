@@ -14,8 +14,34 @@ import yi.pdf.font.YiPdfJGothicFont;
 import yi.pdf.font.YiPdfJGothicFontV;
 import yi.pdf.font.YiPdfJMinchoFont;
 import yi.pdf.font.YiPdfJMinchoFontV;
+import yi.report.MyDomContext.TagType;
 
 class MyLayoutStyle {
+	public static enum DecorationType {
+		DECO_UNDERLINE("underline"),
+		DECO_OVERLINE("overline"),
+		DECO_LINETHROUGH("line-through");
+		private final String name;
+		private DecorationType(String name) {
+			this.name = name;
+		}
+		static HashMap<String, DecorationType> enumDic = null;
+		public static HashMap<String, DecorationType> getDic() {
+			HashMap<String, DecorationType> eDic = enumDic;
+			if(eDic==null) {
+				eDic = new HashMap<String, DecorationType>();
+				for(DecorationType tag : values()) {
+					eDic.put(tag.name, tag);
+				}
+				enumDic = eDic;
+			}
+			return eDic;
+		}
+		public static DecorationType fromString(String name) {
+			DecorationType result = getDic().get(name);
+			return result;
+		}
+	}
 	Map<String, String> style = new HashMap<String, String>();
 	Map<String, String> diff = null;
 	MyLayoutPageStyle pageStyle = null;
@@ -259,5 +285,8 @@ class MyLayoutStyle {
 	}
 	public String getPage() {
 		return diff.get("page");
+	}
+	public DecorationType getTextDecoration() {
+		return DecorationType.fromString(style.get("text-decoration"));
 	}
 }

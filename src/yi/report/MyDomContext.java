@@ -98,6 +98,11 @@ class MyDomContext {
 			regStyle("td", m);
 			regStyle("th", m);
 		}
+		{
+			Map<String, String> m = new HashMap<String, String>();
+			m.put("text-decoration", "underline");
+			regStyle("u", m);
+		}
 	}
 	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_]+) *: *([-#a-zA-Z0-9_\\.]+) *");
 	Map<String, String> fromStyle(String style) {

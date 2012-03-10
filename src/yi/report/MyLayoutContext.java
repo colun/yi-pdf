@@ -13,6 +13,7 @@ import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfFont;
 import yi.pdf.YiPdfTag;
+import yi.report.MyLayoutStyle.DecorationType;
 
 public class MyLayoutContext {
 	YiPdfFile pdfFile;
@@ -281,6 +282,7 @@ public class MyLayoutContext {
 		double fontSize = nowStyle.getFontSize();
 		boolean tabooHangMode = nowStyle.getLineBreakHang();
 		Double lineHeight = nowStyle.getLineHeight();
+		DecorationType decoration = nowStyle.getTextDecoration();
 		int len = text.length();
 		int pos = 0;
 		while(pos<len) {
@@ -292,7 +294,7 @@ public class MyLayoutContext {
 				pos = q.first;
 				String str = q.second;
 				double totalTravel = q.third;
-				MyLayoutInlineText inlineText = new MyLayoutInlineText(font, fontSize, color, str, totalTravel, getLineTag(), lineHeight);
+				MyLayoutInlineText inlineText = new MyLayoutInlineText(font, fontSize, color, str, totalTravel, getLineTag(), lineHeight, decoration);
 				if(isLockedLazyDraw()) {
 					lockedInlineTextList.add(inlineText);
 				}
@@ -308,12 +310,13 @@ public class MyLayoutContext {
 		YiPdfColor color = nowStyle.getFontColor();
 		double fontSize = nowStyle.getFontSize();
 		Double lineHeight = nowStyle.getLineHeight();
+		DecorationType decoration = nowStyle.getTextDecoration();
 		int len = text.length();
 		int travelSum = 0;
 		for(int i=0; i<len; ++i) {
 			travelSum += font.getTravel(text.charAt(i));
 		}
-		return new MyLayoutInlineText(font, fontSize, color, text, (fontSize * travelSum) / 1000, getLineTag(), lineHeight);
+		return new MyLayoutInlineText(font, fontSize, color, text, (fontSize * travelSum) / 1000, getLineTag(), lineHeight, decoration);
 	}
 	String tabooPrefix = "　、。」）・？！";
 	String tabooSuffix = "「（";
