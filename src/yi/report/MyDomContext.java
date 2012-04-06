@@ -222,9 +222,11 @@ class MyDomContext {
 	}
 	void visitChildren(YiDomNode node, Set<TagType> enableChildTag) throws IOException {
 		List<YiDomNode> children = node.getChildren();
-		for(YiDomNode child : children) {
-			if(child!=null) {
-				visitNode(child, enableChildTag);
+		if(children!=null) {
+			for(YiDomNode child : children) {
+				if(child!=null) {
+					visitNode(child, enableChildTag);
+				}
 			}
 		}
 	}
