@@ -31,7 +31,6 @@ class MyDomContext {
 		TAG_BODY("_body"),
 		TAG_BR("_br"),
 		TAG_RUBY("_ruby"),
-		TAG_RB("_rb"),
 		TAG_RT("_rt"),
 		TAG_RP("_rp"),
 		DISPLAY_BLOCK("block"),
@@ -62,7 +61,7 @@ class MyDomContext {
 		}
 	}
 	MyDomContext() {
-		for(String key : new String[] { "html", "head", "title", "meta", "style", "body", "ruby", "rb", "rt", "rp", "br" }) {
+		for(String key : new String[] { "html", "head", "title", "meta", "style", "body", "ruby", "rt", "rp", "br" }) {
 			Map<String, String> m = new HashMap<String, String>();
 			m.put("display", "_" + key);
 			regStyle(key, m);
@@ -207,7 +206,6 @@ class MyDomContext {
 		case TAG_BR: visitBrTag(node); break;
 		case DISPLAY_INLINE: visitInline(node); break;
 		case TAG_RUBY: visitRubyTag(node); break;
-		case TAG_RB: visitRbTag(node); break;
 		case TAG_RT: visitRtTag(node); break;
 		case TAG_RP: visitRpTag(node); break;
 		case DISPLAY_BLOCK: visitBlock(node); break;
@@ -246,7 +244,7 @@ class MyDomContext {
 		table.beginMode(MyLayoutTable.ModeType.MODE_VISIT);
 		visitChildren(node, tableTagSet);
 		table.endMode();
-		System.out.printf("colCount: %d, rowCount: %d\n", table.getColCount(), table.getRowCount());
+		//System.out.printf("colCount: %d, rowCount: %d\n", table.getColCount(), table.getRowCount());
 
 		layoutContext.popTable();
 		layoutContext.popPdfTag();
@@ -413,22 +411,9 @@ class MyDomContext {
 	}
 	private void visitRubyTag(YiDomNode node) throws IOException {
 		layoutContext.lockLazyDraw();
+		rbInlineText = null;
 		visitChildren(node, rubyTagSet);
 		layoutContext.unlockLazyDraw();
-	}
-	List<MyLayoutInlineText> rbInlineText;
-	private void visitRbTag(YiDomNode node) throws IOException {
-		layoutContext.unlockLazyDraw();
-		layoutContext.lockLazyDraw();
-		layoutContext.clearLockedInlineTextList();
-		rbInlineText = null;
-		visitChildren(node, rbTagSet);
-		assert(rbInlineText==null);
-		rbInlineText = layoutContext.getLockedInlineTextList();
-		if(!rbInlineText.isEmpty()) {
-			rbInlineText.get(rbInlineText.size() - 1).setRubyLastFlag(true);
-		}
-		afterRtFlag = false;
 	}
 	boolean afterRtFlag = false;
 	void mergeRuby(List<MyLayoutInlineText> rbList, List<MyLayoutInlineText> rtList) {
@@ -479,8 +464,20 @@ class MyDomContext {
 		}
 		assert(rtPos==rtList.size());
 	}
+	List<MyLayoutInlineText> rbInlineText;
+	private void updateRb() {
+		List<MyLayoutInlineText> inlineText = layoutContext.getLockedInlineTextList();
+		if(!inlineText.isEmpty()) {
+			inlineText.get(inlineText.size() - 1).setRubyLastFlag(true);
+			rbInlineText = inlineText;
+			afterRtFlag = false;
+		}
+	}
 	private void visitRtTag(YiDomNode node) throws IOException {
-		assert(rbInlineText!=null) : "rtタグよりも前にrbタグが必要です。";
+		updateRb();
+		if(rbInlineText==null || rbInlineText.isEmpty()) {
+			return;
+		}
 		Map<String, String> wrapStyle = new HashMap<String, String>();
 		wrapStyle.put("font-size", String.format("%fpt", layoutContext.getNowStyle().getFontSize() * 0.5));
 		wrapStyle.put("line-height", null);
@@ -497,10 +494,11 @@ class MyDomContext {
 		}
 		mergeRuby(rbInlineText, rtList);
 		afterRtFlag = true;
+		layoutContext.clearLockedInlineTextList();
 	}
 	private void visitRpTag(YiDomNode node) throws IOException {
-		assert(rbInlineText!=null) : "rpタグよりも前にrbタグが必要です。";
-		if(rbInlineText.isEmpty()) {
+		updateRb();
+		if(rbInlineText==null || rbInlineText.isEmpty()) {
 			return;
 		}
 		List<YiDomNode> children = node.getChildren();
@@ -525,6 +523,7 @@ class MyDomContext {
 				rbInlineText.get(rbInlineText.size()-1).setAfterRp(rp);
 			}
 		}
+		layoutContext.clearLockedInlineTextList();
 	}
 	private void visitInline(YiDomNode node) throws IOException {
 		MyLayoutStyle style = layoutContext.getNowStyle();
@@ -580,12 +579,12 @@ class MyDomContext {
 		normalTagSet.remove(TagType.TAG_META);
 		normalTagSet.remove(TagType.DISPLAY_TABLE_ROW);
 		normalTagSet.remove(TagType.DISPLAY_TABLE_CELL);
-		normalTagSet.remove(TagType.TAG_RB);
 		normalTagSet.remove(TagType.TAG_RT);
 		normalTagSet.remove(TagType.TAG_RP);
 		tableTagSet.add(TagType.DISPLAY_TABLE_ROW);
 		trTagSet.add(TagType.DISPLAY_TABLE_CELL);
-		rubyTagSet.add(TagType.TAG_RB);
+		rubyTagSet.add(TagType.NOT_TAG_TEXT);
+		rubyTagSet.add(TagType.DISPLAY_INLINE);
 		rubyTagSet.add(TagType.TAG_RT);
 		rubyTagSet.add(TagType.TAG_RP);
 		rbTagSet.add(TagType.NOT_TAG_TEXT);

@@ -233,4 +233,12 @@ public class YiReportTest extends TestCase {
 		YiReportEngine.build(dom, pdfFile);
 		pdfFile.close();
 	}
+	public void test23() throws Exception {
+		String html = readTextFile("test-input/test-report23.html");
+		YiDomNode dom = YiDomNode.parse(html);
+		FileOutputStream fos = new FileOutputStream("test-output/test-report23.pdf");
+		YiPdfFile pdfFile = new YiPdfFile(fos);
+		YiReportEngine.build(dom, pdfFile);
+		pdfFile.close();
+	}
 }
