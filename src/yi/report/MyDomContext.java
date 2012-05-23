@@ -229,7 +229,10 @@ class MyDomContext {
 		}
 	}
 	private void visitTable(YiDomNode node) throws IOException {
-		layoutContext.clearNowLine();
+		layoutContext.writeClearLine();
+		layoutContext.pushChildNest();
+		layoutContext.applyDivePass();
+
 		layoutContext.pushPdfTag("Table");
 		MyLayoutTable table = layoutContext.pushTable();
 
@@ -248,6 +251,10 @@ class MyDomContext {
 
 		layoutContext.popTable();
 		layoutContext.popPdfTag();
+
+		layoutContext.writeClearLine();
+		layoutContext.applyDivePass();
+		layoutContext.popNest();
 	}
 	private void visitTableRow(YiDomNode node) throws IOException {
 		MyLayoutTable table = layoutContext.getNowTable();

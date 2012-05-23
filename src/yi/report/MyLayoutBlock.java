@@ -64,8 +64,8 @@ class MyLayoutBlock implements MyLayoutDrawable {
 	public boolean isPageRoot() {
 		return pageRootFlag;
 	}
-	public void addCellBlock(MyLayoutBlock block, double pos, double width, double height, MyLayoutNest nest, MyLayoutStyle style) {
-		block.contentPos = new MyPosition(!verticalWritingMode ? block.contentPos.x : -(divePos+pos), !verticalWritingMode ? divePos+pos : block.contentPos.y);
+	public void addCellBlock(MyLayoutBlock block, double pos, double width, double height, MyLayoutNest nest, MyLayoutStyle style, MyLayoutNest tableNest) {
+		block.contentPos = new MyPosition(!verticalWritingMode ? getEarthStackTravel(tableNest) + block.contentPos.x : -(divePos+pos), !verticalWritingMode ? divePos+pos : getEarthStackTravel(tableNest) + block.contentPos.y);
 		block.expand(width, height, nest, style);
 		drawableList.add(block);
 	}
@@ -342,11 +342,12 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		}
 	}
 	List<MyQuartet<MyQuartet<String, Double, Double, YiPdfColor>, Double, Double, Object>> crossList = new ArrayList<MyQuartet<MyQuartet<String,Double,Double,YiPdfColor>,Double,Double,Object>>();
-	public void putCross(MyQuartet<String, Double, Double, YiPdfColor> cross, double travel, double dive) {
-		crossList.add(new MyQuartet<MyQuartet<String,Double,Double,YiPdfColor>, Double, Double, Object>(cross, travel, divePos+dive, null));
+	public void putCross(MyQuartet<String, Double, Double, YiPdfColor> cross, double travel, double dive, MyLayoutNest tableNest) {
+		crossList.add(new MyQuartet<MyQuartet<String,Double,Double,YiPdfColor>, Double, Double, Object>(cross, getEarthStackTravel(tableNest)+travel, divePos+dive, null));
 	}
 	List<MySextet<String, Double, Double, Double, Double, Double>> borderList = new ArrayList<MySextet<String,Double,Double,Double,Double,Double>>();
-	public void putBorder(String name, double width, double sTravel, double sDive, double eTravel, double eDive) {
-		borderList.add(new MySextet<String, Double, Double, Double, Double, Double>(name, width, sTravel, sDive+divePos, eTravel, eDive+divePos));
+	public void putBorder(String name, double width, double sTravel, double sDive, double eTravel, double eDive, MyLayoutNest tableNest) {
+		double esTravel = getEarthStackTravel(tableNest);
+		borderList.add(new MySextet<String, Double, Double, Double, Double, Double>(name, width, esTravel+sTravel, sDive+divePos, esTravel+eTravel, eDive+divePos));
 	}
 }

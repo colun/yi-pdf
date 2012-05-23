@@ -83,8 +83,10 @@ class MyLayoutTable {
 	boolean hasTotalTravel;
 	double totalTravel;
 	final MyLayoutContext layoutContext;
+	final MyLayoutNest tableNest;
 	public MyLayoutTable(MyLayoutContext layoutContext) {
 		this.layoutContext = layoutContext;
+		tableNest = layoutContext.getNowNest();
 		MyLayoutStyle nowStyle = layoutContext.getNowStyle();
 		verticalWritingMode = nowStyle.isVerticalWritingMode();
 		hasTotalTravel = !verticalWritingMode ? nowStyle.hasWidth() : nowStyle.hasHeight();
@@ -452,14 +454,14 @@ class MyLayoutTable {
 					MyLayoutStyle style = q.fifth;
 					double t = rowPosList[row-baseRow];
 					double dive = rowPosList[rowspan+row-baseRow] - t;
-					layoutContext.getNowBlock().addCellBlock(block, t, !verticalWritingMode ? block.contentRectSize.width : dive, !verticalWritingMode ? dive : block.contentRectSize.height, nest, style);
+					layoutContext.getNowBlock().addCellBlock(block, t, !verticalWritingMode ? block.contentRectSize.width : dive, !verticalWritingMode ? dive : block.contentRectSize.height, nest, style, tableNest);
 				}
 				for(int y=baseRow; y<=maxRow; ++y) {
 					int rowPos = y+y+1;
 					for(int x=0; x<=colCount; ++x) {
 						MyTableBorder border = getMapBorderWithoutHidden(calcPos(rowPos, x+x));
 						if(border!=null && border.style!=null) {
-							layoutContext.getNowBlock().putBorder(border.style.name, border.width, columnPosList[x], rowPosList[y-baseRow], columnPosList[x], rowPosList[1+y-baseRow]);
+							layoutContext.getNowBlock().putBorder(border.style.name, border.width, columnPosList[x], rowPosList[y-baseRow], columnPosList[x], rowPosList[1+y-baseRow], tableNest);
 						}
 					}
 				}
@@ -468,7 +470,7 @@ class MyLayoutTable {
 					for(int y=baseRow+(baseRow==0 ? 0 : 1); y<=maxRow+1; ++y) {
 						MyTableBorder border = getMapBorderWithoutHidden(calcPos(y+y, colPos));
 						if(border!=null && border.style!=null) {
-							layoutContext.getNowBlock().putBorder(border.style.name, border.width, columnPosList[x], rowPosList[y-baseRow], columnPosList[1+x], rowPosList[y-baseRow]);
+							layoutContext.getNowBlock().putBorder(border.style.name, border.width, columnPosList[x], rowPosList[y-baseRow], columnPosList[1+x], rowPosList[y-baseRow], tableNest);
 						}
 					}
 				}
@@ -476,7 +478,7 @@ class MyLayoutTable {
 					for(int x=0; x<=colCount; ++x) {
 						MyQuartet<String, Double, Double, YiPdfColor> cross = crossMap.get(calcPos(y+y, x+x));
 						if(cross!=null) {
-							layoutContext.getNowBlock().putCross(cross, columnPosList[x], rowPosList[y-baseRow]);
+							layoutContext.getNowBlock().putCross(cross, columnPosList[x], rowPosList[y-baseRow], tableNest);
 						}
 					}
 				}
