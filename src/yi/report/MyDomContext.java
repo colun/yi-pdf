@@ -114,7 +114,7 @@ class MyDomContext {
 			regStyle("center", m);
 		}
 	}
-	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_]+) *: *([-#a-zA-Z0-9_\\.]+) *");
+	static Pattern stylePattern = Pattern.compile(" *([-a-zA-Z0-9_]+) *: *([-#%a-zA-Z0-9_\\.]+) *");
 	Map<String, String> fromStyle(String style) {
 		Map<String, String> dic = new HashMap<String, String>();
 		Matcher m = stylePattern.matcher("");
