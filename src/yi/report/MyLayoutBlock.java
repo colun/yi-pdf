@@ -159,6 +159,7 @@ class MyLayoutBlock implements MyLayoutDrawable {
 		else {
 			nestRangeMap.put(nest, new MyPair<Double, Double>(range.first, end));
 		}
+		nest.unsetFirst();
 	}
 	List<MyLayoutDrawable> drawableList = new ArrayList<MyLayoutDrawable>();
 	public boolean addLine(MyLayoutLine line, boolean fourceBlockFlag, MyLayoutNest nest) {

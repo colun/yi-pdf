@@ -35,7 +35,9 @@ public class MyLayoutPage extends MyLayoutBlock {
 	private void registerNullNestRange(MyLayoutNest nest) {
 		if(nest!=null) {
 			registerNullNestRange(nest.getParent());
-			registerNestRange(nest, null, null);
+			if(!nest.isFirst()) {
+				registerNestRange(nest, null, null);
+			}
 		}
 	}
 	public void finishPage(MyLayoutNest nest) {
