@@ -16,6 +16,7 @@ public final class YiPdfPage {
 	ByteArrayOutputStream textStream = new ByteArrayOutputStream();
 	ByteArrayOutputStream graphicsStream = new ByteArrayOutputStream();
 	Set<YiPdfFont> fontSet = new LinkedHashSet<YiPdfFont>();
+	Set<YiPdfImage> imageSet = new LinkedHashSet<YiPdfImage>();
 
 	protected YiPdfPage(YiPdfFile pdfFile, int pageId, double width, double height) {
 		this.pdfFile = pdfFile;
@@ -298,11 +299,18 @@ public final class YiPdfPage {
 		updateDashPattern();
 		graphicsStream.write(toBytesFromAscii(String.format("%f %f m %f %f l S\n", x1, height - y1, x2, height - y2)));
 	}
+	public void drawImage(YiPdfImage img, double x, double y, double width, double height) throws IOException {
+		imageSet.add(img);
+		graphicsStream.write(toBytesFromAscii(String.format("q %f 0 0 %f %f %f cm /I%d Do Q\n", width, height, x, this.height - y - height, img.getResourceId())));
+	}
 	public void fillRect(double x, double y, double width, double height) throws IOException {
 		updateFillColor();
 		graphicsStream.write(toBytesFromAscii(String.format("%f %f %f %f re f\n", x, this.height - y - height, width, height)));
 	}
 	public Set<YiPdfFont> getFontSet() {
 		return fontSet;
+	}
+	public Set<YiPdfImage> getImageSet() {
+		return imageSet;
 	}
 }

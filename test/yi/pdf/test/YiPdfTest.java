@@ -6,11 +6,13 @@ package yi.pdf.test;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.Date;
 
 import yi.pdf.YiPdfColor;
 import yi.pdf.YiPdfFile;
 import yi.pdf.YiPdfFont;
+import yi.pdf.YiPdfImage;
 import yi.pdf.YiPdfPage;
 import yi.pdf.YiPdfTag;
 import yi.pdf.font.YiPdfJGothicFontV;
@@ -272,6 +274,22 @@ public class YiPdfTest extends TestCase {
 		page1.drawLine(100, 320, 200, 320);
 		page1.setFillColor(new YiPdfColor(1, 1, 0));
 		page1.fillRect(100, 400, 100, 100);
+		pdf.close();
+
+		stream.close();
+	}
+	public void test10() throws IOException {
+		OutputStream stream = new FileOutputStream("test-output/test10.pdf");
+		YiPdfFile pdf = new YiPdfFile(stream);
+		pdf.setCreationDate(new Date(0));
+
+		YiPdfImage image = YiPdfImage.getInstance(new URL("file:./test-input/test.jpg"));
+		YiPdfPage page1 = pdf.newPage(800, 600);
+		page1.drawImage(image, 100, 100, 100, 100);
+		page1.drawImage(image, 100, 200, 50, 50);
+		page1.drawImage(image, 150, 200, 50, 50);
+		page1.drawImage(image, 100, 250, 50, 50);
+		page1.drawImage(image, 150, 250, 50, 50);
 		pdf.close();
 
 		stream.close();

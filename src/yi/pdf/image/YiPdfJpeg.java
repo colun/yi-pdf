@@ -73,8 +73,8 @@ public class YiPdfJpeg extends YiPdfImage {
 				outStream.writeByte(0x08);
 				int height = stream.readShort();
 				int width = stream.readShort();
-				outStream.writeByte(height);
-				outStream.writeByte(width);
+				outStream.writeShort(height);
+				outStream.writeShort(width);
 				setHeight(height);
 				setWidth(width);
 				skip -= 5;
@@ -93,5 +93,8 @@ public class YiPdfJpeg extends YiPdfImage {
 			outStream.write(buf, 0, v);
 		}
 		setData(byteArrayOutputStream.toByteArray());
+		setColorSpace("DeviceRGB");
+		setBitsPerComponent(8);
+		setFilter("DCTDecode");
 	}
 }

@@ -26,6 +26,7 @@ public final class YiPdfFile {
 	Map<Integer, Integer> pageId2ObjIdMap = new TreeMap<Integer, Integer>();
 	Map<YiPdfPage, Integer> reservedPageMap = new LinkedHashMap<YiPdfPage, Integer>();
 	Set<YiPdfFont> fontObjSet;
+	Set<YiPdfImage> imageObjSet;
 	YiPdfTag documentTag = null;
 	//Map<String, Integer> imageObjIdMap;
 	Map<String, String> infoMap = new HashMap<String, String>();
@@ -39,6 +40,7 @@ public final class YiPdfFile {
 			offsets.add(0);
 		}
 		fontObjSet = new LinkedHashSet<YiPdfFont>();
+		imageObjSet = new LinkedHashSet<YiPdfImage>();
 
 		setInfo("Producer", "yi-pdf");
 		setCreationDate(new Date());
@@ -96,6 +98,10 @@ public final class YiPdfFile {
 		Set<YiPdfFont> pageFontSet = page.getFontSet();
 		if(pageFontSet!=null) {
 			fontObjSet.addAll(pageFontSet);
+		}
+		Set<YiPdfImage> pageImageSet = page.getImageSet();
+		if(pageImageSet!=null) {
+			imageObjSet.addAll(pageImageSet);
 		}
 
 		int contentsId = openObj();
@@ -259,22 +265,33 @@ public final class YiPdfFile {
 	private int putFont(YiPdfFont font) throws IOException {
 		return font.putSelf(this);
 	}
+	private int putImage(YiPdfImage image) throws IOException {
+		return image.putSelf(this);
+	}
 	private void putResources() throws IOException {
-		StringBuilder fontStringLine = null;
+		StringBuilder buffer = new StringBuilder();
 		if(!fontObjSet.isEmpty()) {
-			fontStringLine = new StringBuilder();
-			fontStringLine.append("/Font <<");
+			buffer.append("/Font <<");
 			for(YiPdfFont font : fontObjSet) {
 				int resourceId = font.getResourceId();
 				int objId = putFont(font);
-				fontStringLine.append(String.format(" /F%d %d 0 R", resourceId, objId));
+				buffer.append(String.format(" /F%d %d 0 R", resourceId, objId));
 			}
-			fontStringLine.append(" >>\n");
+			buffer.append(" >>\n");
+		}
+		if(!imageObjSet.isEmpty()) {
+			buffer.append("/XObject <<");
+			for(YiPdfImage image : imageObjSet) {
+				int resourceId = image.getResourceId();
+				int objId = putImage(image);
+				buffer.append(String.format(" /I%d %d 0 R", resourceId, objId));
+			}
+			buffer.append(" >>\n");
 		}
 		openObj(2);
 		writeAscii("<<\n");
-		if(fontStringLine!=null) {
-			writeAscii(fontStringLine.toString());
+		if(buffer.length()!=0) {
+			writeAscii(buffer.toString());
 		}
 		writeAscii(">>\n");
 		closeObj();
