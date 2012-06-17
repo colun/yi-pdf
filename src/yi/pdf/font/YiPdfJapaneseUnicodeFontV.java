@@ -10,7 +10,7 @@ public abstract class YiPdfJapaneseUnicodeFontV extends YiPdfJapaneseUnicodeFont
 	}
 	@Override
 	public int getTravel(char c) {
-		return ascent - descent;
+		return 1000;//ascent - descent;
 	}
 	@Override
 	public int getLowerPerpend(char c) {

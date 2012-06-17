@@ -281,6 +281,7 @@ public class MyLayoutContext {
 		YiPdfColor color = nowStyle.getFontColor();
 		double fontSize = nowStyle.getFontSize();
 		boolean tabooHangMode = nowStyle.getLineBreakHang();
+		double letterSpacing = nowStyle.getLetterSpacing();
 		Double lineHeight = nowStyle.getLineHeight();
 		DecorationType decoration = nowStyle.getTextDecoration();
 		int len = text.length();
@@ -288,13 +289,13 @@ public class MyLayoutContext {
 		while(pos<len) {
 			MyLayoutLine nLine = getNowLine();
 			double maxTravel = nLine.getRemainingTravel();
-			MyQuartet<Integer, String, Double, Object> q = formattingText(font, fontSize, text, maxTravel, pos, nLine.isEmpty(), tabooHangMode);
+			MyQuartet<Integer, String, Double, Object> q = formattingText(font, fontSize, letterSpacing, text, maxTravel, pos, nLine.isEmpty(), tabooHangMode);
 			assert(!nLine.isEmpty() || pos!=q.first);
 			if(pos!=q.first) {
 				pos = q.first;
 				String str = q.second;
 				double totalTravel = q.third;
-				MyLayoutInlineText inlineText = new MyLayoutInlineText(font, fontSize, color, str, totalTravel, getLineTag(), lineHeight, decoration);
+				MyLayoutInlineText inlineText = new MyLayoutInlineText(font, fontSize, letterSpacing, color, str, totalTravel, getLineTag(), lineHeight, decoration);
 				if(isLockedLazyDraw()) {
 					lockedInlineTextList.add(inlineText);
 				}
@@ -309,6 +310,7 @@ public class MyLayoutContext {
 		YiPdfFont font = nowStyle.getFont();
 		YiPdfColor color = nowStyle.getFontColor();
 		double fontSize = nowStyle.getFontSize();
+		double letterSpacing = nowStyle.getLetterSpacing();
 		Double lineHeight = nowStyle.getLineHeight();
 		DecorationType decoration = nowStyle.getTextDecoration();
 		int len = text.length();
@@ -316,12 +318,13 @@ public class MyLayoutContext {
 		for(int i=0; i<len; ++i) {
 			travelSum += font.getTravel(text.charAt(i));
 		}
-		return new MyLayoutInlineText(font, fontSize, color, text, (fontSize * travelSum) / 1000, getLineTag(), lineHeight, decoration);
+		return new MyLayoutInlineText(font, fontSize, letterSpacing, color, text, letterSpacing * len + (fontSize * travelSum) / 1000, getLineTag(), lineHeight, decoration);
 	}
 	String tabooPrefix = "　、。」）・？！";
 	String tabooSuffix = "「（";
-	private MyQuartet<Integer, String, Double, Object> formattingText(YiPdfFont font, double fontSize, String text, double maxTravel, int stPos, boolean emptyLineFlag, boolean hangFlag) {
+	private MyQuartet<Integer, String, Double, Object> formattingText(YiPdfFont font, double fontSize, double letterSpacing, String text, double maxTravel, int stPos, boolean emptyLineFlag, boolean hangFlag) {
 		int maxTravelInt = (int)((maxTravel * 1000) / fontSize);
+		int spacingInt = (int)((letterSpacing * 1000) / fontSize);
 		int len = text.length();
 		int totalTravel = 0;
 		int reservedTravel = -1;
@@ -342,7 +345,7 @@ public class MyLayoutContext {
 				reservedPos = pos;
 				reservedTravel = totalTravel;
 			}
-			int travel = font.getTravel(ch);
+			int travel = font.getTravel(ch) + spacingInt;
 			if(maxTravelInt < totalTravel + travel) {
 				if(hangFlag && 0<=tabooPrefix.indexOf(ch)) {
 					++pos;

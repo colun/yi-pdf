@@ -16,6 +16,7 @@ import yi.report.MyLayoutStyle.DecorationType;
 class MyLayoutInlineText extends MyLayoutInline {
 	YiPdfFont font;
 	double fontSize;
+	double letterSpacing;
 	YiPdfColor color;
 	String text;
 	double travel;
@@ -27,9 +28,10 @@ class MyLayoutInlineText extends MyLayoutInline {
 	double fontUpperPerpend;
 	Double lineHeight;
 	DecorationType decoration;
-	public MyLayoutInlineText(YiPdfFont font, double fontSize, YiPdfColor color, String text, double travel, YiPdfTag lineTag, Double lineHeight, DecorationType decoration) {
+	public MyLayoutInlineText(YiPdfFont font, double fontSize, double letterSpacing, YiPdfColor color, String text, double travel, YiPdfTag lineTag, Double lineHeight, DecorationType decoration) {
 		this.font = font;
 		this.fontSize = fontSize;
+		this.letterSpacing = letterSpacing;
 		this.color = color;
 		this.text = text;
 		this.travel = travel;
@@ -85,11 +87,12 @@ class MyLayoutInlineText extends MyLayoutInline {
 		}
 		page.setFont(font);
 		page.setFontSize(fontSize);
+		page.setCharSpace(letterSpacing);
 		page.setTextColor(color);
 		if(transparentFlag) {
 			page.setTextRenderingMode(3);
 		}
-		page.drawText(x, y, text);
+		page.drawText(!verticalWritingMode ? x+letterSpacing/2 : x, !verticalWritingMode ? y : y+letterSpacing/2, text);
 		if(transparentFlag) {
 			page.setTextRenderingMode(0);
 		}
@@ -139,7 +142,7 @@ class MyLayoutInlineText extends MyLayoutInline {
 	public List<MyLayoutInlineText> explode() {
 		List<MyLayoutInlineText> result = new ArrayList<MyLayoutInlineText>();
 		for(int i=0; i<text.length(); ++i) {
-			result.add(new MyLayoutInlineText(font, fontSize, color, text.substring(i, i+1), fontSize * font.getTravel(text.charAt(i)) / 1000, lineTag, lineHeight, decoration));
+			result.add(new MyLayoutInlineText(font, fontSize, letterSpacing, color, text.substring(i, i+1), letterSpacing + fontSize * font.getTravel(text.charAt(i)) / 1000, lineTag, lineHeight, decoration));
 		}
 		return result;
 	}

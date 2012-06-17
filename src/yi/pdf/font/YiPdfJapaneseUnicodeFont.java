@@ -62,7 +62,7 @@ public abstract class YiPdfJapaneseUnicodeFont extends YiPdfFont {
 		writeAscii(pdfFile, "[\n");
 		writeAscii(pdfFile, "1 632 500\n");
 		writeAscii(pdfFile, "]\n");
-		writeAscii(pdfFile, String.format("/DW2 [ %d %d ]\n", getAscent(), getDescent() - getAscent()));
+		writeAscii(pdfFile, String.format("/DW2 [ %d %d ]\n", getAscent(), -1000/*getDescent() - getAscent()*/));
 		writeAscii(pdfFile, ">>\n");
 		closeObj(pdfFile);
 		int id = openObj(pdfFile);

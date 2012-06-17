@@ -294,4 +294,31 @@ public class YiPdfTest extends TestCase {
 
 		stream.close();
 	}
+	public void test11() throws IOException {
+		OutputStream stream = new FileOutputStream("test-output/test11.pdf");
+		YiPdfFile pdf = new YiPdfFile(stream);
+		pdf.setCreationDate(new Date(0));
+
+		YiPdfPage page = pdf.newPage(800, 600);
+		page.setFont(minchoFont);
+		page.setFontSize(10.5);
+		page.drawText(100, 100, "Hello World!");
+		page.drawText(100, 120, "こんにちは、abcdefghijklmnopqrstuvwxyz");
+		page.setCharSpace(1);
+		page.drawText(100, 140, "こんにちは、abcdefghijklmnopqrstuvwxyz");
+		page.setCharSpace(-1);
+		page.drawText(100, 160, "こんにちは、abcdefghijklmnopqrstuvwxyz");
+		page.setCharSpace(0);
+		page.setFont(gothicFont);
+		page.drawText(100, 200, "Hello World!");
+		page.drawText(150, 200, "こんにちは、abcdefghijklmnopqrstuvwxyz");
+		page.setCharSpace(1);
+		page.drawText(200, 200, "こんにちは、abcdefghijklmnopqrstuvwxyz");
+		page.setCharSpace(-1);
+		page.drawText(250, 200, "こんにちは、abcdefghijklmnopqrstuvwxyz");
+		page = pdf.newPage(600, 800);
+		pdf.close();
+
+		stream.close();
+	}
 }

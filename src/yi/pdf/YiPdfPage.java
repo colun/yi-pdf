@@ -119,6 +119,22 @@ public final class YiPdfPage {
 		}
 	}
 
+	private double nowCharSpace = 0;
+	private Double beforeCharSpace = null;
+	public void setCharSpace(double space) {
+		nowCharSpace = space;
+	}
+	public double getCharSpace() {
+		return nowCharSpace;
+	}
+	private void updateCharSpace() throws IOException {
+		double nowCharSpaceV = nowFont.isVertical() ? -nowCharSpace : nowCharSpace;
+		if(beforeCharSpace==null || nowCharSpaceV!=beforeCharSpace) {
+			beforeCharSpace = nowCharSpaceV;
+			textStream.write(toBytesFromAscii(String.format("%f Tc\n", nowCharSpaceV)));
+		}
+	}
+
 	private int nowTextRenderingMode = 0;
 	private Integer beforeTextRenderingMode = null;
 	public void setTextRenderingMode(int mode) {
@@ -139,6 +155,7 @@ public final class YiPdfPage {
 		updateFont();
 		updateTextColor();
 		updateTextRenderingMode();
+		updateCharSpace();
 		textStream.write(toBytesFromAscii(String.format("1 0 0 1 %f %f Tm\n", x, height - y)));
 		textStream.write(toBytesFromAscii("("));
 		textStream.write(escapeStringBinary(nowFont.encode(text)));

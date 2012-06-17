@@ -111,7 +111,7 @@ class MyLayoutStyle {
 			}
 		}
 	}
-	static Pattern unitPattern = Pattern.compile("([0-9]+(\\.[0-9]*)?)([%\\w]*)");
+	static Pattern unitPattern = Pattern.compile("(-?[0-9]+(\\.[0-9]*)?)([%\\w]*)");
 	double evalUnit(String str, boolean fsFlag, double base) {
 		if(str==null) {
 			return 0;
@@ -207,6 +207,10 @@ class MyLayoutStyle {
 			return 10.5;
 		}
 		return evalUnit(str, true);
+	}
+	double getLetterSpacing() {
+		String str = style.get("letter-spacing");
+		return evalUnit(str);
 	}
 	Double getLineHeight() {
 		String str = style.get("line-height");
