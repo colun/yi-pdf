@@ -277,6 +277,16 @@ public class MyLayoutContext {
 		}
 	}
 	public void writeText(String text) throws IOException {
+		if(nowStyle.isFullWidthAscii()) {
+			char[] buf = text.toCharArray();
+			for(int i=0; i<buf.length; ++i) {
+				char c = buf[i];
+				if(0x20<=c && c<=0x7E) {
+					buf[i] = (char)(c - 0x20 + 0xFF00);
+				}
+			}
+			text = String.valueOf(buf);
+		}
 		YiPdfFont font = nowStyle.getFont();
 		YiPdfColor color = nowStyle.getFontColor();
 		double fontSize = nowStyle.getFontSize();

@@ -201,6 +201,13 @@ class MyLayoutStyle {
 		}
 		return false;
 	}
+	boolean isFullWidthAscii() {
+		String str = style.get("full-width-ascii");
+		if(str==null || str.isEmpty() || "0".equals(str) || "false".equals(str)) {
+			return false;
+		}
+		return true;
+	}
 	double getFontSize() {
 		String str = style.get("font-size");
 		if(str==null) {
