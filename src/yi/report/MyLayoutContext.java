@@ -281,8 +281,11 @@ public class MyLayoutContext {
 			char[] buf = text.toCharArray();
 			for(int i=0; i<buf.length; ++i) {
 				char c = buf[i];
-				if(0x20<=c && c<=0x7E) {
-					buf[i] = (char)(c - 0x20 + 0xFF00);
+				if(0x21<=c && c<=0x7E) {
+					buf[i] = (char)(c - 0x21 + 0xFF01);
+				}
+				else if(0x20==c) {
+					buf[i] = (char)0x3000;
 				}
 			}
 			text = String.valueOf(buf);
